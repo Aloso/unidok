@@ -20,6 +20,7 @@ use super::tables::{ParseTable, Table};
 use super::text::ParseText;
 
 #[allow(unused)]
+#[derive(Debug, Clone)]
 pub enum Node {
     Text(StrSlice),
     SubstText(SubstText),
@@ -88,7 +89,7 @@ impl Parse for ParseNode<'_> {
                     Node::Attribute(attr)
                 } else if let Some(block) = input.parse(ParseBraces { ind }) {
                     Node::Braces(block)
-                } else if let Some(math) = input.parse(ParseMath) {
+                } else if let Some(math) = input.parse(ParseMath { ind }) {
                     Node::Math(math)
                 } else {
                     return None;

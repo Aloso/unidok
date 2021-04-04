@@ -3,6 +3,7 @@ use crate::{Input, Parse};
 use super::marker::ParseLineStart;
 
 /// The escape character, `\`.
+#[derive(Debug, Clone)]
 pub struct Escape {
     pub line_start: bool,
 }
@@ -19,9 +20,11 @@ impl Parse for ParseEscape {
     }
 }
 
-pub struct ParseLimiter;
 #[non_exhaustive]
+#[derive(Debug, Clone)]
 pub struct Limiter;
+
+pub struct ParseLimiter;
 
 impl Parse for ParseLimiter {
     type Output = Limiter;

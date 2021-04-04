@@ -6,6 +6,7 @@ use super::UntilChar;
 
 /// A comment. It starts with two slashes at must appear directly after a line
 /// break.
+#[derive(Debug, Clone)]
 pub struct Comment {
     pub content: StrSlice,
 }

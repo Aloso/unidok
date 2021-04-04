@@ -12,6 +12,7 @@ use super::Node;
 /// - ```markdown `code` ```
 ///
 /// A b *c *d* e*
+#[derive(Debug, Clone)]
 pub struct InlineFormat {
     pub formatting: Formatting,
     pub content: Vec<Node>,

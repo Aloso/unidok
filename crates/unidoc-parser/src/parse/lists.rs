@@ -6,6 +6,7 @@ use super::indent::{Indentation, Indents, LineBreak};
 use super::marker::ParseLineStart;
 use super::{Node, NodeParentKind, ParseNodes, UntilChar};
 
+#[derive(Debug, Clone)]
 pub struct List {
     pub indent: u8,
     pub kind: ListKind,

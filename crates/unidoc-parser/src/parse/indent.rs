@@ -61,6 +61,7 @@ impl<'a> Indents<'a> {
 }
 
 /// Parses a line break, including left padding
+#[derive(Debug, Clone, Copy)]
 pub struct LineBreak<'a>(pub Indents<'a>);
 
 impl Parse for LineBreak<'_> {
@@ -71,21 +72,23 @@ impl Parse for LineBreak<'_> {
 
         input.parse('\n')?;
 
-        let mut stack = VecDeque::with_capacity(8);
-        let mut acc = self.0 .0;
-        while let INode::Node { next, ind } = acc {
-            stack.push_front(ind);
-            acc = *next;
-        }
-        dbg!(&stack);
+        if !matches!(input.peek_char(), Some('\n') | None) {
+            let mut stack = VecDeque::with_capacity(8);
+            let mut acc = self.0 .0;
+            while let INode::Node { next, ind } = acc {
+                stack.push_front(ind);
+                acc = *next;
+            }
+            dbg!(&stack);
 
-        for ind in stack {
-            match ind {
-                Indentation::Spaces(s) => {
-                    input.parse(ParseSpacesIndent(s))?;
-                }
-                Indentation::Quote => {
-                    input.parse(ParseQuoteIndent)?;
+            for ind in stack {
+                match ind {
+                    Indentation::Spaces(s) => {
+                        input.parse(ParseSpacesIndent(s))?;
+                    }
+                    Indentation::Quote => {
+                        input.parse(ParseQuoteIndent)?;
+                    }
                 }
             }
         }

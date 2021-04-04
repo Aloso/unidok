@@ -2,11 +2,13 @@ use crate::{Input, Parse, StrSlice};
 
 use super::Node;
 
-pub struct ParseLink;
+#[derive(Debug, Clone)]
 pub struct Link {
     pub href: StrSlice,
     pub text: Option<Vec<Node>>,
 }
+
+pub struct ParseLink;
 
 impl Parse for ParseLink {
     type Output = Link;

@@ -4,6 +4,7 @@ use super::braces::{Braces, ParseBraces};
 use super::indent::Indents;
 use super::{Parse, UntilChar};
 
+#[derive(Debug, Clone)]
 pub struct Macro {
     pub name: StrSlice,
     pub args: Option<StrSlice>,

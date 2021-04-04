@@ -11,6 +11,7 @@ use super::{UntilChar, UntilStr};
 /// pub struct Foo;
 /// ```
 /// ````
+#[derive(Debug, Clone)]
 pub struct CodeBlock {
     pub meta: StrSlice,
     pub backticks: u8,

@@ -44,7 +44,7 @@ impl Input {
         self.text.get(..self.idx)
     }
 
-    pub fn prev_bytes(&self, bytes: usize) -> StrSlice {
+    pub fn prev_slice_bytes(&self, bytes: usize) -> StrSlice {
         self.text.get(self.idx - bytes..self.idx)
     }
 
@@ -87,7 +87,7 @@ impl ModifyInput<'_> {
         let prev = self.prev_idx;
         self.prev_idx = self.input.idx;
         self.prev_l_s = self.input.is_line_start;
-        self.prev_bytes(self.input.idx - prev)
+        self.prev_slice_bytes(self.input.idx - prev)
     }
 }
 

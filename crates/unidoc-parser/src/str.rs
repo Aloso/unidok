@@ -2,7 +2,7 @@ use std::ops::{Deref, Range, RangeFrom, RangeInclusive, RangeTo};
 
 /// An immutable string.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Str(String);
+pub struct Str(Box<str>);
 
 impl Str {
     pub fn slice(&self) -> StrSlice {
@@ -19,7 +19,7 @@ impl Str {
 
 impl From<String> for Str {
     fn from(s: String) -> Self {
-        Str(s)
+        Str(s.into_boxed_str())
     }
 }
 
@@ -54,6 +54,10 @@ impl StrSlice {
     /// Get a reference to the str slice's end.
     pub fn end(&self) -> usize {
         self.end
+    }
+
+    pub fn range(&self) -> Range<usize> {
+        self.start..self.end
     }
 
     pub fn len(&self) -> usize {

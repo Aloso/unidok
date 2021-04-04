@@ -4,6 +4,7 @@ use super::indent::{Indentation, Indents, ParseQuoteIndent};
 use super::marker::ParseLineStart;
 use super::{Node, NodeParentKind, ParseNodes};
 
+#[derive(Debug, Clone)]
 pub struct Quote {
     pub content: Vec<Node>,
 }

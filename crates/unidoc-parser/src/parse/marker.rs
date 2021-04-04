@@ -50,7 +50,7 @@ impl Parse for Prev<&str> {
 
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         if input.prev().ends_with(self.0) {
-            Some(input.prev_bytes(self.0.len()))
+            Some(input.prev_slice_bytes(self.0.len()))
         } else {
             None
         }

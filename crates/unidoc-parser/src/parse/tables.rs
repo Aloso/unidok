@@ -2,6 +2,7 @@ use crate::Parse;
 
 use super::indent::Indents;
 
+#[derive(Debug, Clone)]
 pub struct Table;
 
 pub struct ParseTable<'a> {

@@ -21,6 +21,7 @@ pub mod marker;
 pub mod math;
 pub mod nodes;
 pub mod quotes;
+pub mod statics;
 pub mod subst_text;
 pub mod tables;
 pub mod text;

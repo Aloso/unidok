@@ -9,6 +9,7 @@ use super::{Node, NodeParentKind, ParseNodes};
 /// ```md
 /// ## Level-2 heading
 /// ```
+#[derive(Debug, Clone)]
 pub struct Heading {
     pub level: u8,
     pub content: Vec<Node>,

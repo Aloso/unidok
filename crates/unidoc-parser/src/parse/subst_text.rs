@@ -1,10 +1,12 @@
 use crate::{Input, Parse, StrSlice};
 
-pub struct ParseSubstText;
+#[derive(Debug, Clone)]
 pub struct SubstText {
     pub content: StrSlice,
     pub substituted: String,
 }
+
+pub struct ParseSubstText;
 
 impl Parse for ParseSubstText {
     type Output = SubstText;
