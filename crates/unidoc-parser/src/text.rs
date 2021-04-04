@@ -1,7 +1,7 @@
 use crate::{Input, Parse, StrSlice};
 
-use super::indent::Indents;
-use super::NodeParentKind;
+use crate::indent::Indents;
+use crate::NodeParentKind;
 
 pub struct ParseText<'a> {
     pub ind: Indents<'a>,
@@ -18,8 +18,12 @@ impl Parse for ParseText<'_> {
                 '*' | '_' | '~' | '^' | '`' | // inline
                 '/' | '\\' | '$' | '&' | // comments, escape, limiter, HTML entity
                 '#' | '-' | '.' | ',' | '>' | '<' | '%' | '=' | '[' | '@' |
-                '\n'
+                '\n' | '{' | '}'
             )
+        }
+
+        if input.is_empty() {
+            return None;
         }
 
         match input.rest().find(is_special) {

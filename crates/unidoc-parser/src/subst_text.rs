@@ -12,6 +12,6 @@ impl Parse for ParseSubstText {
     type Output = SubstText;
 
     fn parse(&self, _input: &mut Input) -> Option<Self::Output> {
-        todo!()
+        None
     }
 }

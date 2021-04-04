@@ -1,8 +1,8 @@
 use crate::{Input, Parse, StrSlice};
 
-use super::indent::Indents;
-use super::marker::{ParseLineEnd, ParseLineStart};
-use super::{UntilChar, UntilStr};
+use crate::indent::Indents;
+use crate::marker::{ParseLineEnd, ParseLineStart};
+use crate::{UntilChar, UntilStr};
 
 /// A code block, e.g.
 ///

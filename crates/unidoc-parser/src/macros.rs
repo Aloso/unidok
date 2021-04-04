@@ -1,8 +1,8 @@
 use crate::{Input, StrSlice};
 
-use super::braces::{Braces, ParseBraces};
-use super::indent::Indents;
-use super::{Parse, UntilChar};
+use crate::braces::{Braces, ParseBraces};
+use crate::indent::Indents;
+use crate::{Parse, UntilChar};
 
 #[derive(Debug, Clone)]
 pub struct Macro {

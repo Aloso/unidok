@@ -3,9 +3,19 @@
 version = 3
 
 [[package]]
+name = "detached-str"
+version = "0.1.0"
+
+[[package]]
 name = "unidoc"
 version = "0.1.0"
+dependencies = [
+ "unidoc-parser",
+]
 
 [[package]]
 name = "unidoc-parser"
 version = "0.1.0"
+dependencies = [
+ "detached-str",
+]

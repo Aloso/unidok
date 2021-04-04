@@ -1,6 +1,6 @@
 use crate::{Input, Parse};
 
-use super::Node;
+use crate::Node;
 
 /// Inline formatting:
 ///

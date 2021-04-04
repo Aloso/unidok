@@ -1,6 +1,6 @@
 use crate::{Input, Parse, StrSlice};
 
-use super::Node;
+use crate::Node;
 
 /// An image that should be shown in the document, e.g.
 ///

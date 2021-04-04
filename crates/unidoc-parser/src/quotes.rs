@@ -1,8 +1,8 @@
 use crate::{Input, Parse};
 
-use super::indent::{Indentation, Indents, ParseQuoteIndent};
-use super::marker::ParseLineStart;
-use super::{Node, NodeParentKind, ParseNodes};
+use crate::indent::{Indentation, Indents, ParseQuoteIndent};
+use crate::marker::ParseLineStart;
+use crate::{Node, NodeParentKind, ParseNodes};
 
 #[derive(Debug, Clone)]
 pub struct Quote {

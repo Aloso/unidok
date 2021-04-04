@@ -1,23 +1,23 @@
 use crate::{Input, Parse, StrSlice};
 
-use super::attributes::{Attribute, ParseAttribute};
-use super::braces::{Braces, ParseBraces};
-use super::code_blocks::{CodeBlock, ParseCodeBlock};
-use super::comments::{Comment, ParseComment};
-use super::escapes_limiters::{Escape, Limiter, ParseEscape, ParseLimiter};
-use super::headings::{Heading, ParseHeading};
-use super::hr::{HorizontalLine, ParseHorizontalLine};
-use super::images::Image;
-use super::indent::Indents;
-use super::inline::{Formatting, InlineFormat};
-use super::links::Link;
-use super::lists::{List, ParseList};
-use super::macros::Macro;
-use super::math::{Math, ParseMath};
-use super::quotes::{ParseQuote, Quote};
-use super::subst_text::{ParseSubstText, SubstText};
-use super::tables::{ParseTable, Table};
-use super::text::ParseText;
+use crate::attributes::{Attribute, ParseAttribute};
+use crate::braces::{Braces, ParseBraces};
+use crate::code_blocks::{CodeBlock, ParseCodeBlock};
+use crate::comments::{Comment, ParseComment};
+use crate::escapes_limiters::{Escape, Limiter, ParseEscape, ParseLimiter};
+use crate::headings::{Heading, ParseHeading};
+use crate::hr::{HorizontalLine, ParseHorizontalLine};
+use crate::images::Image;
+use crate::indent::Indents;
+use crate::inline::{Formatting, InlineFormat};
+use crate::links::Link;
+use crate::lists::{List, ParseList};
+use crate::macros::Macro;
+use crate::math::{Math, ParseMath};
+use crate::quotes::{ParseQuote, Quote};
+use crate::subst_text::{ParseSubstText, SubstText};
+use crate::tables::{ParseTable, Table};
+use crate::text::ParseText;
 
 #[allow(unused)]
 #[derive(Debug, Clone)]
@@ -100,12 +100,10 @@ impl Parse for ParseNode<'_> {
         match parent {
             | NodeParentKind::Math
             | NodeParentKind::InlineFormat { formatting: Formatting::Code } => {
-                if let Some(esc) = input.parse(ParseEscape) {
-                    Some(Node::Escape(esc))
-                } else if let Some(text) = input.parse(ParseText { ind, parent }) {
-                    Some(Node::Text(text))
+                if let Some(esc) = input.parse(ParseEscape).map(Node::Escape) {
+                    Some(esc)
                 } else {
-                    None
+                    input.parse(ParseText { ind, parent }).map(Node::Text)
                 }
             }
 

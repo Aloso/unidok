@@ -1,22 +1,22 @@
 use crate::StrSlice;
 
-use super::attributes::Attribute;
-use super::braces::Braces;
-use super::code_blocks::CodeBlock;
-use super::comments::Comment;
-use super::escapes_limiters::{Escape, Limiter};
-use super::headings::Heading;
-use super::hr::HorizontalLine;
-use super::images::Image;
-use super::inline::{Formatting, InlineFormat};
-use super::links::Link;
-use super::lists::{List, ListKind};
-use super::macros::Macro;
-use super::math::Math;
-use super::quotes::Quote;
-use super::subst_text::SubstText;
-use super::tables::Table;
-use super::Node;
+use crate::attributes::Attribute;
+use crate::braces::Braces;
+use crate::code_blocks::CodeBlock;
+use crate::comments::Comment;
+use crate::escapes_limiters::{Escape, Limiter};
+use crate::headings::Heading;
+use crate::hr::HorizontalLine;
+use crate::images::Image;
+use crate::inline::{Formatting, InlineFormat};
+use crate::links::Link;
+use crate::lists::{List, ListKind};
+use crate::macros::Macro;
+use crate::math::Math;
+use crate::quotes::Quote;
+use crate::subst_text::SubstText;
+use crate::tables::Table;
+use crate::Node;
 
 pub trait IsStatic {
     type Static: 'static;

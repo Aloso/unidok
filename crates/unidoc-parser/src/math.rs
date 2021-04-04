@@ -1,6 +1,6 @@
 use crate::{Input, Parse};
 
-use super::indent::{Indents, LineBreak};
+use crate::indent::{Indents, LineBreak};
 
 /// A math block, e.g.
 ///

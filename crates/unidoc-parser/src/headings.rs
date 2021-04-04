@@ -1,8 +1,8 @@
 use crate::{Input, Parse};
 
-use super::indent::Indents;
-use super::marker::ParseLineStart;
-use super::{Node, NodeParentKind, ParseNodes};
+use crate::indent::Indents;
+use crate::marker::ParseLineStart;
+use crate::{Node, NodeParentKind, ParseNodes};
 
 /// A heading, e.g.
 ///

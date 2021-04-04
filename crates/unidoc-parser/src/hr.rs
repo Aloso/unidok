@@ -1,7 +1,7 @@
 use crate::{Input, Parse};
 
-use super::indent::Indents;
-use super::marker::{ParseLineEnd, ParseLineStart};
+use crate::indent::Indents;
+use crate::marker::{ParseLineEnd, ParseLineStart};
 
 /// A horizontal line, consisting of at least three dashes.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -36,7 +36,7 @@ impl Parse for ParseHorizontalLine<'_> {
 
 #[test]
 fn test_hr() {
-    use super::indent::LineBreak;
+    use crate::indent::LineBreak;
 
     let mut input = Input::new("-------\n---\n--\n---");
     let parse_hr = ParseHorizontalLine::default();

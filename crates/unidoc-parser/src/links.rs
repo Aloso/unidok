@@ -1,6 +1,6 @@
 use crate::{Input, Parse, StrSlice};
 
-use super::Node;
+use crate::Node;
 
 #[derive(Debug, Clone)]
 pub struct Link {

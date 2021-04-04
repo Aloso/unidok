@@ -1,6 +1,6 @@
 use crate::Parse;
 
-use super::indent::Indents;
+use crate::indent::Indents;
 
 #[derive(Debug, Clone)]
 pub struct Attribute;

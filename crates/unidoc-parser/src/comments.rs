@@ -1,8 +1,8 @@
 use crate::{Input, Parse, StrSlice};
 
-use super::indent::Indents;
-use super::marker::ParseLineStart;
-use super::UntilChar;
+use crate::indent::Indents;
+use crate::marker::ParseLineStart;
+use crate::UntilChar;
 
 /// A comment. It starts with two slashes at must appear directly after a line
 /// break.

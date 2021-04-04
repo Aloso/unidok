@@ -1,6 +1,6 @@
 use crate::{Input, Parse};
 
-use super::marker::ParseLineStart;
+use crate::marker::ParseLineStart;
 
 /// The escape character, `\`.
 #[derive(Debug, Clone)]
