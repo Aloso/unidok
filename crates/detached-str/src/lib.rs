@@ -1,7 +1,8 @@
+use std::fmt;
 use std::ops::{Deref, Range, RangeFrom, RangeInclusive, RangeTo};
 
 /// An immutable string.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct Str(Box<str>);
 
 impl Str {
@@ -23,6 +24,18 @@ impl From<String> for Str {
     }
 }
 
+impl fmt::Debug for Str {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Debug::fmt(&self.0, f)
+    }
+}
+
+impl fmt::Display for Str {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Display::fmt(&self.0, f)
+    }
+}
+
 impl Deref for Str {
     type Target = str;
 
@@ -35,7 +48,7 @@ impl Deref for Str {
 ///
 /// To get the content of the string slice, the original string
 /// must be still around.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Default)]
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Default)]
 pub struct StrSlice {
     start: usize,
     end: usize,
@@ -73,6 +86,12 @@ impl StrSlice {
         Self: OwnedIndex<T>,
     {
         self.index(index)
+    }
+}
+
+impl fmt::Debug for StrSlice {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "StrSlice @ {}..{}", self.start, self.end)
     }
 }
 

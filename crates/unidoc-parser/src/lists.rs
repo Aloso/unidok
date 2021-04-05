@@ -1,10 +1,9 @@
 use std::convert::TryFrom;
 
-use crate::Parse;
-
-use crate::indent::{Indentation, Indents, LineBreak};
+use crate::indent::{Indentation, Indents};
+use crate::items::{LineBreak, Node, ParentKind};
 use crate::marker::ParseLineStart;
-use crate::{Node, NodeParentKind, ParseNodes, UntilChar};
+use crate::{Parse, UntilChar};
 
 #[derive(Debug, Clone)]
 pub struct List {
@@ -19,6 +18,12 @@ pub enum ListKind {
     Stars,
     Dots,
     Commas,
+}
+
+impl List {
+    pub fn parser(ind: Indents<'_>) -> ParseList<'_> {
+        ParseList { ind }
+    }
 }
 
 pub struct ParseList<'a> {
@@ -38,11 +43,11 @@ impl Parse for ParseList<'_> {
 
         let mut content = Vec::new();
         loop {
-            let node = input.parse(ParseNodes { parent: NodeParentKind::List, ind })?;
+            let node = input.parse(Node::multi_parser(ParentKind::List, ind))?;
             content.push(node);
 
             let mut input2 = input.start();
-            if input2.parse(LineBreak(self.ind)).is_some() {
+            if input2.parse(LineBreak::parser(self.ind)).is_some() {
                 let (indent2, kind2) = input2.parse(ParseBullet)?;
                 if indent2 == indent && kind2 == kind {
                     input2.apply();
@@ -57,7 +62,7 @@ impl Parse for ParseList<'_> {
     }
 }
 
-pub struct ParseBullet;
+struct ParseBullet;
 
 impl Parse for ParseBullet {
     type Output = (u8, ListKind);

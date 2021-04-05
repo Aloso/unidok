@@ -1,4 +1,5 @@
-use crate::{Input, Parse, StrSlice};
+use crate::str::StrSlice;
+use crate::{Input, Parse};
 
 /// This parser matches if a line break has just been parsed.
 pub struct ParseLineStart;

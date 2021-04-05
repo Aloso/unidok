@@ -1,12 +1,17 @@
-use crate::{Input, Parse};
-
 use crate::indent::{Indentation, Indents, ParseQuoteIndent};
+use crate::items::{Node, ParentKind};
 use crate::marker::ParseLineStart;
-use crate::{Node, NodeParentKind, ParseNodes};
+use crate::{Input, Parse};
 
 #[derive(Debug, Clone)]
 pub struct Quote {
     pub content: Vec<Node>,
+}
+
+impl Quote {
+    pub fn parser(ind: Indents<'_>) -> ParseQuote<'_> {
+        ParseQuote { ind }
+    }
 }
 
 pub struct ParseQuote<'a> {
@@ -24,7 +29,7 @@ impl Parse for ParseQuote<'_> {
         input.set_line_start(true);
 
         let ind = self.ind.push(Indentation::Quote);
-        let content = input.parse(ParseNodes { parent: NodeParentKind::Quote, ind })?;
+        let content = input.parse(Node::multi_parser(ParentKind::Quote, ind))?;
 
         input.apply();
         Some(Quote { content })

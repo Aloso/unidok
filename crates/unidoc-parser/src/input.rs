@@ -1,6 +1,7 @@
 use std::ops::{Deref, DerefMut};
 
-use crate::{Parse, Str, StrSlice};
+use crate::str::{Str, StrSlice};
+use crate::Parse;
 
 #[derive(Debug, Clone)]
 pub struct Input {
@@ -135,14 +136,14 @@ fn test_bump() {
 
 #[test]
 fn test_line_start() {
-    use crate::indent::LineBreak;
+    use crate::items::LineBreak;
 
     let mut input = Input::new("abcd\nabcd");
     assert!(input.is_line_start());
     input.bump(4);
     assert!(!input.is_line_start());
 
-    input.parse(LineBreak(Default::default())).unwrap();
+    input.parse(LineBreak::parser(Default::default())).unwrap();
     assert!(input.is_line_start());
     input.parse("abcd");
     assert!(!input.is_line_start());

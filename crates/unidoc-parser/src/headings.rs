@@ -1,8 +1,7 @@
-use crate::{Input, Parse};
-
 use crate::indent::Indents;
+use crate::items::{Node, ParentKind};
 use crate::marker::ParseLineStart;
-use crate::{Node, NodeParentKind, ParseNodes};
+use crate::{Input, Parse};
 
 /// A heading, e.g.
 ///
@@ -13,6 +12,12 @@ use crate::{Node, NodeParentKind, ParseNodes};
 pub struct Heading {
     pub level: u8,
     pub content: Vec<Node>,
+}
+
+impl Heading {
+    pub fn parser(ind: Indents<'_>) -> ParseHeading<'_> {
+        ParseHeading { ind }
+    }
 }
 
 pub struct ParseHeading<'a> {
@@ -35,10 +40,8 @@ impl Parse for ParseHeading<'_> {
             }
         }
         input.parse(' ')?;
-        let content = input.parse(ParseNodes {
-            parent: NodeParentKind::Heading { level },
-            ind: self.ind,
-        })?;
+        let content =
+            input.parse(Node::multi_parser(ParentKind::Heading { level }, self.ind))?;
 
         input.apply();
         Some(Heading { level, content })

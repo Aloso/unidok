@@ -1,13 +1,18 @@
-use crate::Parse;
-
-use crate::indent::{Indents, LineBreak};
+use crate::indent::Indents;
+use crate::items::{LineBreak, Node, ParentKind};
 use crate::marker::{ParseLineEnd, ParseLineStart};
-use crate::{Node, ParseNodes, UntilChar};
+use crate::{Parse, UntilChar};
 
 #[derive(Debug, Clone)]
 pub struct Table {
     pub eq: usize,
     pub content: Vec<Vec<Vec<Node>>>,
+}
+
+impl Table {
+    pub fn parser(ind: Indents<'_>) -> ParseTable<'_> {
+        ParseTable { ind }
+    }
 }
 
 pub struct ParseTable<'a> {
@@ -23,7 +28,7 @@ impl Parse for ParseTable<'_> {
 
         input.parse("|===")?;
         let eq = input.parse(UntilChar(|c| c != '='))?.len() + 3;
-        input.parse(LineBreak(self.ind))?;
+        input.parse(LineBreak::parser(self.ind))?;
 
         let mut content = Vec::new();
         loop {
@@ -39,13 +44,11 @@ impl Parse for ParseTable<'_> {
             let mut row = Vec::new();
 
             while input.parse('|').is_some() {
-                let cell = input.parse(ParseNodes {
-                    parent: crate::NodeParentKind::Table,
-                    ind: self.ind,
-                })?;
+                let cell =
+                    input.parse(Node::multi_parser(ParentKind::Table, self.ind))?;
                 row.push(cell);
             }
-            input.parse(LineBreak(self.ind))?;
+            input.parse(LineBreak::parser(self.ind))?;
             content.push(row);
         }
 

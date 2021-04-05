@@ -1,8 +1,7 @@
-use crate::{Input, Parse, StrSlice};
-
 use crate::indent::Indents;
 use crate::marker::{ParseLineEnd, ParseLineStart};
-use crate::{UntilChar, UntilStr};
+use crate::str::StrSlice;
+use crate::{Input, Parse, UntilChar, UntilStr};
 
 /// A code block, e.g.
 ///
@@ -20,6 +19,12 @@ pub struct CodeBlock {
 
 pub struct ParseCodeBlock<'a> {
     pub ind: Indents<'a>,
+}
+
+impl CodeBlock {
+    pub fn parser(ind: Indents<'_>) -> ParseCodeBlock<'_> {
+        ParseCodeBlock { ind }
+    }
 }
 
 impl Parse for ParseCodeBlock<'_> {

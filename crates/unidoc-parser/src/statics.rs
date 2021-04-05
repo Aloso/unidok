@@ -1,22 +1,5 @@
-use crate::StrSlice;
-
-use crate::attributes::Attribute;
-use crate::braces::Braces;
-use crate::code_blocks::CodeBlock;
-use crate::comments::Comment;
-use crate::escapes_limiters::{Escape, Limiter};
-use crate::headings::Heading;
-use crate::hr::HorizontalLine;
-use crate::images::Image;
-use crate::inline::{Formatting, InlineFormat};
-use crate::links::Link;
-use crate::lists::{List, ListKind};
-use crate::macros::Macro;
-use crate::math::Math;
-use crate::quotes::Quote;
-use crate::subst_text::SubstText;
-use crate::tables::Table;
-use crate::Node;
+use crate::items::*;
+use crate::str::StrSlice;
 
 pub trait IsStatic {
     type Static: 'static;
@@ -29,6 +12,14 @@ impl IsStatic for StrSlice {
 
     fn is(&self, s: &'static str, str: &str) -> bool {
         &str[self.range()] == s
+    }
+}
+
+impl IsStatic for Text {
+    type Static = &'static str;
+
+    fn is(&self, s: &'static str, str: &str) -> bool {
+        &str[self.0.range()] == s
     }
 }
 
@@ -88,7 +79,7 @@ macro_rules! impl_is_static {
         }
         $($rest:tt)*
     ) => {
-        #[derive(Copy, Clone)]
+        #[derive(Debug, Copy, Clone)]
         $v struct $static_name {
             $( $v2 $field : $t ),*
         }
@@ -118,7 +109,7 @@ macro_rules! impl_is_static {
         }
         $($rest:tt)*
     ) => {
-        #[derive(Copy, Clone)]
+        #[derive(Debug, Copy, Clone)]
         #[allow(unused)]
         $v enum $static_name {
             $( $variant ($t) ),*
@@ -147,15 +138,11 @@ macro_rules! impl_is_static {
 impl_is_static! {
     identity usize;
     identity u8;
+    identity bool;
 
-    pub struct StaticSubstText for SubstText {
-        pub content: &'static str,
-        pub substituted: &'static str,
+    pub struct StaticEscape for Escaped {
+        pub line_start: bool,
     }
-
-    pub struct StaticEscape for Escape {}
-
-    pub struct StaticLimiter for Limiter {}
 
     pub struct StaticBraces for Braces {
         pub content: &'static [StaticNode],
@@ -221,13 +208,16 @@ impl_is_static! {
         pub content: &'static [StaticNode],
     }
 
-    pub struct StaticTable for Table {}
+    pub struct StaticTable for Table {
+        pub eq: usize,
+        pub content: &'static [&'static [&'static [StaticNode]]],
+    }
 
     pub enum StaticNode for Node {
         Text(&'static str),
-        SubstText(StaticSubstText),
+        LineBreak(LineBreak),
         Escape(StaticEscape),
-        Limiter(StaticLimiter),
+        Limiter(Limiter),
         Braces(StaticBraces),
         Math(StaticMath),
         InlineFormat(StaticInlineFormat),
@@ -243,4 +233,7 @@ impl_is_static! {
         Quote(StaticQuote),
         Table(StaticTable),
     }
+
+    identity LineBreak;
+    identity Limiter;
 }

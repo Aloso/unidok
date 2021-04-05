@@ -1,14 +1,19 @@
-use crate::{Input, StrSlice};
-
 use crate::braces::{Braces, ParseBraces};
 use crate::indent::Indents;
-use crate::{Parse, UntilChar};
+use crate::str::StrSlice;
+use crate::{Input, Parse, UntilChar};
 
 #[derive(Debug, Clone)]
 pub struct Macro {
     pub name: StrSlice,
     pub args: Option<StrSlice>,
     pub content: Option<Braces>,
+}
+
+impl Macro {
+    pub fn parser(ind: Indents<'_>) -> ParseMacro<'_> {
+        ParseMacro { ind }
+    }
 }
 
 pub struct ParseMacro<'a> {

@@ -1,6 +1,6 @@
+use crate::indent::Indents;
+use crate::items::LineBreak;
 use crate::{Input, Parse};
-
-use crate::indent::{Indents, LineBreak};
 
 /// A math block, e.g.
 ///
@@ -10,6 +10,12 @@ use crate::indent::{Indents, LineBreak};
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Math {
     pub text: String,
+}
+
+impl Math {
+    pub fn parser(ind: Indents<'_>) -> ParseMath<'_> {
+        ParseMath { ind }
+    }
 }
 
 #[derive(Debug, Clone, Copy, Default)]
@@ -33,8 +39,8 @@ impl Parse for ParseMath<'_> {
 }
 
 #[derive(Debug, Clone, Copy, Default)]
-pub struct ParseMathContent<'a> {
-    pub ind: Indents<'a>,
+struct ParseMathContent<'a> {
+    ind: Indents<'a>,
 }
 
 impl Parse for ParseMathContent<'_> {
@@ -60,7 +66,7 @@ impl Parse for ParseMathContent<'_> {
                         break;
                     }
                     '\n' => {
-                        if input.parse(LineBreak(self.ind)).is_some() {
+                        if input.parse(LineBreak::parser(self.ind)).is_some() {
                             text.push('\n');
                             continue;
                         }

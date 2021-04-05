@@ -1,6 +1,5 @@
-use crate::{Input, StrSlice};
-
-use crate::Parse;
+use crate::str::StrSlice;
+use crate::{Input, Parse};
 
 /// Parses until the given `char` parser matches. The matched char itself isn't
 /// included.

@@ -1,8 +1,6 @@
-use crate::{Input, Parse, StrSlice};
-
-use crate::indent::Indents;
 use crate::marker::ParseLineStart;
-use crate::UntilChar;
+use crate::str::StrSlice;
+use crate::{Input, Parse, UntilChar};
 
 /// A comment. It starts with two slashes at must appear directly after a line
 /// break.
@@ -11,11 +9,15 @@ pub struct Comment {
     pub content: StrSlice,
 }
 
-pub struct ParseComment<'a> {
-    pub ind: Indents<'a>,
+impl Comment {
+    pub fn parser() -> ParseComment {
+        ParseComment
+    }
 }
 
-impl Parse for ParseComment<'_> {
+pub struct ParseComment;
+
+impl Parse for ParseComment {
     type Output = Comment;
 
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
