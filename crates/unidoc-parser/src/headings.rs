@@ -3,11 +3,48 @@ use crate::items::{Node, ParentKind};
 use crate::marker::ParseLineStart;
 use crate::{Input, Parse};
 
-/// A heading, e.g.
+/// A heading.
 ///
-/// ```md
+/// A heading can have one of 6 sizes (in HTML: `<h1>` to `<h6>`). The first
+/// heading is the level-1 heading. All level-2 headings after that are
+/// subordinate to this, and the level-3 headings are subordinate to the level-2
+/// headings, and so on.
+///
+/// ### Syntax
+///
+/// ```markdown
 /// ## Level-2 heading
+///
+/// Section
 /// ```
+///
+/// A heading must appear at the beginning of a line. It must start with 1 to 6
+/// number signs, followed by at least one space.
+///
+/// Headings can't contain line breaks, but if a heading contains braces, these
+/// braces can contain line breaks.
+///
+/// Attributes applied to a heading actually applies to the whole section of the
+/// heading. For example, this:
+///
+/// ````markdown
+/// [.foo]
+/// # Heading
+/// bla bla bla
+/// ````
+///
+/// generates HTML similar to this:
+///
+/// ````html
+/// <div class="foo">
+///     <h1>Heading</h1>
+///     <p>bla bla bla</p>
+/// </div>
+/// ````
+///
+/// #### TODO:
+/// Implement a way to add an attribute only to the heading, not the whole
+/// section
 #[derive(Debug, Clone)]
 pub struct Heading {
     pub level: u8,

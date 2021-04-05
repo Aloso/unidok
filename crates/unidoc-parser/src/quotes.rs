@@ -3,6 +3,41 @@ use crate::items::{Node, ParentKind};
 use crate::marker::ParseLineStart;
 use crate::{Input, Parse};
 
+#[rustfmt::skip]
+/// A quote (in HTML, `<blockquote>`).
+///
+/// ### Syntax
+///
+/// Every line is prefixed with `>` followed by a space:
+///
+/// ```markdown
+/// > This is
+/// > a quote.
+/// ```
+///
+/// Quotes can be nested within other quotes or in lists:
+///
+/// ```markdown
+/// - > A quote containing
+///   > > another quote.
+///   > > * and a list.
+/// ```
+///
+/// this renders like this:
+///
+/// - > A quote containing
+///   > > another quote.
+///   > > * and a list.
+///
+/// Quotes are block elements, they can contain anything. They can't appear inline (in the middle of a line) however:
+///
+/// ```markdown
+/// Not > a quote
+/// ```
+///
+/// renders like this:
+///
+/// Not > a quote
 #[derive(Debug, Clone)]
 pub struct Quote {
     pub content: Vec<Node>,

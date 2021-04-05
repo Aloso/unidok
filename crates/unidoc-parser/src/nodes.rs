@@ -5,7 +5,7 @@ use crate::{Input, Parse};
 pub enum Node {
     Text(Text),
     LineBreak(LineBreak),
-    Escape(Escaped), // can't be followed by Text, SubstrText or Comment
+    Escape(Escaped), // can't be followed by Text, LineBreak (?) or Comment
     Limiter(Limiter),
     Braces(Braces),
     Math(Math),
@@ -93,7 +93,7 @@ impl Parse for ParseNode<'_> {
             _ => {
                 if self.multiline && input.parse(LineBreak::parser(ind)).is_some() {
                     Some(Node::LineBreak(LineBreak))
-                } else if let Some(comment) = input.parse(Comment::parser()) {
+                } else if let Some(comment) = input.parse(Comment::parser(ind)) {
                     Some(Node::Comment(comment))
                 } else if let Some(hr) = input.parse(HorizontalLine::parser(ind)) {
                     Some(Node::HorizontalLine(hr))

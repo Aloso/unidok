@@ -1,8 +1,7 @@
-use std::collections::VecDeque;
-
 use crate::indent::{Indentation, Indents, ParseQuoteIndent, ParseSpacesIndent};
 use crate::{Input, Parse};
 
+/// A line break. This includes indentation of the following line!
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct LineBreak;
 
@@ -27,26 +26,11 @@ impl Parse for ParseLineBreak<'_> {
         input.parse('\n')?;
 
         if !matches!(input.peek_char(), Some('\n') | None) {
-            let mut stack = VecDeque::with_capacity(8);
-            let mut acc = self.ind.root;
-            while let INode::Node { next, ind } = acc {
-                stack.push_front(ind);
-                acc = *next;
-            }
-
-            for ind in stack {
-                match ind {
-                    Indentation::Spaces(s) => {
-                        input.parse(ParseSpacesIndent(s))?;
-                    }
-                    Indentation::Quote => {
-                        input.parse(ParseQuoteIndent)?;
-                    }
-                }
-            }
+            parse_recursive(self.ind.root, &mut input)?;
         }
 
         input.set_line_start(true);
+
         input.apply();
         Some(LineBreak)
     }
@@ -67,5 +51,18 @@ impl Default for INode<'_> {
 impl<'a> Indents<'a> {
     pub fn push(&'a self, ind: Indentation) -> Self {
         Indents { root: INode::Node { ind, next: &self.root } }
+    }
+}
+
+fn parse_recursive(node: INode<'_>, input: &mut Input) -> Option<()> {
+    match node {
+        INode::Node { ind, next } => {
+            parse_recursive(*next, input)?;
+            match ind {
+                Indentation::Spaces(s) => input.parse(ParseSpacesIndent(s)),
+                Indentation::Quote => input.parse(ParseQuoteIndent),
+            }
+        }
+        INode::Tail => Some(()),
     }
 }

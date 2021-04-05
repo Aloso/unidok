@@ -3,6 +3,47 @@ use crate::items::{Node, ParentKind};
 use crate::str::StrSlice;
 use crate::Parse;
 
+/// An attribute.
+///
+/// ### Syntax
+///
+/// ````markdown
+/// [attr]{content} and [attr]**fat content**
+///
+/// [attr]
+/// # Heading
+///
+/// [attr1]
+/// [attr2]
+/// . This is
+/// . a list
+/// ````
+///
+/// When it applies to a block element (list, table, quote, etc.), it must be in
+/// a separate line above the element. It must be directly after the line break
+/// and must be the only content in the line.
+///
+/// Inline attributes can apply to formatting (`[attr]**bold**`,
+/// `[attr]_italic_`, etc.), to braces (`[attr]{content}`), to math, links,
+/// images and macros.
+///
+/// There can be arbitrarily many attributes for an item. Attributes can't
+/// contain line breaks directly, but if an attribute contains braces, these
+/// braces can have line breaks.
+///
+/// ### Attribute content
+///
+/// Attributes contain HTML attributes and other information about the element.
+/// There are some built-in attributes for controlling parsing or document
+/// generation.
+///
+/// Attributes may be comma-separated words, or comma-separated key-value pairs,
+/// e.g.
+///
+/// ````markdown
+/// [.foo, #bar]{}
+/// [title={Hello world}, role=button]</link click here!>
+/// ````
 #[derive(Debug, Clone)]
 pub struct Attribute {
     pub is_line_start: bool,

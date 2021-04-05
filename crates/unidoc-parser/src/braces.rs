@@ -2,7 +2,33 @@ use crate::indent::Indents;
 use crate::items::{Node, ParentKind};
 use crate::{Input, Parse};
 
-/// A block surrounded by `{braces}`.
+/// A block surrounded by `{braces}`. The braces are not visible in the
+/// generated document.
+///
+/// If the braces have an attribute, the content of the braces is wrapped in a
+/// `<div>` or `<span>` element (a `<div>` element is used if the braces contain
+/// multiple paragraphs or at least one block-level element). Otherwise, the
+/// content of the braces is inserted into the document directly.
+///
+/// ### Syntax
+///
+/// Braces can contain multiple lines, even if they appear in a single-line
+/// element. For example:
+///
+/// ````markdown
+/// # A heading {
+/// - This is a list
+/// - within a heading
+/// }
+///
+/// |===
+/// | A table cell
+/// | Another table cell
+/// |{ A large table cell.
+///
+/// Containing multiple paragraphs. }
+/// | ===
+/// ````
 #[derive(Debug, Clone)]
 pub struct Braces {
     pub content: Vec<Node>,

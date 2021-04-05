@@ -13,6 +13,7 @@ pub struct List {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ListKind {
     Dashes,
+    Pluses,
     Stars,
     Dots,
     Commas,
@@ -80,6 +81,7 @@ impl Parse for ParseBullet {
 
         let bullet = match input.peek_char() {
             Some('-') => ListKind::Dashes,
+            Some('+') => ListKind::Pluses,
             Some('.') => ListKind::Dots,
             Some('*') => ListKind::Stars,
             Some(',') => ListKind::Commas,

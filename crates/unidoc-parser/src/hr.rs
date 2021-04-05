@@ -3,7 +3,13 @@ use crate::indent::Indents;
 use crate::marker::{ParseLineEnd, ParseLineStart};
 use crate::{Input, Parse};
 
-/// A horizontal line, consisting of at least three dashes.
+/// A horizontal line, consisting of at least three dashes (`---`).
+///
+/// TODO: Also allow `---` as heading underline, and make sure that horizontal
+/// lines are preceded by an empty line. Do something similar for tables?
+///
+/// The line must be at the beginning of a line and can't contain any other
+/// content.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct HorizontalLine {
     pub len: usize,
@@ -29,7 +35,6 @@ impl Parse for ParseHorizontalLine<'_> {
         input.parse(ParseLineStart)?;
         input.parse("---")?;
         let len = 3 + input.parse(WhileChar('-'))?.len();
-        input.parse(WhileChar(' '))?;
         input.parse(ParseLineEnd)?;
 
         input.apply();
