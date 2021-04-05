@@ -1,7 +1,6 @@
 use crate::items::*;
 use crate::{Input, Parse};
 
-#[allow(unused)]
 #[derive(Debug, Clone)]
 pub enum Node {
     Text(Text),
@@ -11,7 +10,7 @@ pub enum Node {
     Braces(Braces),
     Math(Math),
     InlineFormat(InlineFormat),
-    Attribute(Attribute), // can't be before Text, SubstrText, Limiter, Escape, Comment
+    Attribute(Attribute), // can't be before Text, Limiter, Escape, Comment
     Link(Link),
     Image(Image),
     Macro(Macro),
@@ -26,17 +25,32 @@ pub enum Node {
 }
 
 impl Node {
-    pub fn parser(parent: ParentKind, ind: Indents<'_>) -> ParseNode<'_> {
-        ParseNode { parent, ind }
+    pub fn parser(
+        parent: ParentKind,
+        ind: Indents<'_>,
+        multiline: bool,
+    ) -> ParseNode<'_> {
+        ParseNode { parent, ind, multiline }
     }
 
-    pub fn multi_parser(parent: ParentKind, ind: Indents<'_>) -> ParseNodes<'_> {
-        ParseNodes { parent, ind }
+    pub fn multi_parser(
+        parent: ParentKind,
+        ind: Indents<'_>,
+        multiline: bool,
+    ) -> ParseNodes<'_> {
+        ParseNodes { parent, ind, multiline }
+    }
+
+    pub fn global_parser<'a>() -> ParseNodes<'a> {
+        ParseNodes {
+            parent: ParentKind::Global,
+            ind: Default::default(),
+            multiline: true,
+        }
     }
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
-#[allow(unused)]
 pub enum ParentKind {
     Braces,
     InlineFormat { formatting: Formatting },
@@ -45,6 +59,7 @@ pub enum ParentKind {
     Quote,
     Table,
     LinkOrImg,
+    Attribute,
     Global,
 }
 
@@ -52,6 +67,7 @@ pub enum ParentKind {
 pub struct ParseNode<'a> {
     parent: ParentKind,
     ind: Indents<'a>,
+    multiline: bool,
 }
 
 impl Parse for ParseNode<'_> {
@@ -61,46 +77,12 @@ impl Parse for ParseNode<'_> {
         let ind = self.ind;
         let parent = self.parent;
 
-        fn parse_inline(
-            ind: Indents<'_>,
-            parent: ParentKind,
-            input: &mut Input,
-        ) -> Option<Node> {
-            Some({
-                if let Some(text) = input.parse(Text::parser(ind)) {
-                    Node::Text(text)
-                } else if let Some(esc) = input.parse(Escaped::parser()) {
-                    Node::Escape(esc)
-                } else if let Some(limiter) = input.parse(Limiter::parser()) {
-                    Node::Limiter(limiter)
-                } else if let Some(attr) = input.parse(Attribute::parser(ind)) {
-                    Node::Attribute(attr)
-                } else if let Some(block) = input.parse(Braces::parser(ind)) {
-                    Node::Braces(block)
-                } else if let Some(math) = input.parse(Math::parser(ind)) {
-                    Node::Math(math)
-                } else if !input.is_empty() {
-                    use ParentKind as Npk;
-
-                    match input.peek_char().unwrap() {
-                        '|' if parent == Npk::Table => return None,
-                        '}' if parent == Npk::Braces => return None,
-                        '>' if parent == Npk::LinkOrImg => return None,
-                        '\n' => return None,
-                        c => Node::Text(Text(input.bump(c.len_utf8() as usize))),
-                    }
-                } else {
-                    return None;
-                }
-            })
-        }
-
         match parent {
             ParentKind::InlineFormat { formatting: Formatting::Code } => {
                 if let Some(esc) = input.parse(Escaped::parser()).map(Node::Escape) {
                     Some(esc)
                 } else {
-                    input.parse(Text::parser(ind)).map(Node::Text)
+                    input.parse(Text::parser()).map(Node::Text)
                 }
             }
 
@@ -109,8 +91,8 @@ impl Parse for ParseNode<'_> {
             | ParentKind::LinkOrImg => parse_inline(ind, parent, input),
 
             _ => {
-                if let Some(lb) = input.parse(LineBreak::parser(ind)) {
-                    Some(Node::LineBreak(lb))
+                if self.multiline && input.parse(LineBreak::parser(ind)).is_some() {
+                    Some(Node::LineBreak(LineBreak))
                 } else if let Some(comment) = input.parse(Comment::parser()) {
                     Some(Node::Comment(comment))
                 } else if let Some(hr) = input.parse(HorizontalLine::parser(ind)) {
@@ -133,19 +115,45 @@ impl Parse for ParseNode<'_> {
     }
 }
 
+fn parse_inline(ind: Indents<'_>, parent: ParentKind, input: &mut Input) -> Option<Node> {
+    if let Some(text) = input.parse(Text::parser()) {
+        Some(Node::Text(text))
+    } else if let Some(esc) = input.parse(Escaped::parser()) {
+        Some(Node::Escape(esc))
+    } else if let Some(limiter) = input.parse(Limiter::parser()) {
+        Some(Node::Limiter(limiter))
+    } else if let Some(attr) = input.parse(Attribute::parser(ind)) {
+        Some(Node::Attribute(attr))
+    } else if let Some(block) = input.parse(Braces::parser(ind)) {
+        Some(Node::Braces(block))
+    } else if let Some(math) = input.parse(Math::parser(ind)) {
+        Some(Node::Math(math))
+    } else if !input.is_empty() {
+        match input.peek_char().unwrap() {
+            ']' if parent == ParentKind::Attribute => None,
+            '|' if parent == ParentKind::Table => None,
+            '}' if parent == ParentKind::Braces => None,
+            '>' if parent == ParentKind::LinkOrImg => None,
+            '\n' => None,
+            c => Some(Node::Text(Text(input.bump(c.len_utf8() as usize)))),
+        }
+    } else {
+        None
+    }
+}
+
 #[derive(Debug)]
 pub struct ParseNodes<'a> {
-    pub parent: ParentKind,
-    pub ind: Indents<'a>,
+    parent: ParentKind,
+    ind: Indents<'a>,
+    multiline: bool,
 }
 
 impl Parse for ParseNodes<'_> {
     type Output = Vec<Node>;
 
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
-        let parent = self.parent;
-        let ind = self.ind;
-        let parser = ParseNode { parent, ind };
+        let parser = Node::parser(self.parent, self.ind, self.multiline);
 
         let mut v = Vec::new();
         while let Some(node) = input.parse(parser) {

@@ -1,3 +1,4 @@
+use crate::basic::WhileChar;
 use crate::indent::Indents;
 use crate::marker::{ParseLineEnd, ParseLineStart};
 use crate::{Input, Parse};
@@ -16,7 +17,7 @@ impl HorizontalLine {
 
 #[derive(Debug, Default, Clone, Copy)]
 pub struct ParseHorizontalLine<'a> {
-    pub ind: Indents<'a>,
+    ind: Indents<'a>,
 }
 
 impl Parse for ParseHorizontalLine<'_> {
@@ -27,11 +28,8 @@ impl Parse for ParseHorizontalLine<'_> {
 
         input.parse(ParseLineStart)?;
         input.parse("---")?;
-        let mut len = 3;
-        while input.parse('-').is_some() {
-            len += 1;
-        }
-        while input.parse(' ').is_some() {}
+        let len = 3 + input.parse(WhileChar('-'))?.len();
+        input.parse(WhileChar(' '))?;
         input.parse(ParseLineEnd)?;
 
         input.apply();

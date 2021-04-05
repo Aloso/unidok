@@ -22,7 +22,7 @@ impl Image {
 }
 
 pub struct ParseImage<'a> {
-    pub ind: Indents<'a>,
+    ind: Indents<'a>,
 }
 
 impl Parse for ParseImage<'_> {
@@ -32,10 +32,10 @@ impl Parse for ParseImage<'_> {
         let mut input = input.start();
 
         input.parse("<!")?;
-        let href = input.parse(UntilChar(|c| c == ' ' || c == '\n' || c == '>'))?;
+        let href = input.parse(UntilChar(|c| matches!(c, ' ' | '\n' | '>')))?;
         let alt = if input.parse(' ').is_some() || input.parse('\n').is_some() {
-            let alt = input.parse(Node::multi_parser(ParentKind::LinkOrImg, self.ind))?;
-            Some(alt)
+            let parser = Node::multi_parser(ParentKind::LinkOrImg, self.ind, false);
+            Some(input.parse(parser)?)
         } else {
             None
         };

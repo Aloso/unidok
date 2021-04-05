@@ -15,7 +15,7 @@ impl Quote {
 }
 
 pub struct ParseQuote<'a> {
-    pub ind: Indents<'a>,
+    ind: Indents<'a>,
 }
 
 impl Parse for ParseQuote<'_> {
@@ -29,7 +29,7 @@ impl Parse for ParseQuote<'_> {
         input.set_line_start(true);
 
         let ind = self.ind.push(Indentation::Quote);
-        let content = input.parse(Node::multi_parser(ParentKind::Quote, ind))?;
+        let content = input.parse(Node::multi_parser(ParentKind::Quote, ind, true))?;
 
         input.apply();
         Some(Quote { content })

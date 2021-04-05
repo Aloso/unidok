@@ -15,7 +15,7 @@ impl LineBreak {
 /// Parses a line break, including left padding
 #[derive(Debug, Clone, Copy)]
 pub struct ParseLineBreak<'a> {
-    pub ind: Indents<'a>,
+    ind: Indents<'a>,
 }
 
 impl Parse for ParseLineBreak<'_> {
@@ -33,7 +33,6 @@ impl Parse for ParseLineBreak<'_> {
                 stack.push_front(ind);
                 acc = *next;
             }
-            dbg!(&stack);
 
             for ind in stack {
                 match ind {

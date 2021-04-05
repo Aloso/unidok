@@ -16,7 +16,7 @@ impl Table {
 }
 
 pub struct ParseTable<'a> {
-    pub ind: Indents<'a>,
+    ind: Indents<'a>,
 }
 
 impl Parse for ParseTable<'_> {
@@ -44,9 +44,8 @@ impl Parse for ParseTable<'_> {
             let mut row = Vec::new();
 
             while input.parse('|').is_some() {
-                let cell =
-                    input.parse(Node::multi_parser(ParentKind::Table, self.ind))?;
-                row.push(cell);
+                let cell_parser = Node::multi_parser(ParentKind::Table, self.ind, false);
+                row.push(input.parse(cell_parser)?);
             }
             input.parse(LineBreak::parser(self.ind))?;
             content.push(row);

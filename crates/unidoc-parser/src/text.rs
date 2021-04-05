@@ -1,6 +1,5 @@
 use std::fmt;
 
-use crate::indent::Indents;
 use crate::str::StrSlice;
 use crate::{Input, Parse};
 
@@ -8,8 +7,8 @@ use crate::{Input, Parse};
 pub struct Text(pub StrSlice);
 
 impl Text {
-    pub fn parser(ind: Indents<'_>) -> ParseText<'_> {
-        ParseText { ind }
+    pub fn parser() -> ParseText {
+        ParseText
     }
 }
 
@@ -19,11 +18,9 @@ impl fmt::Debug for Text {
     }
 }
 
-pub struct ParseText<'a> {
-    pub ind: Indents<'a>,
-}
+pub struct ParseText;
 
-impl Parse for ParseText<'_> {
+impl Parse for ParseText {
     type Output = Text;
 
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {

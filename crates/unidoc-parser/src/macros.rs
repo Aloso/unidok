@@ -1,5 +1,5 @@
-use crate::braces::{Braces, ParseBraces};
 use crate::indent::Indents;
+use crate::items::Braces;
 use crate::str::StrSlice;
 use crate::{Input, Parse, UntilChar};
 
@@ -17,7 +17,7 @@ impl Macro {
 }
 
 pub struct ParseMacro<'a> {
-    pub ind: Indents<'a>,
+    ind: Indents<'a>,
 }
 
 impl Parse for ParseMacro<'_> {
@@ -29,7 +29,7 @@ impl Parse for ParseMacro<'_> {
         input.parse('@')?;
         let name = input.parse(ParseMacroName)?;
         let args = input.parse(ParseMacroArgs);
-        let content = input.parse(ParseBraces { ind: self.ind });
+        let content = input.parse(Braces::parser(self.ind));
 
         input.apply();
         Some(Macro { name, args, content })

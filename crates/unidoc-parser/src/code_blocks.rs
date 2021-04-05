@@ -1,7 +1,9 @@
+use crate::basic::Cond;
 use crate::indent::Indents;
+use crate::items::LineBreak;
 use crate::marker::{ParseLineEnd, ParseLineStart};
 use crate::str::StrSlice;
-use crate::{Input, Parse, UntilChar, UntilStr};
+use crate::{Input, Parse, UntilChar, WhileChar};
 
 /// A code block, e.g.
 ///
@@ -13,12 +15,12 @@ use crate::{Input, Parse, UntilChar, UntilStr};
 #[derive(Debug, Clone)]
 pub struct CodeBlock {
     pub meta: StrSlice,
-    pub backticks: u8,
-    pub content: StrSlice,
+    pub backticks: usize,
+    pub lines: Vec<StrSlice>,
 }
 
 pub struct ParseCodeBlock<'a> {
-    pub ind: Indents<'a>,
+    ind: Indents<'a>,
 }
 
 impl CodeBlock {
@@ -35,27 +37,27 @@ impl Parse for ParseCodeBlock<'_> {
 
         input.parse(ParseLineStart)?;
         input.parse("```")?;
-        let mut backticks = 3;
-        while input.parse('`').is_some() {
-            if backticks == u8::MAX {
-                return None;
-            }
-            backticks += 1;
-        }
-        let meta = input.parse(UntilChar(|c| c == '\n'))?;
-        input.parse('\n')?;
+        let backticks = 3 + input.parse(WhileChar('`'))?.len();
+        let meta = input.parse(UntilChar('\n'))?;
 
-        const LIMIT: &str = "\n\
-            ````````````````````````````````````````````````````````````````\
-            ````````````````````````````````````````````````````````````````\
-            ````````````````````````````````````````````````````````````````\
-            ````````````````````````````````````````````````````````````````";
-        let limit = &LIMIT[..backticks as usize + 1];
-        let content = input.parse(UntilStr(limit))?;
-        input.parse(limit)?;
-        input.parse(ParseLineEnd)?;
+        let mut lines = Vec::new();
+        loop {
+            input.parse(LineBreak::parser(self.ind))?;
+
+            if input.rest().starts_with("```") {
+                let mut input2 = input.start();
+                let backticks_end = input2.parse(UntilChar(|c| c != '`'))?.len();
+                input2.parse(ParseLineEnd)?;
+                input2.parse(Cond(|| backticks == backticks_end))?;
+                input2.apply();
+                break;
+            }
+
+            let line = input.parse(UntilChar('\n'))?;
+            lines.push(line);
+        }
 
         input.apply();
-        Some(CodeBlock { meta, backticks, content })
+        Some(CodeBlock { meta, backticks, lines })
     }
 }

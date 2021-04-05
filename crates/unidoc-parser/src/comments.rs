@@ -23,7 +23,7 @@ impl Parse for ParseComment {
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         input.parse(ParseLineStart)?;
         input.parse("//")?;
-        let content = input.parse(UntilChar(|c| c == '\n'))?;
+        let content = input.parse(UntilChar('\n'))?;
         Some(Comment { content })
     }
 }

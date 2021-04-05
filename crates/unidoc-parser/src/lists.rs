@@ -1,9 +1,7 @@
-use std::convert::TryFrom;
-
 use crate::indent::{Indentation, Indents};
 use crate::items::{LineBreak, Node, ParentKind};
 use crate::marker::ParseLineStart;
-use crate::{Parse, UntilChar};
+use crate::{Parse, WhileChar};
 
 #[derive(Debug, Clone)]
 pub struct List {
@@ -27,7 +25,7 @@ impl List {
 }
 
 pub struct ParseList<'a> {
-    pub ind: Indents<'a>,
+    ind: Indents<'a>,
 }
 
 impl Parse for ParseList<'_> {
@@ -39,19 +37,23 @@ impl Parse for ParseList<'_> {
 
         let (indent, kind) = input.parse(ParseBullet)?;
         input.set_line_start(true);
-        let ind = self.ind.push(Indentation::spaces(indent + 2));
+        let ind = self.ind.push(Indentation::spaces(indent));
 
         let mut content = Vec::new();
         loop {
-            let node = input.parse(Node::multi_parser(ParentKind::List, ind))?;
-            content.push(node);
+            dbg!(input.rest());
+            let content_parser = Node::multi_parser(ParentKind::List, ind, true);
+            content.push(input.parse(content_parser)?);
 
             let mut input2 = input.start();
             if input2.parse(LineBreak::parser(self.ind)).is_some() {
-                let (indent2, kind2) = input2.parse(ParseBullet)?;
-                if indent2 == indent && kind2 == kind {
-                    input2.apply();
-                    continue;
+                if let Some((indent2, kind2)) = input2.parse(ParseBullet) {
+                    if indent2 == indent && kind2 == kind {
+                        input2.apply();
+                        continue;
+                    }
+                } else {
+                    break;
                 }
             }
             break;
@@ -70,7 +72,12 @@ impl Parse for ParseBullet {
     fn parse(&self, input: &mut crate::Input) -> Option<Self::Output> {
         let mut input = input.start();
 
-        let indent = input.parse(UntilChar(|c| c != ' '))?.len();
+        let indent = input.parse(WhileChar(' '))?.len();
+        if indent > (u8::MAX - 2) as usize {
+            return None;
+        }
+        let indent = indent as u8 + 2;
+
         let bullet = match input.peek_char() {
             Some('-') => ListKind::Dashes,
             Some('.') => ListKind::Dots,
@@ -82,6 +89,6 @@ impl Parse for ParseBullet {
         input.parse(' ')?;
 
         input.apply();
-        Some((u8::try_from(indent).ok()? + 2, bullet))
+        Some((indent, bullet))
     }
 }

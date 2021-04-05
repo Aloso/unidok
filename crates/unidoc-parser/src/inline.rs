@@ -17,7 +17,6 @@ pub struct InlineFormat {
     pub content: Vec<Node>,
 }
 
-#[allow(unused)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Formatting {
     Bold,

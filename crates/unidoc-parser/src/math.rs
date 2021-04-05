@@ -20,7 +20,7 @@ impl Math {
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct ParseMath<'a> {
-    pub ind: Indents<'a>,
+    ind: Indents<'a>,
 }
 
 impl Parse for ParseMath<'_> {

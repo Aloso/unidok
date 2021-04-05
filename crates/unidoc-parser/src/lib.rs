@@ -1,3 +1,9 @@
+#[cfg(test)]
+pub mod statics;
+#[cfg(test)]
+#[macro_use]
+mod test_macros;
+
 mod attributes;
 mod braces;
 mod code_blocks;
@@ -24,15 +30,12 @@ mod basic;
 mod input;
 mod parse;
 
-#[cfg(test)]
-pub mod statics;
-
 pub use detached_str as str;
 
 pub use crate::input::Input;
 pub use crate::parse::Parse;
 
-use crate::basic::{UntilChar, UntilStr};
+use crate::basic::{UntilChar, WhileChar};
 
 pub mod items {
     pub use crate::attributes::Attribute;

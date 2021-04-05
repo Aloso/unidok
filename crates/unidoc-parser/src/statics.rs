@@ -110,7 +110,6 @@ macro_rules! impl_is_static {
         $($rest:tt)*
     ) => {
         #[derive(Debug, Copy, Clone)]
-        #[allow(unused)]
         $v enum $static_name {
             $( $variant ($t) ),*
         }
@@ -140,8 +139,9 @@ impl_is_static! {
     identity u8;
     identity bool;
 
-    pub struct StaticEscape for Escaped {
+    pub struct StaticEscaped for Escaped {
         pub line_start: bool,
+        pub text: &'static str,
     }
 
     pub struct StaticBraces for Braces {
@@ -159,7 +159,10 @@ impl_is_static! {
 
     identity Formatting;
 
-    pub struct StaticAttribute for Attribute {}
+    pub struct StaticAttribute for Attribute {
+        pub is_line_start: bool,
+        pub content: &'static str,
+    }
 
     pub struct StaticLink for Link {
         pub href: &'static str,
@@ -187,8 +190,8 @@ impl_is_static! {
 
     pub struct StaticCodeBlock for CodeBlock {
         pub meta: &'static str,
-        pub backticks: u8,
-        pub content: &'static str,
+        pub backticks: usize,
+        pub lines: &'static [&'static str],
     }
 
     pub struct StaticHeading for Heading {
@@ -216,7 +219,7 @@ impl_is_static! {
     pub enum StaticNode for Node {
         Text(&'static str),
         LineBreak(LineBreak),
-        Escape(StaticEscape),
+        Escape(StaticEscaped),
         Limiter(Limiter),
         Braces(StaticBraces),
         Math(StaticMath),

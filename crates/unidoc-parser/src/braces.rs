@@ -16,7 +16,7 @@ impl Braces {
 
 #[derive(Debug, Default, Clone, Copy)]
 pub struct ParseBraces<'a> {
-    pub ind: Indents<'a>,
+    ind: Indents<'a>,
 }
 
 impl Parse for ParseBraces<'_> {
@@ -26,7 +26,8 @@ impl Parse for ParseBraces<'_> {
         let mut input = input.start();
 
         input.parse('{')?;
-        let content = input.parse(Node::multi_parser(ParentKind::Braces, self.ind))?;
+        let content =
+            input.parse(Node::multi_parser(ParentKind::Braces, self.ind, true))?;
         input.parse('}')?;
 
         input.apply();
@@ -36,37 +37,18 @@ impl Parse for ParseBraces<'_> {
 
 #[cfg(test)]
 mod tests {
-    use crate::braces::ParseBraces;
+    use crate::indent::Indents;
+    use crate::items::{Braces, LineBreak, ListKind};
     use crate::statics::{
-        IsStatic, StaticBraces, StaticEscape, StaticMath, StaticNode as SN,
+        StaticBraces, StaticEscaped, StaticList, StaticMath, StaticNode as SN,
+        StaticQuote, StaticTable,
     };
-    use crate::Input;
-
-    macro_rules! braces {
-        ($( $e:expr ),* $(,)?) => {
-            StaticBraces { content: &[ $($e),* ] }
-        };
-    }
-
-    macro_rules! parse {
-        ($text:literal, $expected:expr) => {{
-            let str = $text;
-            let mut input = Input::new(str);
-            let parsed = input.parse(ParseBraces::default());
-            if !parsed.is(Some($expected), str) {
-                eprintln!(
-                    "INPUT: {:?}\n\nEXPECTED: {:#?}\n\nGOT: {:#?}\n",
-                    str, $expected, parsed
-                );
-                panic!("assertion failed");
-            }
-        }};
-    }
 
     #[test]
     fn test_braces() {
         parse!(
             "{this {is} cool}",
+            Braces::parser(Indents::new()),
             braces![
                 SN::Text("this "),
                 SN::Braces(braces![SN::Text("is")]),
@@ -75,13 +57,80 @@ mod tests {
         );
         parse!(
             r"{\%this %{is\\} cool%}",
+            Braces::parser(Indents::new()),
             braces![
-                SN::Escape(StaticEscape { line_start: false }),
-                SN::Text("%"),
+                SN::Escape(StaticEscaped { line_start: false, text: "%" }),
                 SN::Text("this "),
                 SN::Math(StaticMath { text: r"is\" }),
                 SN::Text(" cool"),
                 SN::Text("%"),
+            ]
+        );
+        parse!(
+            "{\nHello world!\n}",
+            Braces::parser(Indents::new()),
+            braces![
+                SN::LineBreak(LineBreak),
+                SN::Text("Hello world!"),
+                SN::LineBreak(LineBreak),
+            ]
+        );
+        parse!(
+            "{\n> Hello\n> world!\n}",
+            Braces::parser(Indents::new()),
+            braces![
+                SN::LineBreak(LineBreak),
+                SN::Quote(StaticQuote {
+                    content: &[
+                        SN::Text("Hello"),
+                        SN::LineBreak(LineBreak),
+                        SN::Text("world!")
+                    ]
+                }),
+                SN::LineBreak(LineBreak),
+            ]
+        );
+        parse!("{- Hello\n- world}", Braces::parser(Indents::new()), None);
+        parse!(
+            "{- Hello\n- world\n}",
+            Braces::parser(Indents::new()),
+            braces![
+                SN::Text("- Hello"),
+                SN::LineBreak(LineBreak),
+                SN::List(StaticList {
+                    indent: 2,
+                    kind: ListKind::Dashes,
+                    content: &[&[SN::Text("world")]],
+                }),
+                SN::LineBreak(LineBreak),
+            ]
+        );
+        parse!(
+            "{\n- Hello\n- world\n}",
+            Braces::parser(Indents::new()),
+            braces![
+                SN::LineBreak(LineBreak),
+                SN::List(StaticList {
+                    indent: 2,
+                    kind: ListKind::Dashes,
+                    content: &[&[SN::Text("Hello")], &[SN::Text("world")]]
+                }),
+                SN::LineBreak(LineBreak),
+            ]
+        );
+        parse!(
+            "{\n|===\n| This | is \n| great! \n|===\n}",
+            Braces::parser(Indents::new()),
+            braces![
+                SN::LineBreak(LineBreak),
+                SN::Table(StaticTable {
+                    eq: 3,
+                    content: &[
+                        &[&[SN::Text(" This ")], &[SN::Text(" is ")]],
+                        &[&[SN::Text(" great! ")]]
+                    ]
+                }),
+                SN::LineBreak(LineBreak),
             ]
         );
     }

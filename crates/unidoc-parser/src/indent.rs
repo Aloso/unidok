@@ -43,3 +43,9 @@ impl Parse for ParseQuoteIndent {
 pub struct Indents<'a> {
     pub(super) root: INode<'a>,
 }
+
+impl Indents<'_> {
+    pub fn new() -> Self {
+        Indents { root: INode::Tail }
+    }
+}

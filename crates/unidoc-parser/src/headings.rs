@@ -21,7 +21,7 @@ impl Heading {
 }
 
 pub struct ParseHeading<'a> {
-    pub ind: Indents<'a>,
+    ind: Indents<'a>,
 }
 
 impl Parse for ParseHeading<'_> {
@@ -40,8 +40,11 @@ impl Parse for ParseHeading<'_> {
             }
         }
         input.parse(' ')?;
-        let content =
-            input.parse(Node::multi_parser(ParentKind::Heading { level }, self.ind))?;
+        let content = input.parse(Node::multi_parser(
+            ParentKind::Heading { level },
+            self.ind,
+            false,
+        ))?;
 
         input.apply();
         Some(Heading { level, content })
