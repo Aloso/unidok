@@ -29,6 +29,20 @@ macro_rules! parse {
 
 macro_rules! braces {
     ($( $e:expr ),* $(,)?) => {
-        StaticBraces { content: &[ $($e),* ] }
+        crate::statics::StaticBraces {
+            content: &[ $( $e ),* ]
+        }
+    };
+}
+
+macro_rules! ln {
+    ($( $t:ident($e:expr) ),* $(,)?) => {
+        crate::statics::StaticNode::Line(
+            crate::statics::StaticLine {
+                segments: &[
+                    $( crate::statics::StaticSegment::$t($e) ),*
+                ]
+            }
+        )
     };
 }

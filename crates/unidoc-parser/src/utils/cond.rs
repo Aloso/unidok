@@ -13,6 +13,9 @@ pub struct WhileChar<T>(pub T);
 /// returns `false`.
 pub struct If(pub bool);
 
+/// Parses either the left or, if that fails, the right parser.
+pub struct Or<T, U>(pub T, pub U);
+
 impl<F: Fn(char) -> bool> Parse for UntilChar<F> {
     type Output = StrSlice;
 
@@ -91,6 +94,21 @@ impl Parse for If {
             Some(())
         } else {
             None
+        }
+    }
+}
+
+impl<T, U> Parse for Or<T, U>
+where
+    T: Parse,
+    U: Parse<Output = T::Output>,
+{
+    type Output = T::Output;
+
+    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+        match self.0.parse(input) {
+            Some(res) => Some(res),
+            None => self.1.parse(input),
         }
     }
 }

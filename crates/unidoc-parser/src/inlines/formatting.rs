@@ -1,5 +1,6 @@
-use crate::items::Node;
 use crate::{Input, Parse};
+
+use super::Segment;
 
 /// Inline formatting (bold, italic, etc.)
 ///
@@ -34,7 +35,7 @@ use crate::{Input, Parse};
 #[derive(Debug, Clone)]
 pub struct InlineFormat {
     pub formatting: Formatting,
-    pub content: Vec<Node>,
+    pub content: Vec<Segment>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

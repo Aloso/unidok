@@ -1,11 +1,13 @@
 use crate::indent::Indents;
-use crate::items::{LineBreak, Node, ParentKind};
+use crate::inlines::{Segment, SegmentCtx};
+use crate::items::LineBreak;
+use crate::utils::{ParseLineEnd, ParseLineStart};
 use crate::{Parse, UntilChar};
 
 #[derive(Debug, Clone)]
 pub struct Table {
     pub eq: usize,
-    pub content: Vec<Vec<Vec<Node>>>,
+    pub content: Vec<Vec<Vec<Segment>>>,
 }
 
 impl Table {
@@ -22,7 +24,7 @@ impl Parse for ParseTable<'_> {
     type Output = Table;
 
     fn parse(&self, input: &mut crate::Input) -> Option<Self::Output> {
-        input.parse(Self::LINE_START)?;
+        input.parse(ParseLineStart)?;
         let mut input = input.start();
 
         input.parse("|===")?;
@@ -36,14 +38,14 @@ impl Parse for ParseTable<'_> {
                 if eq != eq_end {
                     return None;
                 }
-                input.parse(Self::LINE_END)?;
+                input.parse(ParseLineEnd)?;
                 break;
             }
 
             let mut row = Vec::new();
 
             while input.parse('|').is_some() {
-                let cell_parser = Node::multi_parser(ParentKind::Table, self.ind, false);
+                let cell_parser = Segment::multi_parser(SegmentCtx::Table, self.ind);
                 row.push(input.parse(cell_parser)?);
             }
             input.parse(LineBreak::parser(self.ind))?;

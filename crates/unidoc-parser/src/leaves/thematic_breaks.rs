@@ -1,36 +1,38 @@
 use crate::indent::Indents;
+use crate::utils::{ParseLineEnd, ParseLineStart};
 use crate::{Input, Parse, WhileChar};
 
-/// A horizontal line, consisting of at least three dashes (`---`).
+/// A horizontal line, consisting of at least three dashes (`---`), stars
+/// (`***`) or underscores (`___`).
 ///
-/// TODO: Also allow `---` as heading underline, and make sure that horizontal
-/// lines are preceded by an empty line. Do something similar for tables?
+/// TODO: Also allow `---` as heading underline, and make sure that thematic
+/// breaks are preceded by an empty line.
 ///
 /// The line must be at the beginning of a line and can't contain any other
-/// content.
+/// content except whitespace.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct HorizontalLine {
+pub struct ThematicBreak {
     pub len: usize,
 }
 
-impl HorizontalLine {
-    pub fn parser(ind: Indents<'_>) -> ParseHorizontalLine<'_> {
-        ParseHorizontalLine { ind }
+impl ThematicBreak {
+    pub fn parser(ind: Indents<'_>) -> ParseThematicBreak<'_> {
+        ParseThematicBreak { ind }
     }
 }
 
 #[derive(Debug, Default, Clone, Copy)]
-pub struct ParseHorizontalLine<'a> {
+pub struct ParseThematicBreak<'a> {
     ind: Indents<'a>,
 }
 
-impl Parse for ParseHorizontalLine<'_> {
-    type Output = HorizontalLine;
+impl Parse for ParseThematicBreak<'_> {
+    type Output = ThematicBreak;
 
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
-        input.parse(Self::LINE_START)?;
+        input.parse(ParseLineStart)?;
 
         let parser = if input.parse("---").is_some() {
             WhileChar('-')
@@ -43,10 +45,10 @@ impl Parse for ParseHorizontalLine<'_> {
         };
         let len = 3 + input.parse(parser)?.len();
 
-        input.parse(Self::LINE_END)?;
+        input.parse(ParseLineEnd)?;
 
         input.apply();
-        Some(HorizontalLine { len })
+        Some(ThematicBreak { len })
     }
 }
 
@@ -55,18 +57,18 @@ fn test_hr() {
     use crate::items::LineBreak;
 
     let mut input = Input::new("-------\n---\n--\n---");
-    let parse_hr = ParseHorizontalLine::default();
+    let parse_hr = ParseThematicBreak::default();
     let parse_br = LineBreak::parser(Default::default());
 
-    assert_eq!(input.parse(parse_hr), Some(HorizontalLine { len: 7 }));
+    assert_eq!(input.parse(parse_hr), Some(ThematicBreak { len: 7 }));
     input.parse(parse_br).unwrap();
 
-    assert_eq!(input.parse(parse_hr), Some(HorizontalLine { len: 3 }));
+    assert_eq!(input.parse(parse_hr), Some(ThematicBreak { len: 3 }));
     input.parse(parse_br).unwrap();
 
     assert_eq!(input.parse(parse_hr), None);
     input.bump(2);
     input.parse(parse_br).unwrap();
 
-    assert_eq!(input.parse(parse_hr), Some(HorizontalLine { len: 3 }));
+    assert_eq!(input.parse(parse_hr), Some(ThematicBreak { len: 3 }));
 }

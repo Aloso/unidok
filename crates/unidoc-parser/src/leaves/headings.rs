@@ -1,5 +1,6 @@
 use crate::indent::Indents;
-use crate::items::{Node, ParentKind};
+use crate::inlines::{Segment, SegmentCtx};
+use crate::utils::ParseLineStart;
 use crate::{Input, Parse};
 
 /// A heading.
@@ -47,16 +48,16 @@ use crate::{Input, Parse};
 #[derive(Debug, Clone)]
 pub struct Heading {
     pub level: u8,
-    pub content: Vec<Node>,
+    pub content: Vec<Segment>,
 }
 
 impl Heading {
-    pub fn parser(ind: Indents<'_>) -> ParseHeading<'_> {
+    pub(crate) fn parser(ind: Indents<'_>) -> ParseHeading<'_> {
         ParseHeading { ind }
     }
 }
 
-pub struct ParseHeading<'a> {
+pub(crate) struct ParseHeading<'a> {
     ind: Indents<'a>,
 }
 
@@ -66,7 +67,7 @@ impl Parse for ParseHeading<'_> {
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
-        input.parse(Self::LINE_START)?;
+        input.parse(ParseLineStart)?;
         input.parse('#')?;
         let mut level = 1;
         while input.parse('#').is_some() {
@@ -76,11 +77,7 @@ impl Parse for ParseHeading<'_> {
             }
         }
         input.parse(' ')?;
-        let content = input.parse(Node::multi_parser(
-            ParentKind::Heading { level },
-            self.ind,
-            false,
-        ))?;
+        let content = input.parse(Segment::multi_parser(SegmentCtx::Other, self.ind))?;
 
         input.apply();
         Some(Heading { level, content })

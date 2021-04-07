@@ -1,4 +1,5 @@
-use crate::indent::{Indentation, Indents, ParseNSpaces, ParseQuoteMarker};
+use crate::indent::{Indentation, Indents, ParseQuoteMarker};
+use crate::utils::ParseNSpaces;
 use crate::{Input, Parse};
 
 /// A line break. This includes indentation of the following line!

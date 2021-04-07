@@ -1,7 +1,7 @@
-use crate::cond::If;
 use crate::indent::Indents;
 use crate::items::LineBreak;
 use crate::str::StrSlice;
+use crate::utils::{If, ParseLineEnd, ParseLineStart, ParseNSpaces, ParseSpaces};
 use crate::{Input, Parse, UntilChar, WhileChar};
 
 #[rustfmt::skip]
@@ -67,12 +67,12 @@ pub struct CodeBlock {
     pub indent: u8,
 }
 
-pub struct ParseCodeBlock<'a> {
+pub(crate) struct ParseCodeBlock<'a> {
     ind: Indents<'a>,
 }
 
 impl CodeBlock {
-    pub fn parser(ind: Indents<'_>) -> ParseCodeBlock<'_> {
+    pub(crate) fn parser(ind: Indents<'_>) -> ParseCodeBlock<'_> {
         ParseCodeBlock { ind }
     }
 }
@@ -83,8 +83,8 @@ impl Parse for ParseCodeBlock<'_> {
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
-        input.parse(Self::LINE_START)?;
-        let indent = input.parse(Self::WS)?;
+        input.parse(ParseLineStart)?;
+        let indent = input.parse(ParseSpaces)?;
 
         input.parse("```")?;
         let backticks = 3 + input.parse(WhileChar('`'))?.len();
@@ -93,12 +93,12 @@ impl Parse for ParseCodeBlock<'_> {
         let mut lines = Vec::new();
         loop {
             input.parse(LineBreak::parser(self.ind))?;
-            input.parse(Self::spaces(indent))?;
+            input.parse(ParseNSpaces(indent))?;
 
             if input.rest().starts_with("```") {
                 let mut input2 = input.start();
                 let backticks_end = input2.parse(WhileChar('`'))?.len();
-                input2.parse(Self::LINE_END)?;
+                input2.parse(ParseLineEnd)?;
                 input2.parse(If(backticks == backticks_end))?;
                 input2.apply();
                 break;

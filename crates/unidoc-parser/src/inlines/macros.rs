@@ -1,5 +1,5 @@
 use crate::indent::Indents;
-use crate::items::Braces;
+use crate::inlines::Braces;
 use crate::str::StrSlice;
 use crate::{Input, Parse, UntilChar};
 

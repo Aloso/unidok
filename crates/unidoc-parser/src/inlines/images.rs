@@ -1,8 +1,9 @@
-use crate::cond::UntilChar;
 use crate::indent::Indents;
-use crate::items::{Node, ParentKind};
 use crate::str::StrSlice;
+use crate::utils::UntilChar;
 use crate::{Input, Parse};
+
+use super::{Segment, SegmentCtx};
 
 /// An image that should be shown in the document.
 ///
@@ -31,7 +32,7 @@ use crate::{Input, Parse};
 #[derive(Debug, Clone)]
 pub struct Image {
     pub href: StrSlice,
-    pub alt: Option<Vec<Node>>,
+    pub alt: Option<Vec<Segment>>,
 }
 
 impl Image {
@@ -53,7 +54,7 @@ impl Parse for ParseImage<'_> {
         input.parse("<!")?;
         let href = input.parse(UntilChar(|c| matches!(c, ' ' | '\n' | '>')))?;
         let alt = if input.parse(' ').is_some() || input.parse('\n').is_some() {
-            let parser = Node::multi_parser(ParentKind::LinkOrImg, self.ind, false);
+            let parser = Segment::multi_parser(SegmentCtx::LinkOrImg, self.ind);
             Some(input.parse(parser)?)
         } else {
             None

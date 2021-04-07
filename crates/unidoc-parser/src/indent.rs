@@ -10,52 +10,12 @@ pub enum Indentation {
 }
 
 impl Indentation {
-    pub fn spaces(n: u8) -> Self {
+    pub(crate) fn spaces(n: u8) -> Self {
         Indentation::Spaces(NonZeroU8::new(n).unwrap())
     }
 }
 
-pub struct ParseSpaces;
-
-pub struct ParseNSpaces(pub u8);
-
-pub struct ParseQuoteMarker;
-
-impl Parse for ParseSpaces {
-    type Output = u8;
-
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
-        let mut res = 0;
-        let mut len = 0;
-        let rest = input.rest();
-        for c in rest.chars() {
-            match c {
-                ' ' => {
-                    res += 1;
-                    len += 1;
-                }
-                '\t' => {
-                    res += 4;
-                    len += 1;
-                }
-                _ => break,
-            }
-        }
-        input.bump(len);
-        Some(res)
-    }
-}
-
-impl Parse for ParseNSpaces {
-    type Output = ();
-
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
-        const SPACES: &str = "                                                                                                                                                                                                                                                                ";
-        let spaces = &SPACES[..self.0 as usize];
-        input.parse(spaces)?;
-        Some(())
-    }
-}
+pub(crate) struct ParseQuoteMarker;
 
 impl Parse for ParseQuoteMarker {
     type Output = ();

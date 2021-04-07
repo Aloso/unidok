@@ -1,12 +1,13 @@
 use crate::indent::Indents;
-use crate::items::{Node, ParentKind};
 use crate::str::StrSlice;
 use crate::{Input, Parse, UntilChar};
+
+use super::{Segment, SegmentCtx};
 
 #[derive(Debug, Clone)]
 pub struct Link {
     pub href: StrSlice,
-    pub text: Option<Vec<Node>>,
+    pub text: Option<Vec<Segment>>,
 }
 
 impl Link {
@@ -28,7 +29,7 @@ impl Parse for ParseLink<'_> {
         input.parse('<')?;
         let href = input.parse(UntilChar(|c| c == ' ' || c == '\n' || c == '>'))?;
         let text = if input.parse(' ').is_some() || input.parse('\n').is_some() {
-            let parser = Node::multi_parser(ParentKind::LinkOrImg, self.ind, false);
+            let parser = Segment::multi_parser(SegmentCtx::LinkOrImg, self.ind);
             Some(input.parse(parser)?)
         } else {
             None

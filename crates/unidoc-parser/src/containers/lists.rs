@@ -1,5 +1,6 @@
 use crate::indent::{Indentation, Indents};
-use crate::items::{LineBreak, Node, ParentKind};
+use crate::items::{LineBreak, Node, NodeCtx};
+use crate::utils::{ParseLineEnd, ParseLineStart};
 use crate::{Parse, WhileChar};
 
 #[derive(Debug, Clone)]
@@ -19,7 +20,7 @@ pub enum Bullet {
 }
 
 impl List {
-    pub fn parser(ind: Indents<'_>) -> ParseList<'_> {
+    pub(crate) fn parser(ind: Indents<'_>) -> ParseList<'_> {
         ParseList { ind }
     }
 }
@@ -45,7 +46,7 @@ pub enum ListKind {
     Parens,
 }
 
-pub struct ParseList<'a> {
+pub(crate) struct ParseList<'a> {
     ind: Indents<'a>,
 }
 
@@ -53,7 +54,7 @@ impl Parse for ParseList<'_> {
     type Output = List;
 
     fn parse(&self, input: &mut crate::Input) -> Option<Self::Output> {
-        input.parse(Self::LINE_START)?;
+        input.parse(ParseLineStart)?;
         let mut input = input.start();
 
         let (indent, kind) = input.parse(ParseBullet)?;
@@ -62,7 +63,7 @@ impl Parse for ParseList<'_> {
 
         let mut content = Vec::new();
         loop {
-            let content_parser = Node::multi_parser(ParentKind::List, ind, true);
+            let content_parser = Node::multi_parser(NodeCtx::ContainerOrGlobal, ind);
             content.push(input.parse(content_parser)?);
 
             let mut input2 = input.start();
@@ -108,7 +109,7 @@ impl Parse for ParseBullet {
         };
         input.bump(1);
 
-        if input.parse(' ').is_none() && input.parse(Self::LINE_END).is_none() {
+        if input.parse(' ').is_none() && input.parse(ParseLineEnd).is_none() {
             return None;
         }
 

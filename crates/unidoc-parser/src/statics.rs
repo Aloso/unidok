@@ -1,4 +1,7 @@
+use crate::containers::*;
+use crate::inlines::*;
 use crate::items::*;
+use crate::leaves::*;
 use crate::str::StrSlice;
 
 pub trait IsStatic {
@@ -153,7 +156,7 @@ impl_is_static! {
 
     pub struct StaticInlineFormat for InlineFormat {
         pub formatting: Formatting,
-        pub content: &'static [StaticNode],
+        pub content: &'static [StaticSegment],
     }
 
     identity Formatting;
@@ -165,12 +168,12 @@ impl_is_static! {
 
     pub struct StaticLink for Link {
         pub href: &'static str,
-        pub text: Option<&'static [StaticNode]>,
+        pub text: Option<&'static [StaticSegment]>,
     }
 
     pub struct StaticImage for Image {
         pub href: &'static str,
-        pub alt: Option<&'static [StaticNode]>,
+        pub alt: Option<&'static [StaticSegment]>,
     }
 
     pub struct StaticMacro for Macro {
@@ -183,7 +186,7 @@ impl_is_static! {
         pub content: &'static str,
     }
 
-    pub struct StaticHorizontalLine for HorizontalLine {
+    pub struct StaticThematicBreak for ThematicBreak {
         pub len: usize,
     }
 
@@ -196,7 +199,7 @@ impl_is_static! {
 
     pub struct StaticHeading for Heading {
         pub level: u8,
-        pub content: &'static [StaticNode],
+        pub content: &'static [StaticSegment],
     }
 
     pub struct StaticList for List {
@@ -213,23 +216,30 @@ impl_is_static! {
 
     pub struct StaticTable for Table {
         pub eq: usize,
-        pub content: &'static [&'static [&'static [StaticNode]]],
+        pub content: &'static [&'static [&'static [StaticSegment]]],
     }
 
-    pub enum StaticNode for Node {
+    pub struct StaticLine for Line {
+        pub segments: &'static [StaticSegment],
+    }
+
+    pub enum StaticSegment for Segment {
         Text(&'static str),
-        LineBreak(LineBreak),
-        Escape(StaticEscaped),
+        Escaped(StaticEscaped),
         Limiter(Limiter),
         Braces(StaticBraces),
         Math(StaticMath),
-        InlineFormat(StaticInlineFormat),
-        Attribute(StaticAttribute),
         Link(StaticLink),
         Image(StaticImage),
         Macro(StaticMacro),
+        InlineAttribute(StaticAttribute),
+        InlineFormat(StaticInlineFormat),
+    }
+
+    pub enum StaticNode for Node {
+        Line(StaticLine),
         Comment(StaticComment),
-        HorizontalLine(StaticHorizontalLine),
+        ThematicBreak(StaticThematicBreak),
         CodeBlock(StaticCodeBlock),
         Heading(StaticHeading),
         List(StaticList),

@@ -1,6 +1,7 @@
 use crate::indent::Indents;
 use crate::items::LineBreak;
 use crate::str::StrSlice;
+use crate::utils::{ParseLineStart, ParseSpaces};
 use crate::{Input, Parse, UntilChar};
 
 /// A line comment.
@@ -13,12 +14,12 @@ pub struct Comment {
 }
 
 impl Comment {
-    pub fn parser(ind: Indents<'_>) -> ParseComment<'_> {
+    pub(crate) fn parser(ind: Indents<'_>) -> ParseComment<'_> {
         ParseComment { ind }
     }
 }
 
-pub struct ParseComment<'a> {
+pub(crate) struct ParseComment<'a> {
     ind: Indents<'a>,
 }
 
@@ -26,10 +27,10 @@ impl Parse for ParseComment<'_> {
     type Output = Comment;
 
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
-        input.parse(Self::LINE_START)?;
+        input.parse(ParseLineStart)?;
         let mut input = input.start();
 
-        input.parse(Self::WS);
+        input.parse(ParseSpaces);
         input.parse("//")?;
         let content = input.parse(UntilChar('\n'))?;
         input.parse(LineBreak::parser(self.ind));

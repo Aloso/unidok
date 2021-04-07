@@ -1,7 +1,9 @@
-use crate::cond::If;
 use crate::indent::Indents;
-use crate::items::{LineBreak, Node, ParentKind};
+use crate::inlines::Segment;
+use crate::items::LineBreak;
 use crate::str::StrSlice;
+use crate::utils::cond::If;
+use crate::utils::ParseSpaces;
 use crate::Parse;
 
 /// An attribute.
@@ -52,12 +54,12 @@ pub struct Attribute {
 }
 
 impl Attribute {
-    pub fn parser(ind: Indents<'_>) -> ParseAttribute<'_> {
+    pub(crate) fn parser(ind: Indents<'_>) -> ParseAttribute<'_> {
         ParseAttribute { ind }
     }
 }
 
-pub struct ParseAttribute<'a> {
+pub(crate) struct ParseAttribute<'a> {
     ind: Indents<'a>,
 }
 
@@ -68,21 +70,20 @@ impl Parse for ParseAttribute<'_> {
         let is_line_start = input.is_line_start();
         let mut input = input.start();
 
-        let indent = if is_line_start { input.parse(Self::WS)? } else { 0 };
+        let indent = if is_line_start { input.parse(ParseSpaces)? } else { 0 };
 
         input.parse('[')?;
         let content = {
             let mut input2 = input.start();
-            input2.parse(Node::multi_parser(
-                ParentKind::Attribute,
-                self.ind.indent(indent),
-                false,
+            input2.parse(Segment::multi_parser(
+                crate::inlines::SegmentCtx::Attribute,
+                self.ind,
             ))?;
             input2.apply()
         };
         input.parse(']')?;
 
-        let outdent = if is_line_start { input.parse(Self::WS)? } else { 0 };
+        let outdent = if is_line_start { input.parse(ParseSpaces)? } else { 0 };
 
         let is_separate_line = if input.parse(LineBreak::parser(self.ind)).is_some() {
             true
