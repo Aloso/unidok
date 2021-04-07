@@ -1,6 +1,5 @@
 use crate::indent::Indents;
 use crate::items::LineBreak;
-use crate::marker::ParseLineStart;
 use crate::str::StrSlice;
 use crate::{Input, Parse, UntilChar};
 
@@ -27,10 +26,15 @@ impl Parse for ParseComment<'_> {
     type Output = Comment;
 
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
-        input.parse(ParseLineStart)?;
+        input.parse(Self::LINE_START)?;
+        let mut input = input.start();
+
+        input.parse(Self::WS);
         input.parse("//")?;
         let content = input.parse(UntilChar('\n'))?;
         input.parse(LineBreak::parser(self.ind));
+
+        input.apply();
         Some(Comment { content })
     }
 }

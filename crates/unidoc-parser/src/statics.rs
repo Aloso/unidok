@@ -140,7 +140,6 @@ impl_is_static! {
     identity bool;
 
     pub struct StaticEscaped for Escaped {
-        pub line_start: bool,
         pub text: &'static str,
     }
 
@@ -160,7 +159,7 @@ impl_is_static! {
     identity Formatting;
 
     pub struct StaticAttribute for Attribute {
-        pub is_line_start: bool,
+        pub is_separate_line: bool,
         pub content: &'static str,
     }
 
@@ -189,9 +188,10 @@ impl_is_static! {
     }
 
     pub struct StaticCodeBlock for CodeBlock {
-        pub meta: &'static str,
+        pub info: &'static str,
         pub backticks: usize,
         pub lines: &'static [&'static str],
+        pub indent: u8,
     }
 
     pub struct StaticHeading for Heading {
@@ -201,11 +201,11 @@ impl_is_static! {
 
     pub struct StaticList for List {
         pub indent: u8,
-        pub kind: ListKind,
+        pub bullet: Bullet,
         pub content: &'static [&'static [StaticNode]],
     }
 
-    identity ListKind;
+    identity Bullet;
 
     pub struct StaticQuote for Quote {
         pub content: &'static [StaticNode],

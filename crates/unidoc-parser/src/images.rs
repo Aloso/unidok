@@ -1,4 +1,4 @@
-use crate::basic::UntilChar;
+use crate::cond::UntilChar;
 use crate::indent::Indents;
 use crate::items::{Node, ParentKind};
 use crate::str::StrSlice;

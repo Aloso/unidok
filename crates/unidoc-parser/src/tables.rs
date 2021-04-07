@@ -1,6 +1,5 @@
 use crate::indent::Indents;
 use crate::items::{LineBreak, Node, ParentKind};
-use crate::marker::{ParseLineEnd, ParseLineStart};
 use crate::{Parse, UntilChar};
 
 #[derive(Debug, Clone)]
@@ -23,7 +22,7 @@ impl Parse for ParseTable<'_> {
     type Output = Table;
 
     fn parse(&self, input: &mut crate::Input) -> Option<Self::Output> {
-        input.parse(ParseLineStart)?;
+        input.parse(Self::LINE_START)?;
         let mut input = input.start();
 
         input.parse("|===")?;
@@ -37,7 +36,7 @@ impl Parse for ParseTable<'_> {
                 if eq != eq_end {
                     return None;
                 }
-                input.parse(ParseLineEnd)?;
+                input.parse(Self::LINE_END)?;
                 break;
             }
 

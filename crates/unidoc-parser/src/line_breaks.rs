@@ -1,4 +1,4 @@
-use crate::indent::{Indentation, Indents, ParseQuoteIndent, ParseSpacesIndent};
+use crate::indent::{Indentation, Indents, ParseNSpaces, ParseQuoteMarker};
 use crate::{Input, Parse};
 
 /// A line break. This includes indentation of the following line!
@@ -48,19 +48,13 @@ impl Default for INode<'_> {
     }
 }
 
-impl<'a> Indents<'a> {
-    pub fn push(&'a self, ind: Indentation) -> Self {
-        Indents { root: INode::Node { ind, next: &self.root } }
-    }
-}
-
 fn parse_recursive(node: INode<'_>, input: &mut Input) -> Option<()> {
     match node {
         INode::Node { ind, next } => {
             parse_recursive(*next, input)?;
             match ind {
-                Indentation::Spaces(s) => input.parse(ParseSpacesIndent(s)),
-                Indentation::Quote => input.parse(ParseQuoteIndent),
+                Indentation::Spaces(s) => input.parse(ParseNSpaces(s.into())),
+                Indentation::QuoteMarker => input.parse(ParseQuoteMarker),
             }
         }
         INode::Tail => Some(()),

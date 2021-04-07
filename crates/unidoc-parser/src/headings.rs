@@ -1,6 +1,5 @@
 use crate::indent::Indents;
 use crate::items::{Node, ParentKind};
-use crate::marker::ParseLineStart;
 use crate::{Input, Parse};
 
 /// A heading.
@@ -67,7 +66,7 @@ impl Parse for ParseHeading<'_> {
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
-        input.parse(ParseLineStart)?;
+        input.parse(Self::LINE_START)?;
         input.parse('#')?;
         let mut level = 1;
         while input.parse('#').is_some() {

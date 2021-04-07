@@ -1,5 +1,6 @@
+use crate::cond::If;
 use crate::indent::Indents;
-use crate::items::{Node, ParentKind};
+use crate::items::{LineBreak, Node, ParentKind};
 use crate::str::StrSlice;
 use crate::Parse;
 
@@ -20,8 +21,8 @@ use crate::Parse;
 /// ````
 ///
 /// When it applies to a block element (list, table, quote, etc.), it must be in
-/// a separate line above the element. It must be directly after the line break
-/// and must be the only content in the line.
+/// a separate line above the element. It must be after a line break, and in the
+/// same can be nothing except whitespace.
 ///
 /// Inline attributes can apply to formatting (`[attr]**bold**`,
 /// `[attr]_italic_`, etc.), to braces (`[attr]{content}`), to math, links,
@@ -46,7 +47,7 @@ use crate::Parse;
 /// ````
 #[derive(Debug, Clone)]
 pub struct Attribute {
-    pub is_line_start: bool,
+    pub is_separate_line: bool,
     pub content: StrSlice,
 }
 
@@ -67,15 +68,30 @@ impl Parse for ParseAttribute<'_> {
         let is_line_start = input.is_line_start();
         let mut input = input.start();
 
+        let indent = if is_line_start { input.parse(Self::WS)? } else { 0 };
+
         input.parse('[')?;
         let content = {
             let mut input2 = input.start();
-            input2.parse(Node::multi_parser(ParentKind::Attribute, self.ind, false))?;
+            input2.parse(Node::multi_parser(
+                ParentKind::Attribute,
+                self.ind.indent(indent),
+                false,
+            ))?;
             input2.apply()
         };
         input.parse(']')?;
 
+        let outdent = if is_line_start { input.parse(Self::WS)? } else { 0 };
+
+        let is_separate_line = if input.parse(LineBreak::parser(self.ind)).is_some() {
+            true
+        } else {
+            input.parse(If(indent == 0 && outdent == 0))?;
+            false
+        };
+
         input.apply();
-        Some(Attribute { is_line_start, content })
+        Some(Attribute { is_separate_line, content })
     }
 }

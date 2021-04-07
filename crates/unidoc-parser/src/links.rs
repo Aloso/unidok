@@ -1,8 +1,7 @@
-use crate::basic::UntilChar;
 use crate::indent::Indents;
 use crate::items::{Node, ParentKind};
 use crate::str::StrSlice;
-use crate::{Input, Parse};
+use crate::{Input, Parse, UntilChar};
 
 #[derive(Debug, Clone)]
 pub struct Link {

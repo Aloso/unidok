@@ -8,6 +8,7 @@ mod attributes;
 mod braces;
 mod code_blocks;
 mod comments;
+mod cond;
 mod escapes;
 mod headings;
 mod hr;
@@ -35,7 +36,7 @@ pub use detached_str as str;
 pub use crate::input::Input;
 pub use crate::parse::Parse;
 
-use crate::basic::{UntilChar, WhileChar};
+use crate::cond::{UntilChar, WhileChar};
 
 pub mod items {
     pub use crate::attributes::Attribute;
@@ -51,7 +52,7 @@ pub mod items {
     pub use crate::limiters::Limiter;
     pub use crate::line_breaks::LineBreak;
     pub use crate::links::Link;
-    pub use crate::lists::{List, ListKind};
+    pub use crate::lists::{Bullet, List};
     pub use crate::macros::Macro;
     pub use crate::math::Math;
     pub use crate::nodes::{Node, ParentKind};

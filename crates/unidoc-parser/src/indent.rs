@@ -6,7 +6,7 @@ use crate::{Input, Parse};
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Indentation {
     Spaces(NonZeroU8),
-    Quote,
+    QuoteMarker,
 }
 
 impl Indentation {
@@ -15,26 +15,53 @@ impl Indentation {
     }
 }
 
-pub(super) struct ParseSpacesIndent(pub(super) NonZeroU8);
+pub struct ParseSpaces;
 
-pub(super) struct ParseQuoteIndent;
+pub struct ParseNSpaces(pub u8);
 
-impl Parse for ParseSpacesIndent {
+pub struct ParseQuoteMarker;
+
+impl Parse for ParseSpaces {
+    type Output = u8;
+
+    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+        let mut res = 0;
+        let mut len = 0;
+        let rest = input.rest();
+        for c in rest.chars() {
+            match c {
+                ' ' => {
+                    res += 1;
+                    len += 1;
+                }
+                '\t' => {
+                    res += 4;
+                    len += 1;
+                }
+                _ => break,
+            }
+        }
+        input.bump(len);
+        Some(res)
+    }
+}
+
+impl Parse for ParseNSpaces {
     type Output = ();
 
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         const SPACES: &str = "                                                                                                                                                                                                                                                                ";
-        let spaces = &SPACES[..u8::from(self.0) as usize];
+        let spaces = &SPACES[..self.0 as usize];
         input.parse(spaces)?;
         Some(())
     }
 }
 
-impl Parse for ParseQuoteIndent {
+impl Parse for ParseQuoteMarker {
     type Output = ();
 
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
-        input.parse("> ")?;
+        input.parse('>')?;
         Some(())
     }
 }
@@ -62,8 +89,21 @@ pub struct Indents<'a> {
     pub(super) root: INode<'a>,
 }
 
-impl Indents<'_> {
+impl<'a> Indents<'a> {
     pub fn new() -> Self {
         Indents { root: INode::Tail }
+    }
+
+    pub fn push(&'a self, ind: Indentation) -> Self {
+        Indents { root: INode::Node { ind, next: &self.root } }
+    }
+
+    pub fn indent(&'a self, spaces: u8) -> Self {
+        match NonZeroU8::new(spaces) {
+            Some(ind) => Indents {
+                root: INode::Node { ind: Indentation::Spaces(ind), next: &self.root },
+            },
+            None => *self,
+        }
     }
 }

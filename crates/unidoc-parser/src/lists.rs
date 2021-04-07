@@ -1,13 +1,39 @@
 use crate::indent::{Indentation, Indents};
 use crate::items::{LineBreak, Node, ParentKind};
-use crate::marker::ParseLineStart;
 use crate::{Parse, WhileChar};
 
 #[derive(Debug, Clone)]
 pub struct List {
     pub indent: u8,
-    pub kind: ListKind,
+    pub bullet: Bullet,
     pub content: Vec<Vec<Node>>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Bullet {
+    Dash,
+    Plus,
+    Star,
+    Dot { start: u32 },
+    Paren { start: u32 },
+}
+
+impl List {
+    pub fn parser(ind: Indents<'_>) -> ParseList<'_> {
+        ParseList { ind }
+    }
+}
+
+impl Bullet {
+    pub fn kind(self) -> ListKind {
+        match self {
+            Bullet::Dash => ListKind::Dashes,
+            Bullet::Plus => ListKind::Pluses,
+            Bullet::Star => ListKind::Stars,
+            Bullet::Dot { .. } => ListKind::Dots,
+            Bullet::Paren { .. } => ListKind::Parens,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -16,13 +42,7 @@ pub enum ListKind {
     Pluses,
     Stars,
     Dots,
-    Commas,
-}
-
-impl List {
-    pub fn parser(ind: Indents<'_>) -> ParseList<'_> {
-        ParseList { ind }
-    }
+    Parens,
 }
 
 pub struct ParseList<'a> {
@@ -33,7 +53,7 @@ impl Parse for ParseList<'_> {
     type Output = List;
 
     fn parse(&self, input: &mut crate::Input) -> Option<Self::Output> {
-        input.parse(ParseLineStart)?;
+        input.parse(Self::LINE_START)?;
         let mut input = input.start();
 
         let (indent, kind) = input.parse(ParseBullet)?;
@@ -42,7 +62,6 @@ impl Parse for ParseList<'_> {
 
         let mut content = Vec::new();
         loop {
-            dbg!(input.rest());
             let content_parser = Node::multi_parser(ParentKind::List, ind, true);
             content.push(input.parse(content_parser)?);
 
@@ -61,36 +80,39 @@ impl Parse for ParseList<'_> {
         }
 
         input.apply();
-        Some(List { indent, kind, content })
+        Some(List { indent, bullet: kind, content })
     }
 }
 
 struct ParseBullet;
 
 impl Parse for ParseBullet {
-    type Output = (u8, ListKind);
+    type Output = (u8, Bullet);
 
     fn parse(&self, input: &mut crate::Input) -> Option<Self::Output> {
         let mut input = input.start();
 
         let indent = input.parse(WhileChar(' '))?.len();
-        if indent > (u8::MAX - 2) as usize {
+        if indent > 200 {
             return None;
         }
         let indent = indent as u8 + 2;
 
-        let bullet = match input.peek_char() {
-            Some('-') => ListKind::Dashes,
-            Some('+') => ListKind::Pluses,
-            Some('.') => ListKind::Dots,
-            Some('*') => ListKind::Stars,
-            Some(',') => ListKind::Commas,
+        let result = match input.peek_char() {
+            Some('-') => (indent, Bullet::Dash),
+            Some('+') => (indent, Bullet::Plus),
+            Some('*') => (indent, Bullet::Star),
+            Some('.') => (indent, Bullet::Dot { start: 1 }),
+            Some(')') => (indent, Bullet::Paren { start: 1 }),
             _ => return None,
         };
         input.bump(1);
-        input.parse(' ')?;
+
+        if input.parse(' ').is_none() && input.parse(Self::LINE_END).is_none() {
+            return None;
+        }
 
         input.apply();
-        Some((indent, bullet))
+        Some(result)
     }
 }

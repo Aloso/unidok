@@ -1,35 +1,23 @@
-use crate::marker::{ParseLineEnd, ParseLineStart};
 use crate::str::StrSlice;
 use crate::{Input, Parse, WhileChar};
 
-/// Text escaped with the escape character, `\`.
+/// Text escaped with the escape character, `\`. All ASCII characters that are
+/// visible and not whitespace or alphanumeric can be escaped:
 ///
-/// At a line start, the following text sequences can be escaped:
+/// ```text
+/// ! " # $ % & ' ( ) * + , - . / : ; < = > ? @ [ \ ] ^ _ ` { | } ~
+/// ```
 ///
-/// - `#` (headings)
-/// - `>` (quotes)
-/// - `|===` (tables)
-/// - ```` ``` ```` (code fences)
-/// - `//` (comments)
-/// - `-`, `.`, `,`, `+` (lists)
+/// A single backslash applies to the next ASCII character that fulfills the
+/// above criteria. Exceptions are inline formatting characters (`` * _ ` ~ ^
+/// ``): When a backslash is followed by one of these characters, it can escape
+/// an arbitrary number of the same consecutive character.
 ///
-/// Additionally, the following characters can be escaped anywhere in the text:
-///
-/// - `**`, `__`, `~~`, `*`, `_`, `~`, `^`, `` ` `` (inline formatting)
-/// - `[` (attributes)
-/// - `{`, `}` (braces, math)
-/// - `<` (links, images)
-/// - `\` (escape character)
-/// - `$` (limiter)
-/// - `%` (math)
-/// - `@` (macros)
-///
-/// #### TODO:
-/// - Escape auto-quotes, auto-arrows and other substitutions
-/// - Actually implement substitution (must be language-aware)
+/// Example: `\***text\***` results in all 5 stars to be displayed as-is. You
+/// can prevent this by inserting a limiter (`$`): `\*$**text**` means that only
+/// one star is displayed, followed by bold text.
 #[derive(Debug, Clone)]
 pub struct Escaped {
-    pub line_start: bool,
     pub text: StrSlice,
 }
 
@@ -45,54 +33,23 @@ impl Parse for ParseEscape {
     type Output = Escaped;
 
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
-        let line_start = input.parse(ParseLineStart).is_some();
         let mut input = input.start();
         input.parse('\\')?;
-        let rest = input.rest();
 
-        let text = if two_escapable_inline_chars(rest) {
-            input.bump(2)
-        } else if input.peek_char().map(escapable_inline_char) == Some(true) {
-            input.bump(1)
-        } else if line_start {
-            if rest.starts_with('#') {
-                input.parse(WhileChar('#'))?
-            } else if rest.starts_with("//") {
-                input.bump(2)
-            } else if rest.starts_with('>')
-                || rest.starts_with('-')
-                || rest.starts_with('.')
-                || rest.starts_with(',')
-                || rest.starts_with('+')
-            {
-                input.bump(1)
-            } else if rest.starts_with("|===") {
-                let mut input2 = input.start();
-                input2.parse('|')?;
-                input2.parse(WhileChar('='))?;
-                input2.parse(ParseLineEnd)?;
-                input2.apply()
-            } else if rest.starts_with("```") {
-                input.parse(WhileChar('`'))?
-            } else {
-                return None;
-            }
-        } else {
+        let c = input.peek_char()?;
+        if !is_escapable_char(c) {
             return None;
-        };
+        }
+        input.bump(1);
+        if matches!(c, '*' | '_' | '`' | '~' | '^') {
+            input.parse(WhileChar(c))?;
+        }
 
-        input.apply();
-        Some(Escaped { line_start, text })
+        let text = input.apply().get(1..);
+        Some(Escaped { text })
     }
 }
 
-fn two_escapable_inline_chars(rest: &str) -> bool {
-    rest.starts_with("**") || rest.starts_with("__") || rest.starts_with("~~")
-}
-
-fn escapable_inline_char(c: char) -> bool {
-    matches!(
-        c,
-        '[' | '{' | '}' | '<' | '\\' | '*' | '_' | '~' | '`' | '^' | '$' | '%' | '@'
-    )
+fn is_escapable_char(c: char) -> bool {
+    matches!(c, '!'..='/' | ':'..='@' | '['..='`' | '{'..='~')
 }

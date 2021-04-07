@@ -64,7 +64,7 @@ impl Parse for ParseBraces<'_> {
 #[cfg(test)]
 mod tests {
     use crate::indent::Indents;
-    use crate::items::{Braces, LineBreak, ListKind};
+    use crate::items::{Braces, Bullet, LineBreak};
     use crate::statics::{
         StaticBraces, StaticEscaped, StaticList, StaticMath, StaticNode as SN,
         StaticQuote, StaticTable,
@@ -85,7 +85,7 @@ mod tests {
             r"{\%this %{is\\} cool%}",
             Braces::parser(Indents::new()),
             braces![
-                SN::Escape(StaticEscaped { line_start: false, text: "%" }),
+                SN::Escape(StaticEscaped { text: "%" }),
                 SN::Text("this "),
                 SN::Math(StaticMath { text: r"is\" }),
                 SN::Text(" cool"),
@@ -108,9 +108,9 @@ mod tests {
                 SN::LineBreak(LineBreak),
                 SN::Quote(StaticQuote {
                     content: &[
-                        SN::Text("Hello"),
+                        SN::Text(" Hello"),
                         SN::LineBreak(LineBreak),
-                        SN::Text("world!")
+                        SN::Text(" world!")
                     ]
                 }),
                 SN::LineBreak(LineBreak),
@@ -118,14 +118,14 @@ mod tests {
         );
         parse!("{- Hello\n- world}", Braces::parser(Indents::new()), None);
         parse!(
-            "{- Hello\n- world\n}",
+            "{) Hello\n) world\n}",
             Braces::parser(Indents::new()),
             braces![
-                SN::Text("- Hello"),
+                SN::Text(") Hello"),
                 SN::LineBreak(LineBreak),
                 SN::List(StaticList {
                     indent: 2,
-                    kind: ListKind::Dashes,
+                    bullet: Bullet::Paren { start: 1 },
                     content: &[&[SN::Text("world")]],
                 }),
                 SN::LineBreak(LineBreak),
@@ -138,7 +138,7 @@ mod tests {
                 SN::LineBreak(LineBreak),
                 SN::List(StaticList {
                     indent: 2,
-                    kind: ListKind::Dashes,
+                    bullet: Bullet::Dash,
                     content: &[&[SN::Text("Hello")], &[SN::Text("world")]]
                 }),
                 SN::LineBreak(LineBreak),

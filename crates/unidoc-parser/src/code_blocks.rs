@@ -1,7 +1,6 @@
-use crate::basic::Cond;
+use crate::cond::If;
 use crate::indent::Indents;
 use crate::items::LineBreak;
-use crate::marker::{ParseLineEnd, ParseLineStart};
 use crate::str::StrSlice;
 use crate::{Input, Parse, UntilChar, WhileChar};
 
@@ -62,9 +61,10 @@ use crate::{Input, Parse, UntilChar, WhileChar};
 /// You can configure unidoc to use `<i>` instead of `<span>` elements for syntax highlighting.
 #[derive(Debug, Clone)]
 pub struct CodeBlock {
-    pub meta: StrSlice,
+    pub info: StrSlice,
     pub backticks: usize,
     pub lines: Vec<StrSlice>,
+    pub indent: u8,
 }
 
 pub struct ParseCodeBlock<'a> {
@@ -83,20 +83,23 @@ impl Parse for ParseCodeBlock<'_> {
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
-        input.parse(ParseLineStart)?;
+        input.parse(Self::LINE_START)?;
+        let indent = input.parse(Self::WS)?;
+
         input.parse("```")?;
         let backticks = 3 + input.parse(WhileChar('`'))?.len();
-        let meta = input.parse(UntilChar('\n'))?;
+        let info = input.parse(UntilChar('\n'))?;
 
         let mut lines = Vec::new();
         loop {
             input.parse(LineBreak::parser(self.ind))?;
+            input.parse(Self::spaces(indent))?;
 
             if input.rest().starts_with("```") {
                 let mut input2 = input.start();
-                let backticks_end = input2.parse(UntilChar(|c| c != '`'))?.len();
-                input2.parse(ParseLineEnd)?;
-                input2.parse(Cond(|| backticks == backticks_end))?;
+                let backticks_end = input2.parse(WhileChar('`'))?.len();
+                input2.parse(Self::LINE_END)?;
+                input2.parse(If(backticks == backticks_end))?;
                 input2.apply();
                 break;
             }
@@ -106,6 +109,6 @@ impl Parse for ParseCodeBlock<'_> {
         }
 
         input.apply();
-        Some(CodeBlock { meta, backticks, lines })
+        Some(CodeBlock { info, backticks, lines, indent })
     }
 }

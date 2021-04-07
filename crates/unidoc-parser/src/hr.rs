@@ -1,7 +1,5 @@
-use crate::basic::WhileChar;
 use crate::indent::Indents;
-use crate::marker::{ParseLineEnd, ParseLineStart};
-use crate::{Input, Parse};
+use crate::{Input, Parse, WhileChar};
 
 /// A horizontal line, consisting of at least three dashes (`---`).
 ///
@@ -32,10 +30,20 @@ impl Parse for ParseHorizontalLine<'_> {
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
-        input.parse(ParseLineStart)?;
-        input.parse("---")?;
-        let len = 3 + input.parse(WhileChar('-'))?.len();
-        input.parse(ParseLineEnd)?;
+        input.parse(Self::LINE_START)?;
+
+        let parser = if input.parse("---").is_some() {
+            WhileChar('-')
+        } else if input.parse("***").is_some() {
+            WhileChar('*')
+        } else if input.parse("___").is_some() {
+            WhileChar('_')
+        } else {
+            return None;
+        };
+        let len = 3 + input.parse(parser)?.len();
+
+        input.parse(Self::LINE_END)?;
 
         input.apply();
         Some(HorizontalLine { len })
