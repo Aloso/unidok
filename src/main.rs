@@ -1,5 +1,4 @@
-use unidoc_parser::items::Node;
-use unidoc_parser::Input;
+use unidoc_parser::{Input, Node};
 
 fn main() {
     let input = std::env::args().nth(1).unwrap();

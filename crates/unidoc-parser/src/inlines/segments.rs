@@ -1,11 +1,10 @@
-use crate::indent::Indents;
-use crate::items::Attribute;
+use super::*;
+use crate::utils::Indents;
 use crate::Parse;
 
-use super::*;
-
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Segment {
+    LineBreak(LineBreak),
     Text(Text),
     Escaped(Escaped),
     Limiter(Limiter),
@@ -14,7 +13,6 @@ pub enum Segment {
     Link(Link),
     Image(Image),
     Macro(Macro),
-    InlineAttribute(Attribute),
     InlineFormat(InlineFormat),
 }
 
@@ -60,8 +58,6 @@ impl Parse for ParseSegment<'_> {
             Some(Segment::Escaped(esc))
         } else if let Some(limiter) = input.parse(Limiter::parser()) {
             Some(Segment::Limiter(limiter))
-        } else if let Some(attr) = input.parse(Attribute::parser(self.ind)) {
-            Some(Segment::InlineAttribute(attr))
         } else if let Some(block) = input.parse(Braces::parser(self.ind)) {
             Some(Segment::Braces(block))
         } else if let Some(math) = input.parse(Math::parser(self.ind)) {

@@ -1,10 +1,10 @@
-use crate::indent::Indents;
 use crate::str::StrSlice;
+use crate::utils::Indents;
 use crate::{Input, Parse, UntilChar};
 
 use super::{Segment, SegmentCtx};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Link {
     pub href: StrSlice,
     pub text: Option<Vec<Segment>>,

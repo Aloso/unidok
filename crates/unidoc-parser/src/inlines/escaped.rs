@@ -16,7 +16,7 @@ use crate::{Input, Parse, WhileChar};
 /// Example: `\***text\***` results in all 5 stars to be displayed as-is. You
 /// can prevent this by inserting a limiter (`$`): `\*$**text**` means that only
 /// one star is displayed, followed by bold text.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Escaped {
     pub text: StrSlice,
 }

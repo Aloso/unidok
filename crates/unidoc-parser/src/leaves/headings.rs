@@ -1,6 +1,5 @@
-use crate::indent::Indents;
 use crate::inlines::{Segment, SegmentCtx};
-use crate::utils::ParseLineStart;
+use crate::utils::Indents;
 use crate::{Input, Parse};
 
 /// A heading.
@@ -45,7 +44,7 @@ use crate::{Input, Parse};
 /// #### TODO:
 /// Implement a way to add an attribute only to the heading, not the whole
 /// section
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Heading {
     pub level: u8,
     pub content: Vec<Segment>,
@@ -67,9 +66,27 @@ impl Parse for ParseHeading<'_> {
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
-        input.parse(ParseLineStart)?;
+        let level = input.parse(ParseHashes)?;
+        let content = input.parse(Segment::multi_parser(SegmentCtx::Other, self.ind))?;
+
+        input.apply();
+        Some(Heading { level, content })
+    }
+
+    fn can_parse(&self, input: &mut Input) -> bool {
+        input.can_parse(ParseHashes)
+    }
+}
+
+struct ParseHashes;
+
+impl Parse for ParseHashes {
+    type Output = u8;
+
+    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         input.parse('#')?;
         let mut level = 1;
+
         while input.parse('#').is_some() {
             level += 1;
             if level > 6 {
@@ -77,9 +94,6 @@ impl Parse for ParseHeading<'_> {
             }
         }
         input.parse(' ')?;
-        let content = input.parse(Segment::multi_parser(SegmentCtx::Other, self.ind))?;
-
-        input.apply();
-        Some(Heading { level, content })
+        Some(level)
     }
 }

@@ -1,7 +1,5 @@
-use crate::indent::{Indentation, Indents, ParseQuoteMarker};
-use crate::items::{Node, NodeCtx};
-use crate::utils::{ParseLineStart, ParseSpaces};
-use crate::{Input, Parse};
+use crate::utils::{Indentation, Indents, ParseQuoteMarker, ParseSpaces};
+use crate::{Input, Node, NodeCtx, Parse};
 
 #[rustfmt::skip]
 /// A quote (in HTML, `<blockquote>`).
@@ -38,7 +36,7 @@ use crate::{Input, Parse};
 /// renders like this:
 ///
 /// Not > a quote
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Quote {
     pub content: Vec<Node>,
 }
@@ -57,12 +55,10 @@ impl Parse for ParseQuote<'_> {
     type Output = Quote;
 
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
-        input.parse(ParseLineStart)?;
         let mut input = input.start();
 
         let indent = input.parse(ParseSpaces)?;
         input.parse(ParseQuoteMarker)?;
-        input.set_line_start(true);
 
         let ind = self.ind.indent(indent);
         let ind = ind.push(Indentation::QuoteMarker);
@@ -70,5 +66,9 @@ impl Parse for ParseQuote<'_> {
 
         input.apply();
         Some(Quote { content })
+    }
+
+    fn can_parse(&self, input: &mut Input) -> bool {
+        input.can_parse(ParseQuoteMarker)
     }
 }

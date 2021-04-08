@@ -1,15 +1,10 @@
-use crate::indent::Indents;
-use crate::utils::{ParseLineEnd, ParseLineStart};
+use crate::utils::{Indents, ParseLineEnd};
 use crate::{Input, Parse, WhileChar};
 
-/// A horizontal line, consisting of at least three dashes (`---`), stars
-/// (`***`) or underscores (`___`).
+/// A thematic break, consisting of at least three stars (`***`) or underscores
+/// (`___`).
 ///
-/// TODO: Also allow `---` as heading underline, and make sure that thematic
-/// breaks are preceded by an empty line.
-///
-/// The line must be at the beginning of a line and can't contain any other
-/// content except whitespace.
+/// This is usually rendered as a horizontal ruler (`<hr>`).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ThematicBreak {
     pub len: usize,
@@ -32,11 +27,7 @@ impl Parse for ParseThematicBreak<'_> {
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
-        input.parse(ParseLineStart)?;
-
-        let parser = if input.parse("---").is_some() {
-            WhileChar('-')
-        } else if input.parse("***").is_some() {
+        let parser = if input.parse("***").is_some() {
             WhileChar('*')
         } else if input.parse("___").is_some() {
             WhileChar('_')
@@ -54,11 +45,11 @@ impl Parse for ParseThematicBreak<'_> {
 
 #[test]
 fn test_hr() {
-    use crate::items::LineBreak;
+    use crate::utils::ParseLineBreak;
 
-    let mut input = Input::new("-------\n---\n--\n---");
+    let mut input = Input::new("*******\n***\n**\n___");
     let parse_hr = ParseThematicBreak::default();
-    let parse_br = LineBreak::parser(Default::default());
+    let parse_br = ParseLineBreak(Default::default());
 
     assert_eq!(input.parse(parse_hr), Some(ThematicBreak { len: 7 }));
     input.parse(parse_br).unwrap();

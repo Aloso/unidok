@@ -1,6 +1,5 @@
-use crate::indent::Indents;
 use crate::str::StrSlice;
-use crate::utils::UntilChar;
+use crate::utils::{Indents, UntilChar};
 use crate::{Input, Parse};
 
 use super::{Segment, SegmentCtx};
@@ -29,7 +28,7 @@ use super::{Segment, SegmentCtx};
 /// - Consider adding support for regular `[]()` CommonMark links for better
 ///   compatibility.
 /// - Consider adding support for auto-links.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Image {
     pub href: StrSlice,
     pub alt: Option<Vec<Segment>>,

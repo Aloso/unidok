@@ -1,6 +1,6 @@
 use std::num::NonZeroU8;
 
-use crate::line_breaks::INode;
+use super::ParseNSpaces;
 use crate::{Input, Parse};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -24,6 +24,10 @@ impl Parse for ParseQuoteMarker {
         input.parse('>')?;
         Some(())
     }
+
+    fn can_parse(&self, input: &mut Input) -> bool {
+        input.rest().starts_with('>')
+    }
 }
 
 /// This type contains an immutable linked list of indentation nodes.
@@ -46,7 +50,7 @@ impl Parse for ParseQuoteMarker {
 ///   correct indentation level)
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Default)]
 pub struct Indents<'a> {
-    pub(super) root: INode<'a>,
+    root: INode<'a>,
 }
 
 impl<'a> Indents<'a> {
@@ -65,5 +69,55 @@ impl<'a> Indents<'a> {
             },
             None => *self,
         }
+    }
+}
+
+/// Parses a line break, including indentation (whitespace and quote markers) on
+/// the next line, if present.
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct ParseLineBreak<'a>(pub Indents<'a>);
+
+impl Parse for ParseLineBreak<'_> {
+    type Output = ();
+
+    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+        if !input.is_empty() {
+            let mut input = input.start();
+
+            input.parse('\n')?;
+
+            if !matches!(input.peek_char(), Some('\n') | None) {
+                parse_recursive(self.0.root, &mut input)?;
+            }
+
+            input.apply();
+        }
+
+        Some(())
+    }
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub(crate) enum INode<'a> {
+    Node { ind: Indentation, next: &'a INode<'a> },
+    Tail,
+}
+
+impl Default for INode<'_> {
+    fn default() -> Self {
+        INode::Tail
+    }
+}
+
+fn parse_recursive(node: INode<'_>, input: &mut Input) -> Option<()> {
+    match node {
+        INode::Node { ind, next } => {
+            parse_recursive(*next, input)?;
+            match ind {
+                Indentation::Spaces(s) => input.parse(ParseNSpaces(s.into())),
+                Indentation::QuoteMarker => input.parse(ParseQuoteMarker),
+            }
+        }
+        INode::Tail => Some(()),
     }
 }

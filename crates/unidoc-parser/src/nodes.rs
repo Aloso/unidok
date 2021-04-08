@@ -1,14 +1,14 @@
 use crate::containers::*;
-use crate::items::*;
 use crate::leaves::*;
+use crate::utils::Indents;
 use crate::{Input, Parse};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Node {
     // Leaves
     CodeBlock(CodeBlock),
     Comment(Comment),
-    Line(Line),
+    Paragraph(Paragraph),
     Heading(Heading),
     Table(Table),
     ThematicBreak(ThematicBreak),
@@ -66,7 +66,7 @@ impl Parse for ParseNode<'_> {
         } else if let Some(table) = input.parse(Table::parser(ind)) {
             Some(Node::Table(table))
         } else {
-            Some(Node::Line(input.parse(Line::parser(ind, context))?))
+            Some(Node::Paragraph(input.parse(Paragraph::parser(ind, context))?))
         }
     }
 }

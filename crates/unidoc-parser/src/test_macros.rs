@@ -37,8 +37,8 @@ macro_rules! braces {
 
 macro_rules! ln {
     ($( $t:ident($e:expr) ),* $(,)?) => {
-        crate::statics::StaticNode::Line(
-            crate::statics::StaticLine {
+        crate::statics::StaticNode::Paragraph(
+            crate::statics::StaticParagraph {
                 segments: &[
                     $( crate::statics::StaticSegment::$t($e) ),*
                 ]

@@ -1,5 +1,4 @@
-use crate::indent::Indents;
-use crate::items::LineBreak;
+use crate::utils::{Indents, ParseLineBreak};
 use crate::{Input, Parse};
 
 /// A math block.
@@ -77,7 +76,7 @@ impl Parse for ParseMathContent<'_> {
                         break;
                     }
                     '\n' => {
-                        if input.parse(LineBreak::parser(self.ind)).is_some() {
+                        if input.parse(ParseLineBreak(self.ind)).is_some() {
                             text.push('\n');
                             continue;
                         }

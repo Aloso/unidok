@@ -1,6 +1,5 @@
-use crate::indent::Indents;
-use crate::items::{Node, NodeCtx};
-use crate::{Input, Parse};
+use crate::utils::Indents;
+use crate::{Input, Node, NodeCtx, Parse};
 
 /// A block surrounded by `{braces}`. The braces are not visible in the
 /// generated document.
@@ -29,7 +28,7 @@ use crate::{Input, Parse};
 /// Containing multiple paragraphs. }
 /// | ===
 /// ````
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Braces {
     pub content: Vec<Node>,
 }
@@ -63,12 +62,12 @@ impl Parse for ParseBraces<'_> {
 #[cfg(test)]
 mod tests {
     use crate::containers::Bullet;
-    use crate::indent::Indents;
     use crate::inlines::Braces;
     use crate::statics::{
         StaticEscaped, StaticList, StaticMath, StaticNode as SN, StaticQuote,
-        StaticSegment, StaticTable,
+        StaticSegment, StaticTable, StaticTableRow,
     };
+    use crate::utils::Indents;
 
     #[test]
     fn test_braces() {
@@ -129,18 +128,17 @@ mod tests {
             ]
         );
         parse!(
-            "{\n|===\n| This | is \n| great! \n|===\n}",
+            "{\n| This | is \n| great! \n}",
             Braces::parser(Indents::new()),
             braces![
                 ln![],
                 SN::Table(StaticTable {
-                    eq: 3,
                     content: &[
-                        &[
+                        StaticTableRow::Content(&[
                             &[StaticSegment::Text(" This ")],
                             &[StaticSegment::Text(" is ")],
-                        ],
-                        &[&[StaticSegment::Text(" great! ")]]
+                        ]),
+                        StaticTableRow::Content(&[&[StaticSegment::Text(" great! ")]])
                     ]
                 }),
             ]

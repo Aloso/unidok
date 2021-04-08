@@ -1,13 +1,21 @@
-use crate::indent::{Indentation, Indents};
-use crate::items::{LineBreak, Node, NodeCtx};
-use crate::utils::{ParseLineEnd, ParseLineStart};
-use crate::{Parse, WhileChar};
+use crate::utils::{Indentation, Indents, ParseLineBreak, ParseLineEnd};
+use crate::{Node, NodeCtx, Parse, WhileChar};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct List {
     pub indent: u8,
     pub bullet: Bullet,
     pub content: Vec<Vec<Node>>,
+}
+
+impl List {
+    pub(crate) fn parser(ind: Indents<'_>) -> ParseList<'_> {
+        ParseList { ind }
+    }
+}
+
+pub(crate) struct ParseList<'a> {
+    ind: Indents<'a>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -17,12 +25,6 @@ pub enum Bullet {
     Star,
     Dot { start: u32 },
     Paren { start: u32 },
-}
-
-impl List {
-    pub(crate) fn parser(ind: Indents<'_>) -> ParseList<'_> {
-        ParseList { ind }
-    }
 }
 
 impl Bullet {
@@ -46,19 +48,13 @@ pub enum ListKind {
     Parens,
 }
 
-pub(crate) struct ParseList<'a> {
-    ind: Indents<'a>,
-}
-
 impl Parse for ParseList<'_> {
     type Output = List;
 
     fn parse(&self, input: &mut crate::Input) -> Option<Self::Output> {
-        input.parse(ParseLineStart)?;
         let mut input = input.start();
 
         let (indent, kind) = input.parse(ParseBullet)?;
-        input.set_line_start(true);
         let ind = self.ind.push(Indentation::spaces(indent));
 
         let mut content = Vec::new();
@@ -67,7 +63,7 @@ impl Parse for ParseList<'_> {
             content.push(input.parse(content_parser)?);
 
             let mut input2 = input.start();
-            if input2.parse(LineBreak::parser(self.ind)).is_some() {
+            if input2.parse(ParseLineBreak(self.ind)).is_some() {
                 if let Some((indent2, kind2)) = input2.parse(ParseBullet) {
                     if indent2 == indent && kind2 == kind {
                         input2.apply();

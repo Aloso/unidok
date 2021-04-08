@@ -1,7 +1,7 @@
-use crate::indent::Indents;
-use crate::items::LineBreak;
 use crate::str::StrSlice;
-use crate::utils::{If, ParseLineEnd, ParseLineStart, ParseNSpaces, ParseSpaces};
+use crate::utils::{
+    If, Indents, ParseLineBreak, ParseLineEnd, ParseNSpaces, ParseSpaces,
+};
 use crate::{Input, Parse, UntilChar, WhileChar};
 
 #[rustfmt::skip]
@@ -59,7 +59,7 @@ use crate::{Input, Parse, UntilChar, WhileChar};
 ///     ```
 ///
 /// You can configure unidoc to use `<i>` instead of `<span>` elements for syntax highlighting.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct CodeBlock {
     pub info: StrSlice,
     pub backticks: usize,
@@ -83,7 +83,6 @@ impl Parse for ParseCodeBlock<'_> {
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
-        input.parse(ParseLineStart)?;
         let indent = input.parse(ParseSpaces)?;
 
         input.parse("```")?;
@@ -92,7 +91,7 @@ impl Parse for ParseCodeBlock<'_> {
 
         let mut lines = Vec::new();
         loop {
-            input.parse(LineBreak::parser(self.ind))?;
+            input.parse(ParseLineBreak(self.ind))?;
             input.parse(ParseNSpaces(indent))?;
 
             if input.rest().starts_with("```") {

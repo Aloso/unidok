@@ -1,14 +1,12 @@
-use crate::indent::Indents;
-use crate::items::LineBreak;
 use crate::str::StrSlice;
-use crate::utils::{ParseLineStart, ParseSpaces};
+use crate::utils::{Indents, ParseLineBreak, ParseSpaces};
 use crate::{Input, Parse, UntilChar};
 
 /// A line comment.
 ///
 /// It starts with two slashes and must appear directly after a line break. The
 /// line break after the comment is ignored.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Comment {
     pub content: StrSlice,
 }
@@ -27,15 +25,18 @@ impl Parse for ParseComment<'_> {
     type Output = Comment;
 
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
-        input.parse(ParseLineStart)?;
         let mut input = input.start();
 
         input.parse(ParseSpaces);
         input.parse("//")?;
         let content = input.parse(UntilChar('\n'))?;
-        input.parse(LineBreak::parser(self.ind));
+        input.parse(ParseLineBreak(self.ind));
 
         input.apply();
         Some(Comment { content })
+    }
+
+    fn can_parse(&self, input: &mut Input) -> bool {
+        input.rest().starts_with("//")
     }
 }

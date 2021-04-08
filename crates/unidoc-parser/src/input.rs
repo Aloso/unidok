@@ -7,21 +7,16 @@ use crate::Parse;
 pub struct Input {
     text: Str,
     idx: usize,
-    is_line_start: bool,
 }
 
 impl Input {
     pub fn new(text: impl ToString) -> Self {
-        Input { text: text.to_string().into(), idx: 0, is_line_start: true }
-    }
-
-    pub fn is_line_start(&self) -> bool {
-        self.is_line_start
+        Input { text: text.to_string().into(), idx: 0 }
     }
 
     pub fn start(&mut self) -> ModifyInput<'_> {
-        let (prev_idx, prev_l_s) = (self.idx, self.is_line_start);
-        ModifyInput { input: self, prev_idx, prev_l_s }
+        let prev_idx = self.idx;
+        ModifyInput { input: self, prev_idx }
     }
 
     pub fn len(&self) -> usize {
@@ -50,12 +45,7 @@ impl Input {
 
     pub fn bump(&mut self, bytes: usize) -> StrSlice {
         self.idx += bytes;
-        self.is_line_start = false;
         self.text.get(self.idx - bytes..self.idx)
-    }
-
-    pub fn set_line_start(&mut self, is_line_start: bool) {
-        self.is_line_start = is_line_start;
     }
 
     pub fn peek_char(&self) -> Option<char> {
@@ -70,12 +60,15 @@ impl Input {
     pub fn parse<P: Parse>(&mut self, parser: P) -> Option<P::Output> {
         parser.parse(self)
     }
+
+    pub fn can_parse<P: Parse>(&mut self, parser: P) -> bool {
+        parser.can_parse(self)
+    }
 }
 
 pub struct ModifyInput<'a> {
     input: &'a mut Input,
     prev_idx: usize,
-    prev_l_s: bool,
 }
 
 impl ModifyInput<'_> {
@@ -86,7 +79,6 @@ impl ModifyInput<'_> {
     pub fn apply(&mut self) -> StrSlice {
         let prev = self.prev_idx;
         self.prev_idx = self.input.idx;
-        self.prev_l_s = self.input.is_line_start;
         self.prev_slice_bytes(self.input.idx - prev)
     }
 }
@@ -120,7 +112,6 @@ impl<'a> AsMut<Input> for ModifyInput<'a> {
 impl Drop for ModifyInput<'_> {
     fn drop(&mut self) {
         self.input.idx = self.prev_idx;
-        self.input.is_line_start = self.prev_l_s;
     }
 }
 
@@ -135,30 +126,14 @@ fn test_bump() {
 }
 
 #[test]
-fn test_line_start() {
-    use crate::items::LineBreak;
-
-    let mut input = Input::new("abcd\nabcd");
-    assert!(input.is_line_start());
-    input.bump(4);
-    assert!(!input.is_line_start());
-
-    input.parse(LineBreak::parser(Default::default())).unwrap();
-    assert!(input.is_line_start());
-    input.parse("abcd");
-    assert!(!input.is_line_start());
-}
-
-#[test]
 fn test_modify() {
     let mut input = Input::new("abcdef");
     {
         let mut input2 = input.start();
         input2.bump(1);
-        assert!(!input2.is_line_start());
+        assert_eq!(input2.rest(), "bcdef");
     }
     assert_eq!(input.rest(), "abcdef");
-    assert!(input.is_line_start());
 
     {
         let mut input3 = input.start();
@@ -201,12 +176,10 @@ fn test_modify() {
     }
     assert_eq!(input.rest(), "f");
 
-    input.set_line_start(true);
     {
         let mut input8 = input.start();
         input8.bump(1);
     }
-    assert!(input.is_line_start());
 
     assert_eq!(input.prev(), "abcde");
 }

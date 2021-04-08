@@ -1,8 +1,8 @@
 use crate::containers::*;
 use crate::inlines::*;
-use crate::items::*;
 use crate::leaves::*;
 use crate::str::StrSlice;
+use crate::Node;
 
 pub trait IsStatic {
     type Static: 'static;
@@ -161,11 +161,6 @@ impl_is_static! {
 
     identity Formatting;
 
-    pub struct StaticAttribute for Attribute {
-        pub is_separate_line: bool,
-        pub content: &'static str,
-    }
-
     pub struct StaticLink for Link {
         pub href: &'static str,
         pub text: Option<&'static [StaticSegment]>,
@@ -215,15 +210,22 @@ impl_is_static! {
     }
 
     pub struct StaticTable for Table {
-        pub eq: usize,
-        pub content: &'static [&'static [&'static [StaticSegment]]],
+        pub content: &'static [StaticTableRow],
     }
 
-    pub struct StaticLine for Line {
+    pub enum StaticTableRow for TableRow {
+        Content(&'static [&'static [StaticSegment]]),
+        Line(&'static [ColumnKind]),
+    }
+
+    identity ColumnKind;
+
+    pub struct StaticParagraph for Paragraph {
         pub segments: &'static [StaticSegment],
     }
 
     pub enum StaticSegment for Segment {
+        LineBreak(LineBreak),
         Text(&'static str),
         Escaped(StaticEscaped),
         Limiter(Limiter),
@@ -232,12 +234,11 @@ impl_is_static! {
         Link(StaticLink),
         Image(StaticImage),
         Macro(StaticMacro),
-        InlineAttribute(StaticAttribute),
         InlineFormat(StaticInlineFormat),
     }
 
     pub enum StaticNode for Node {
-        Line(StaticLine),
+        Paragraph(StaticParagraph),
         Comment(StaticComment),
         ThematicBreak(StaticThematicBreak),
         CodeBlock(StaticCodeBlock),

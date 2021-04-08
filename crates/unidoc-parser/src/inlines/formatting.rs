@@ -32,7 +32,7 @@ use super::Segment;
 /// consecutive line breaks (which introduce a new paragraph). Consider how this
 /// can be implemented and how it affects other parsers, e.g. headings or table
 /// cells which contain inline formatting.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct InlineFormat {
     pub formatting: Formatting,
     pub content: Vec<Segment>,

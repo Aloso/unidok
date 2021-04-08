@@ -1,9 +1,9 @@
-use crate::indent::Indents;
 use crate::inlines::Braces;
 use crate::str::StrSlice;
+use crate::utils::Indents;
 use crate::{Input, Parse, UntilChar};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Macro {
     pub name: StrSlice,
     pub args: Option<StrSlice>,
