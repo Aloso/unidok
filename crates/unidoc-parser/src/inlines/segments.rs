@@ -16,15 +16,16 @@ pub enum Segment {
     InlineFormat(InlineFormat),
 }
 
+// TODO: Think about braces *WITHOUT* macro, i.e.
+//
+// {some {text} and %{math} and @{macro content}!}
+
 impl Segment {
     pub(crate) fn parser(context: SegmentCtx, ind: Indents<'_>) -> ParseSegment<'_> {
         ParseSegment { ind, context }
     }
 
-    pub(crate) fn multi_parser(
-        context: SegmentCtx,
-        ind: Indents<'_>,
-    ) -> ParseSegments<'_> {
+    pub(crate) fn multi_parser(context: SegmentCtx, ind: Indents<'_>) -> ParseSegments<'_> {
         ParseSegments { ind, context }
     }
 }
@@ -43,7 +44,6 @@ pub(crate) struct ParseSegments<'a> {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SegmentCtx {
-    Attribute,
     Table,
     Braces,
     LinkOrImg,
@@ -64,12 +64,13 @@ impl Parse for ParseSegment<'_> {
             Some(Segment::Math(math))
         } else if let Some(text) = input.parse(Text::parser()) {
             Some(Segment::Text(text))
+        } else if let Some(mac) = input.parse(Macro::parser(self.ind)) {
+            Some(Segment::Macro(mac))
         } else if !input.is_empty() {
             match input.peek_char().unwrap() {
-                ']' if self.context == SegmentCtx::Attribute => None,
+                ']' if self.context == SegmentCtx::LinkOrImg => None,
                 '|' if self.context == SegmentCtx::Table => None,
                 '}' if self.context == SegmentCtx::Braces => None,
-                '>' if self.context == SegmentCtx::LinkOrImg => None,
                 '\n' => None,
                 c => Some(Segment::Text(Text(input.bump(c.len_utf8() as usize)))),
             }

@@ -27,10 +27,10 @@ impl Parse for ParseComment<'_> {
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
-        input.parse(ParseSpaces);
+        input.try_parse(ParseSpaces);
         input.parse("//")?;
         let content = input.parse(UntilChar('\n'))?;
-        input.parse(ParseLineBreak(self.ind));
+        input.try_parse(ParseLineBreak(self.ind));
 
         input.apply();
         Some(Comment { content })

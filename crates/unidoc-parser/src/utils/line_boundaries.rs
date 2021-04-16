@@ -9,8 +9,12 @@ impl Parse for ParseLineEnd {
 
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         match input.peek_char() {
-            Some('\n') | None => Some(()),
+            Some('\n' | '\r') | None => Some(()),
             _ => None,
         }
+    }
+
+    fn can_parse(&self, input: &mut Input) -> bool {
+        matches!(input.peek_char(), Some('\n' | '\r') | None)
     }
 }

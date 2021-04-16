@@ -7,7 +7,7 @@ use crate::{Input, Parse, UntilChar};
 pub struct Macro {
     pub name: StrSlice,
     pub args: Option<StrSlice>,
-    pub content: Option<Braces>,
+    pub content: Braces,
 }
 
 impl Macro {
@@ -29,14 +29,14 @@ impl Parse for ParseMacro<'_> {
         input.parse('@')?;
         let name = input.parse(ParseMacroName)?;
         let args = input.parse(ParseMacroArgs);
-        let content = input.parse(Braces::parser(self.ind));
+        let content = input.parse(Braces::parser(self.ind))?;
 
         input.apply();
         Some(Macro { name, args, content })
     }
 }
 
-struct ParseMacroName;
+pub(crate) struct ParseMacroName;
 
 impl Parse for ParseMacroName {
     type Output = StrSlice;
@@ -46,24 +46,21 @@ impl Parse for ParseMacroName {
             c.is_ascii_uppercase() || c.is_ascii_digit() || c == '_'
         }
 
-        match input.rest().find(|c| !is_macro_char(c)) {
-            Some(0) => None,
-            Some(no_match) => {
-                let rest = &input.rest()[no_match..];
-                if rest.starts_with(|c: char| c.is_alphanumeric()) {
-                    None
-                } else {
-                    let len = input.len() - rest.len();
-                    Some(input.bump(len))
-                }
+        if let Some(mat) = input.rest().find(|c| !is_macro_char(c)) {
+            let rest = &input.rest()[mat..];
+            if rest.starts_with(char::is_alphanumeric) {
+                None
+            } else {
+                let len = input.len() - rest.len();
+                Some(input.bump(len))
             }
-            None if input.is_empty() => None,
-            None => Some(input.bump(input.len())),
+        } else {
+            Some(input.bump(input.len()))
         }
     }
 }
 
-struct ParseMacroArgs;
+pub(crate) struct ParseMacroArgs;
 
 impl Parse for ParseMacroArgs {
     type Output = StrSlice;

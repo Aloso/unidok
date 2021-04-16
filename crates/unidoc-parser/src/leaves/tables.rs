@@ -35,7 +35,7 @@ impl Parse for ParseTable<'_> {
     type Output = Table;
 
     fn parse(&self, input: &mut crate::Input) -> Option<Self::Output> {
-        input.parse(If(input.rest().starts_with('|')));
+        input.parse(If(input.rest().starts_with('|')))?;
         let mut input = input.start();
 
         let ind = self.ind;
@@ -79,8 +79,7 @@ impl Parse for ParseContentRow<'_> {
         let mut contents = Vec::new();
 
         loop {
-            let content =
-                input.parse(Segment::multi_parser(SegmentCtx::Table, self.ind))?;
+            let content = input.parse(Segment::multi_parser(SegmentCtx::Table, self.ind))?;
 
             contents.push(content);
 

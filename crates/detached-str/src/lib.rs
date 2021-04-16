@@ -1,26 +1,111 @@
-use std::fmt;
-use std::ops::{Deref, Range, RangeFrom, RangeInclusive, RangeTo};
+//! A crate for borrowing strings without a lifetime.
+//!
+//! ## Example
+//!
+//! ```
+//! use detached_str::{Str, StrSlice};
+//!
+//! let string: Str = "Hello, world!".into();
+//! let slice: StrSlice = string.get(7..);
+//! assert_eq!(slice.to_str(&string), "world!");
+//! ```
+//!
+//! A `StrSlice` is "detached", i.e. the string content can only be accessed
+//! when you have a reference to the owned string. The owned string is immutable
+//! to ensure that string slices remain valid.
 
-/// An immutable string.
-#[derive(Clone, PartialEq, Eq)]
+use std::borrow::Cow;
+use std::fmt;
+use std::iter::FromIterator;
+use std::ops::Deref;
+use std::path::PathBuf;
+
+mod slice;
+#[cfg(test)]
+mod tests;
+
+pub use slice::{StrSlice, StrSliceIndex};
+
+/// An immutable string. It dereferences to a `&str` and can also be borrowed as
+/// a [`StrSlice`].
+#[derive(Clone, PartialEq, Eq, Default, Hash, PartialOrd, Ord)]
 pub struct Str(Box<str>);
 
 impl Str {
-    pub fn slice(&self) -> StrSlice {
-        StrSlice::new(0..self.len())
-    }
-
-    pub fn get<T>(&self, index: T) -> <StrSlice as OwnedIndex<T>>::Output
+    pub fn get<T>(&self, index: T) -> StrSlice
     where
-        StrSlice: OwnedIndex<T>,
+        StrSlice: StrSliceIndex<T>,
     {
-        self.slice().index(index)
+        StrSlice::new(0..self.len()).index(index)
     }
 }
 
 impl From<String> for Str {
     fn from(s: String) -> Self {
         Str(s.into_boxed_str())
+    }
+}
+
+impl<'a> From<&'a str> for Str {
+    fn from(s: &'a str) -> Self {
+        Str(s.to_string().into_boxed_str())
+    }
+}
+
+impl<'a> From<Cow<'a, str>> for Str {
+    fn from(s: Cow<'a, str>) -> Self {
+        Str(s.to_string().into_boxed_str())
+    }
+}
+
+impl FromIterator<char> for Str {
+    fn from_iter<T: IntoIterator<Item = char>>(iter: T) -> Self {
+        let s: String = iter.into_iter().collect();
+        s.into()
+    }
+}
+
+impl<'a> FromIterator<&'a str> for Str {
+    fn from_iter<T: IntoIterator<Item = &'a str>>(iter: T) -> Self {
+        let s: String = iter.into_iter().collect();
+        s.into()
+    }
+}
+
+impl FromIterator<String> for Str {
+    fn from_iter<T: IntoIterator<Item = String>>(iter: T) -> Self {
+        let s: String = iter.into_iter().collect();
+        s.into()
+    }
+}
+
+impl From<Str> for Box<str> {
+    fn from(s: Str) -> Self {
+        s.0
+    }
+}
+
+impl From<Str> for String {
+    fn from(s: Str) -> Self {
+        s.0.into()
+    }
+}
+
+impl From<Str> for Cow<'_, str> {
+    fn from(s: Str) -> Self {
+        Cow::Owned(s.0.into())
+    }
+}
+
+impl From<Str> for PathBuf {
+    fn from(s: Str) -> Self {
+        s.0.to_string().into()
+    }
+}
+
+impl AsRef<str> for Str {
+    fn as_ref(&self) -> &str {
+        self.0.as_ref()
     }
 }
 
@@ -41,128 +126,5 @@ impl Deref for Str {
 
     fn deref(&self) -> &Self::Target {
         &self.0
-    }
-}
-
-/// A memory efficient string slice without a lifetime.
-///
-/// To get the content of the string slice, the original string
-/// must be still around.
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Default)]
-pub struct StrSlice {
-    start: usize,
-    end: usize,
-}
-
-impl StrSlice {
-    fn new(range: Range<usize>) -> Self {
-        StrSlice { start: range.start, end: range.end }
-    }
-
-    /// Get a reference to the str slice's start.
-    pub fn start(&self) -> usize {
-        self.start
-    }
-
-    /// Get a reference to the str slice's end.
-    pub fn end(&self) -> usize {
-        self.end
-    }
-
-    pub fn range(&self) -> Range<usize> {
-        self.start..self.end
-    }
-
-    pub fn len(&self) -> usize {
-        self.end - self.start
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.end == self.start
-    }
-
-    pub fn get<T>(&self, index: T) -> <Self as OwnedIndex<T>>::Output
-    where
-        Self: OwnedIndex<T>,
-    {
-        self.index(index)
-    }
-}
-
-impl fmt::Debug for StrSlice {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "StrSlice @ {}..{}", self.start, self.end)
-    }
-}
-
-pub trait OwnedIndex<T> {
-    type Output;
-
-    fn index(&self, index: T) -> Self::Output;
-}
-
-impl OwnedIndex<Range<usize>> for StrSlice {
-    type Output = StrSlice;
-
-    fn index(&self, index: Range<usize>) -> Self::Output {
-        let (start, end) = (self.start + index.start, self.start + index.end);
-        if start > end || end > self.end {
-            panic!(
-                "Range {}..{} too big to index a StrSlice with length {}",
-                index.start,
-                index.end,
-                self.len(),
-            );
-        }
-        StrSlice::new(start..end)
-    }
-}
-
-impl OwnedIndex<RangeInclusive<usize>> for StrSlice {
-    type Output = StrSlice;
-
-    fn index(&self, index: RangeInclusive<usize>) -> Self::Output {
-        let (start, end) = (self.start + index.start(), self.start + index.end() + 1);
-        if start > end || end > self.end {
-            panic!(
-                "Range {}..={} too big to index a StrSlice with length {}",
-                index.start(),
-                index.end(),
-                self.len(),
-            );
-        }
-        StrSlice::new(start..end)
-    }
-}
-
-impl OwnedIndex<RangeFrom<usize>> for StrSlice {
-    type Output = StrSlice;
-
-    fn index(&self, index: RangeFrom<usize>) -> Self::Output {
-        let start = self.start + index.start;
-        if start > self.end {
-            panic!(
-                "Range {}.. too big to index a StrSlice with length {}",
-                index.start,
-                self.len(),
-            );
-        }
-        StrSlice::new(start..self.end)
-    }
-}
-
-impl OwnedIndex<RangeTo<usize>> for StrSlice {
-    type Output = StrSlice;
-
-    fn index(&self, index: RangeTo<usize>) -> Self::Output {
-        let end = self.start + index.end;
-        if end > self.end {
-            panic!(
-                "Range ..{} too big to index a StrSlice with length {}",
-                index.end,
-                self.len(),
-            );
-        }
-        StrSlice::new(self.start..end)
     }
 }

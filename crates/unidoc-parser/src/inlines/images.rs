@@ -1,37 +1,29 @@
-use crate::str::StrSlice;
-use crate::utils::{Indents, UntilChar};
+use crate::utils::Indents;
 use crate::{Input, Parse};
 
+use super::links::{ParseHref, ParseQuotedText};
 use super::{Segment, SegmentCtx};
 
 /// An image that should be shown in the document.
 ///
 /// ### Syntax
 ///
-/// The syntax is similar to links, except that on the right is the alt text,
+/// The syntax is similar to links, except that on the left is the alt text,
 /// not the content:
 ///
 /// ```markdown
-/// <!https://www.example.com/image.jpg Alt text>
+/// ![Alt text](https://www.example.com/image.jpg "a title")
 /// ```
-///
-/// Adding the `[link]` attribute wraps the image in a link, so users can click
-/// on the image to open it. Adding the `[link, _blank]` makes the image open in
-/// a new tab. This can also be configured globally.
 ///
 /// The alt text can be wrapped in `{braces}` to allow line breaks etc.
 ///
 /// If no text is directly above and below the image, the `.block` CSS class is
 /// added to the image.
-///
-/// #### TODO:
-/// - Consider adding support for regular `[]()` CommonMark links for better
-///   compatibility.
-/// - Consider adding support for auto-links.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Image {
-    pub href: StrSlice,
-    pub alt: Option<Vec<Segment>>,
+    pub href: String,
+    pub alt: Vec<Segment>,
+    pub title: Option<String>,
 }
 
 impl Image {
@@ -50,17 +42,14 @@ impl Parse for ParseImage<'_> {
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
-        input.parse("<!")?;
-        let href = input.parse(UntilChar(|c| matches!(c, ' ' | '\n' | '>')))?;
-        let alt = if input.parse(' ').is_some() || input.parse('\n').is_some() {
-            let parser = Segment::multi_parser(SegmentCtx::LinkOrImg, self.ind);
-            Some(input.parse(parser)?)
-        } else {
-            None
-        };
-        input.parse('>')?;
+        input.parse("![")?;
+        let alt = input.parse(Segment::multi_parser(SegmentCtx::LinkOrImg, self.ind))?;
+        input.parse("](")?;
+        let href = input.parse(ParseHref)?;
+        let title = input.parse(ParseQuotedText);
+        input.parse(')')?;
 
         input.apply();
-        Some(Image { href, alt })
+        Some(Image { href, alt, title })
     }
 }

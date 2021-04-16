@@ -122,13 +122,7 @@ fn test_math() {
     let mut input = Input::new(r#"%{A}%{f() + g(h(%{}))}%{\}\(()}%{ \A\B + \(A\B\) }"#);
 
     assert_eq!(input.parse(ParseMath::default()), Some(Math { text: "A".into() }));
-    assert_eq!(
-        input.parse(ParseMath::default()),
-        Some(Math { text: "f() + g(h(%{}))".into() })
-    );
+    assert_eq!(input.parse(ParseMath::default()), Some(Math { text: "f() + g(h(%{}))".into() }));
     assert_eq!(input.parse(ParseMath::default()), Some(Math { text: "}(()".into() }));
-    assert_eq!(
-        input.parse(ParseMath::default()),
-        Some(Math { text: r#" \A\B + (A\B) "#.into() })
-    );
+    assert_eq!(input.parse(ParseMath::default()), Some(Math { text: r#" \A\B + (A\B) "#.into() }));
 }

@@ -25,18 +25,13 @@ impl Parse for ParseText {
 
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         fn is_special(c: char) -> bool {
-            matches!(
-                c,
-                '\n' | // block elements
-                '*' | '_' | '~' | '^' | '`' | // inline
-                '\\' | '$' | // escape, limiter
-                '<' | // links, images
-                '%' | // math
-                '[' | // attributes
-                '@' | // macros
-                '{' | '}' | // braces, macro bodies
-                '|' // table cells
-            )
+            matches!(c, '\n') // block comments
+                || matches!(c, '*' | '_' | '~' | '^' | '`' | '#') // inline
+                || matches!(c, '\\' | '$') // escape, limiter
+                || matches!(c, '!' | '[' | ']') // links, images
+                || matches!(c, '%' | '@') // math, macros
+                || matches!(c, '}' | '|') // macro bodies, table cells
+                || matches!(c, '<') // HTML
         }
 
         if input.is_empty() {

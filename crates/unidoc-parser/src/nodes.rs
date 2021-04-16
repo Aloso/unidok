@@ -16,6 +16,7 @@ pub enum Node {
     // Containers
     List(List),
     Quote(Quote),
+    BlockMacro(BlockMacro),
 }
 
 impl Node {
@@ -49,7 +50,6 @@ impl Parse for ParseNode<'_> {
 
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         let ind = self.ind;
-        let context = self.context;
 
         if let Some(comment) = input.parse(Comment::parser(ind)) {
             Some(Node::Comment(comment))
@@ -65,9 +65,25 @@ impl Parse for ParseNode<'_> {
             Some(Node::Quote(quote))
         } else if let Some(table) = input.parse(Table::parser(ind)) {
             Some(Node::Table(table))
+        } else if let Some(mac) = input.parse(BlockMacro::parser(ind)) {
+            Some(Node::BlockMacro(mac))
         } else {
-            Some(Node::Paragraph(input.parse(Paragraph::parser(ind, context))?))
+            Some(Node::Paragraph(input.parse(Paragraph::parser(ind, self.context))?))
         }
+    }
+
+    fn can_parse(&self, input: &mut Input) -> bool {
+        let ind = self.ind;
+
+        input.can_parse(Comment::parser(ind))
+            || input.can_parse(ThematicBreak::parser(ind))
+            || input.can_parse(CodeBlock::parser(ind))
+            || input.can_parse(Heading::parser(ind))
+            || input.can_parse(List::parser(ind))
+            || input.can_parse(Quote::parser(ind))
+            || input.can_parse(Table::parser(ind))
+            || input.can_parse(BlockMacro::parser(ind))
+            || input.can_parse(Paragraph::parser(ind, self.context))
     }
 }
 

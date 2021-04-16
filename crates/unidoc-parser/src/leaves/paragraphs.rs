@@ -2,7 +2,7 @@ use super::*;
 use crate::containers::*;
 use crate::inlines::{LineBreak, Segment, SegmentCtx};
 use crate::utils::{Indents, ParseLineBreak, ParseSpaces};
-use crate::{NodeCtx, Parse};
+use crate::{Input, NodeCtx, Parse};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Paragraph {
@@ -23,7 +23,7 @@ impl Paragraph {
 impl Parse for ParseParagraph<'_> {
     type Output = Paragraph;
 
-    fn parse(&self, input: &mut crate::Input) -> Option<Self::Output> {
+    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         let context = match self.context {
             NodeCtx::Braces => SegmentCtx::Braces,
             NodeCtx::ContainerOrGlobal => SegmentCtx::Other,
@@ -39,16 +39,9 @@ impl Parse for ParseParagraph<'_> {
                 if input.parse(ParseLineBreak(self.ind)).is_some() {
                     let mut input2 = input.start();
                     let offset = input2.parse(ParseSpaces)?;
-                    let ind = self.ind.indent(offset);
+                    let ind = self.ind.push_indent(offset);
 
-                    if !input2.can_parse(CodeBlock::parser(ind))
-                        && !input2.can_parse(Comment::parser(ind))
-                        && !input2.can_parse(Heading::parser(ind))
-                        && !input2.can_parse(ThematicBreak::parser(ind))
-                        && !input2.can_parse(Table::parser(ind))
-                        && !input2.can_parse(List::parser(ind))
-                        && !input2.can_parse(Quote::parser(ind))
-                    {
+                    if !can_parse_block(&mut input2, ind) {
                         input2.apply();
                         if segments.last() == Some(&Segment::LineBreak(LineBreak)) {
                             break;
@@ -67,4 +60,14 @@ impl Parse for ParseParagraph<'_> {
             Some(Paragraph { segments })
         }
     }
+}
+
+fn can_parse_block(input: &mut Input, ind: Indents) -> bool {
+    input.can_parse(CodeBlock::parser(ind))
+        || input.can_parse(Comment::parser(ind))
+        || input.can_parse(Heading::parser(ind))
+        || input.can_parse(ThematicBreak::parser(ind))
+        || input.can_parse(Table::parser(ind))
+        || input.can_parse(List::parser(ind))
+        || input.can_parse(Quote::parser(ind))
 }

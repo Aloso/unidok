@@ -9,11 +9,12 @@ use crate::{Input, Parse, WhileChar};
 /// ```
 ///
 /// A single backslash applies to the next ASCII character that fulfills the
-/// above criteria. Exceptions are inline formatting characters (`` * _ ` ~ ^
-/// ``): When a backslash is followed by one of these characters, it can escape
-/// an arbitrary number of the same consecutive character.
+/// above criteria. Exceptions are inline formatting characters
+/// (`` * _ ` ~ ^ # ``): When a backslash is followed by one of these
+/// characters, it can escape an arbitrary number of the same consecutive
+/// character.
 ///
-/// Example: `\***text\***` results in all 5 stars to be displayed as-is. You
+/// Example: `\***text\***` results in all 6 stars to be displayed as-is. You
 /// can prevent this by inserting a limiter (`$`): `\*$**text**` means that only
 /// one star is displayed, followed by bold text.
 #[derive(Debug, Clone, PartialEq, Eq)]

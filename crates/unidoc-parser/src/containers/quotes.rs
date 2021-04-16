@@ -1,4 +1,4 @@
-use crate::utils::{Indentation, Indents, ParseQuoteMarker, ParseSpaces};
+use crate::utils::{Indents, ParseQuoteMarker, ParseSpaces};
 use crate::{Input, Node, NodeCtx, Parse};
 
 #[rustfmt::skip]
@@ -57,11 +57,11 @@ impl Parse for ParseQuote<'_> {
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
-        let indent = input.parse(ParseSpaces)?;
-        input.parse(ParseQuoteMarker)?;
+        let ind = self.ind.push_indent(input.parse(ParseSpaces)?);
 
-        let ind = self.ind.indent(indent);
-        let ind = ind.push(Indentation::QuoteMarker);
+        input.parse(ParseQuoteMarker)?;
+        let ind = ind.push_quote();
+
         let content = input.parse(Node::multi_parser(NodeCtx::ContainerOrGlobal, ind))?;
 
         input.apply();

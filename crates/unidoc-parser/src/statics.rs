@@ -141,12 +141,14 @@ impl_is_static! {
     identity usize;
     identity u8;
     identity bool;
+    identity ();
 
     pub struct StaticEscaped for Escaped {
         pub text: &'static str,
     }
 
     pub struct StaticBraces for Braces {
+        pub first_line: Option<&'static [StaticSegment]>,
         pub content: &'static [StaticNode],
     }
 
@@ -163,18 +165,20 @@ impl_is_static! {
 
     pub struct StaticLink for Link {
         pub href: &'static str,
-        pub text: Option<&'static [StaticSegment]>,
+        pub text: &'static [StaticSegment],
+        pub title: Option<&'static str>,
     }
 
     pub struct StaticImage for Image {
         pub href: &'static str,
-        pub alt: Option<&'static [StaticSegment]>,
+        pub alt: &'static [StaticSegment],
+        pub title: Option<&'static str>,
     }
 
     pub struct StaticMacro for Macro {
         pub name: &'static str,
         pub args: Option<&'static str>,
-        pub content: Option<StaticBraces>,
+        pub content: StaticBraces,
     }
 
     pub struct StaticComment for Comment {
@@ -198,7 +202,7 @@ impl_is_static! {
     }
 
     pub struct StaticList for List {
-        pub indent: u8,
+        pub indent_spaces: u8,
         pub bullet: Bullet,
         pub content: &'static [&'static [StaticNode]],
     }

@@ -1,9 +1,9 @@
-use crate::utils::{Indentation, Indents, ParseLineBreak, ParseLineEnd};
+use crate::utils::{Indents, ParseLineEnd};
 use crate::{Node, NodeCtx, Parse, WhileChar};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct List {
-    pub indent: u8,
+    pub indent_spaces: u8,
     pub bullet: Bullet,
     pub content: Vec<Vec<Node>>,
 }
@@ -54,8 +54,8 @@ impl Parse for ParseList<'_> {
     fn parse(&self, input: &mut crate::Input) -> Option<Self::Output> {
         let mut input = input.start();
 
-        let (indent, kind) = input.parse(ParseBullet)?;
-        let ind = self.ind.push(Indentation::spaces(indent));
+        let (indent_spaces, bullet) = input.parse(ParseBullet { first: true })?;
+        let ind = self.ind.push_indent(indent_spaces);
 
         let mut content = Vec::new();
         loop {
@@ -63,25 +63,24 @@ impl Parse for ParseList<'_> {
             content.push(input.parse(content_parser)?);
 
             let mut input2 = input.start();
-            if input2.parse(ParseLineBreak(self.ind)).is_some() {
-                if let Some((indent2, kind2)) = input2.parse(ParseBullet) {
-                    if indent2 == indent && kind2 == kind {
-                        input2.apply();
-                        continue;
-                    }
-                } else {
-                    break;
+            if let Some((is, b)) = input2.parse(ParseBullet { first: false }) {
+                if is == indent_spaces && b.kind() == bullet.kind() {
+                    input2.apply();
+                    continue;
                 }
             }
             break;
         }
 
         input.apply();
-        Some(List { indent, bullet: kind, content })
+        Some(List { indent_spaces, bullet, content })
     }
 }
 
-struct ParseBullet;
+struct ParseBullet {
+    #[allow(unused)]
+    first: bool,
+}
 
 impl Parse for ParseBullet {
     type Output = (u8, Bullet);
@@ -94,6 +93,8 @@ impl Parse for ParseBullet {
             return None;
         }
         let indent = indent as u8 + 2;
+
+        // TODO: If first == true, require number before `.` or `)`
 
         let result = match input.peek_char() {
             Some('-') => (indent, Bullet::Dash),

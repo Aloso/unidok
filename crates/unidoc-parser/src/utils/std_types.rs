@@ -2,12 +2,11 @@ use crate::str::StrSlice;
 use crate::{Input, Parse};
 
 impl Parse for char {
-    type Output = char;
+    type Output = StrSlice;
 
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         if input.rest().starts_with(*self) {
-            input.bump(self.len_utf8() as usize);
-            Some(*self)
+            Some(input.bump(self.len_utf8() as usize))
         } else {
             None
         }

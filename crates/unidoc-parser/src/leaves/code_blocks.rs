@@ -1,7 +1,5 @@
 use crate::str::StrSlice;
-use crate::utils::{
-    If, Indents, ParseLineBreak, ParseLineEnd, ParseNSpaces, ParseSpaces,
-};
+use crate::utils::{If, Indents, ParseLineBreak, ParseLineEnd, ParseNSpaces, ParseSpaces};
 use crate::{Input, Parse, UntilChar, WhileChar};
 
 #[rustfmt::skip]

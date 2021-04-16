@@ -1,18 +1,12 @@
 use std::num::NonZeroU8;
 
-use super::ParseNSpaces;
+use super::{Or, ParseAtMostNSpaces, ParseLineEnd};
 use crate::{Input, Parse};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Indentation {
+enum Indentation {
     Spaces(NonZeroU8),
     QuoteMarker,
-}
-
-impl Indentation {
-    pub(crate) fn spaces(n: u8) -> Self {
-        Indentation::Spaces(NonZeroU8::new(n).unwrap())
-    }
 }
 
 pub(crate) struct ParseQuoteMarker;
@@ -58,15 +52,15 @@ impl<'a> Indents<'a> {
         Indents { root: INode::Tail }
     }
 
-    pub fn push(&'a self, ind: Indentation) -> Self {
-        Indents { root: INode::Node { ind, next: &self.root } }
+    pub fn push_quote(&'a self) -> Self {
+        Indents { root: INode::Node { ind: Indentation::QuoteMarker, next: &self.root } }
     }
 
-    pub fn indent(&'a self, spaces: u8) -> Self {
+    pub fn push_indent(&'a self, spaces: u8) -> Self {
         match NonZeroU8::new(spaces) {
-            Some(ind) => Indents {
-                root: INode::Node { ind: Indentation::Spaces(ind), next: &self.root },
-            },
+            Some(ind) => {
+                Indents { root: INode::Node { ind: Indentation::Spaces(ind), next: &self.root } }
+            }
             None => *self,
         }
     }
@@ -84,10 +78,10 @@ impl Parse for ParseLineBreak<'_> {
         if !input.is_empty() {
             let mut input = input.start();
 
-            input.parse('\n')?;
+            input.parse(Or('\n', Or("\r\n", '\r')))?;
 
-            if !matches!(input.peek_char(), Some('\n') | None) {
-                parse_recursive(self.0.root, &mut input)?;
+            if let State::Error = parse_indentation_rec(self.0.root, &mut input) {
+                return None;
             }
 
             input.apply();
@@ -98,7 +92,7 @@ impl Parse for ParseLineBreak<'_> {
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub(crate) enum INode<'a> {
+enum INode<'a> {
     Node { ind: Indentation, next: &'a INode<'a> },
     Tail,
 }
@@ -109,15 +103,120 @@ impl Default for INode<'_> {
     }
 }
 
-fn parse_recursive(node: INode<'_>, input: &mut Input) -> Option<()> {
+enum State {
+    Continue,
+    Done,
+    Error,
+}
+
+fn parse_indentation_rec(node: INode<'_>, input: &mut Input) -> State {
     match node {
         INode::Node { ind, next } => {
-            parse_recursive(*next, input)?;
-            match ind {
-                Indentation::Spaces(s) => input.parse(ParseNSpaces(s.into())),
-                Indentation::QuoteMarker => input.parse(ParseQuoteMarker),
+            let prev_state = parse_indentation_rec(*next, input);
+            if let State::Continue = prev_state {
+                match ind {
+                    Indentation::Spaces(s) => {
+                        let s: u8 = s.into();
+                        match input.parse(ParseAtMostNSpaces(s)) {
+                            Some(n) if n == s => State::Continue,
+                            Some(_) if input.can_parse(ParseLineEnd) => State::Done,
+                            _ => State::Error,
+                        }
+                    }
+                    Indentation::QuoteMarker => match input.parse(ParseQuoteMarker) {
+                        None if input.can_parse(ParseLineEnd) => State::Done,
+                        Some(_) => State::Continue,
+                        _ => State::Error,
+                    },
+                }
+            } else {
+                prev_state
             }
         }
-        INode::Tail => Some(()),
+        INode::Tail => State::Continue,
     }
+}
+
+#[test]
+fn test_no_indentation() {
+    let no_ind = Indents::new();
+
+    parse!("\n", ParseLineBreak(no_ind), ());
+    parse!("", ParseLineBreak(no_ind), ());
+    parse!("x", ParseLineBreak(no_ind), None);
+    parse!(" ", ParseLineBreak(no_ind), None);
+}
+
+#[test]
+fn test_spaces_indentation() {
+    let no_ind = Indents::new();
+    let two_ind = no_ind.push_indent(2);
+
+    parse!("", ParseLineBreak(two_ind), ());
+    parse!("  ", ParseLineBreak(two_ind), None);
+    parse!("\n", ParseLineBreak(two_ind), ());
+    parse!("\n ", ParseLineBreak(two_ind), ());
+    parse!("\n  ", ParseLineBreak(two_ind), ());
+    parse!("\n   ", ParseLineBreak(two_ind), ());
+    parse!("\n\n", ParseLineBreak(two_ind), ());
+    parse!("\n \n", ParseLineBreak(two_ind), ());
+    parse!("\n  \n", ParseLineBreak(two_ind), ());
+    parse!("\n >", ParseLineBreak(two_ind), None);
+    parse!("\n  >", ParseLineBreak(two_ind), ());
+    parse!("\n   >", ParseLineBreak(two_ind), ());
+    parse!("\r\n  >", ParseLineBreak(two_ind), ());
+    parse!("\r  >", ParseLineBreak(two_ind), ());
+}
+
+#[test]
+fn test_space_and_quote_indentation() {
+    let no_ind = Indents::new();
+    let two_ind = no_ind.push_indent(2);
+    let three_ind = two_ind.push_quote();
+
+    parse!(">", ParseLineBreak(three_ind), None);
+    parse!("\n", ParseLineBreak(three_ind), ());
+    parse!("\n  ", ParseLineBreak(three_ind), ());
+    parse!("\n  > X\n", ParseLineBreak(three_ind), ());
+    parse!("\n  > \n", ParseLineBreak(three_ind), ());
+    parse!("\n  >\n", ParseLineBreak(three_ind), ());
+    parse!("\n  \n", ParseLineBreak(three_ind), ());
+    parse!("\n \n", ParseLineBreak(three_ind), ());
+    parse!("\n\n", ParseLineBreak(three_ind), ());
+    parse!("\n  X\n", ParseLineBreak(three_ind), None);
+}
+
+#[test]
+fn test_quote_indentation() {
+    let no_ind = Indents::new();
+    let one_ind = no_ind.push_quote();
+
+    parse!("", ParseLineBreak(one_ind), ());
+    parse!(">", ParseLineBreak(one_ind), None);
+    parse!("\n", ParseLineBreak(one_ind), ());
+    parse!("\n>", ParseLineBreak(one_ind), ());
+    parse!("\n> ", ParseLineBreak(one_ind), ());
+    parse!("\n\n", ParseLineBreak(one_ind), ());
+    parse!("\n>\n", ParseLineBreak(one_ind), ());
+    parse!("\n> \n", ParseLineBreak(one_ind), ());
+}
+
+#[test]
+fn test_quote_and_space_indentation() {
+    let no_ind = Indents::new();
+    let one_ind = no_ind.push_quote();
+    let two_ind = one_ind.push_indent(1);
+
+    parse!("", ParseLineBreak(two_ind), ());
+    parse!("> ", ParseLineBreak(two_ind), None);
+    parse!("\n", ParseLineBreak(two_ind), ());
+    parse!("\n>", ParseLineBreak(two_ind), ());
+    parse!("\n> ", ParseLineBreak(two_ind), ());
+    parse!("\n>  ", ParseLineBreak(two_ind), ());
+    parse!("\n\n", ParseLineBreak(two_ind), ());
+    parse!("\n>\n", ParseLineBreak(two_ind), ());
+    parse!("\n> \n", ParseLineBreak(two_ind), ());
+    parse!("\n>>", ParseLineBreak(two_ind), None);
+    parse!("\n> >", ParseLineBreak(two_ind), ());
+    parse!("\n>  >", ParseLineBreak(two_ind), ());
 }
