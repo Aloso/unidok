@@ -11,7 +11,7 @@ pub struct Macro {
 }
 
 impl Macro {
-    pub fn parser(ind: Indents<'_>) -> ParseMacro<'_> {
+    pub(crate) fn parser(ind: Indents<'_>) -> ParseMacro<'_> {
         ParseMacro { ind }
     }
 }

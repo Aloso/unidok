@@ -23,12 +23,12 @@ pub struct Escaped {
 }
 
 impl Escaped {
-    pub fn parser() -> ParseEscape {
+    pub(crate) fn parser() -> ParseEscape {
         ParseEscape
     }
 }
 
-pub struct ParseEscape;
+pub(crate) struct ParseEscape;
 
 impl Parse for ParseEscape {
     type Output = Escaped;

@@ -18,7 +18,7 @@ mod parse;
 pub use detached_str as str;
 
 pub use crate::input::Input;
-pub use crate::nodes::{Node, NodeCtx};
+pub use crate::nodes::{Context, Node};
 pub use crate::parse::Parse;
 
 use crate::utils::cond::{UntilChar, WhileChar};

@@ -1,4 +1,5 @@
 pub(crate) mod braces;
+pub(crate) mod code;
 pub(crate) mod escaped;
 pub(crate) mod formatting;
 pub(crate) mod images;
@@ -11,6 +12,7 @@ pub(crate) mod segments;
 pub(crate) mod text;
 
 pub use braces::Braces;
+pub use code::Code;
 pub use escaped::Escaped;
 pub use formatting::{Formatting, InlineFormat};
 pub use images::Image;
@@ -19,5 +21,5 @@ pub use line_breaks::LineBreak;
 pub use links::Link;
 pub use macros::Macro;
 pub use math::Math;
-pub use segments::{Segment, SegmentCtx};
+pub use segments::Segment;
 pub use text::Text;

@@ -11,13 +11,13 @@ pub struct ThematicBreak {
 }
 
 impl ThematicBreak {
-    pub fn parser(ind: Indents<'_>) -> ParseThematicBreak<'_> {
+    pub(crate) fn parser(ind: Indents<'_>) -> ParseThematicBreak<'_> {
         ParseThematicBreak { ind }
     }
 }
 
 #[derive(Debug, Default, Clone, Copy)]
-pub struct ParseThematicBreak<'a> {
+pub(crate) struct ParseThematicBreak<'a> {
     ind: Indents<'a>,
 }
 

@@ -1,7 +1,7 @@
 use crate::inlines::macros::{ParseMacroArgs, ParseMacroName};
 use crate::str::StrSlice;
 use crate::utils::{Indents, ParseLineBreak, ParseSpaces};
-use crate::{Input, Node, NodeCtx, Parse};
+use crate::{Context, Input, Node, Parse};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct BlockMacro {
@@ -33,7 +33,7 @@ impl Parse for ParseBlockMacro<'_> {
         let args = input.parse(ParseMacroArgs);
 
         input.parse(ParseLineBreak(ind))?;
-        let node = input.parse(Node::parser(NodeCtx::ContainerOrGlobal, ind))?;
+        let node = input.parse(Node::parser(Context::Global, ind))?;
         let content = Box::new(node);
 
         input.apply();

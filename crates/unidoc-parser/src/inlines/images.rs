@@ -1,8 +1,9 @@
+use crate::leaves::Paragraph;
 use crate::utils::Indents;
-use crate::{Input, Parse};
+use crate::{Context, Input, Parse};
 
 use super::links::{ParseHref, ParseQuotedText};
-use super::{Segment, SegmentCtx};
+use super::Segment;
 
 /// An image that should be shown in the document.
 ///
@@ -27,12 +28,12 @@ pub struct Image {
 }
 
 impl Image {
-    pub fn parser(ind: Indents<'_>) -> ParseImage<'_> {
+    pub(crate) fn parser(ind: Indents<'_>) -> ParseImage<'_> {
         ParseImage { ind }
     }
 }
 
-pub struct ParseImage<'a> {
+pub(crate) struct ParseImage<'a> {
     ind: Indents<'a>,
 }
 
@@ -43,7 +44,7 @@ impl Parse for ParseImage<'_> {
         let mut input = input.start();
 
         input.parse("![")?;
-        let alt = input.parse(Segment::multi_parser(SegmentCtx::LinkOrImg, self.ind))?;
+        let alt = input.parse(Paragraph::parser(self.ind, Context::LinkOrImg))?.segments;
         input.parse("](")?;
         let href = input.parse(ParseHref)?;
         let title = input.parse(ParseQuotedText);

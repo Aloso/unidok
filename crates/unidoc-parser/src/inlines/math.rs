@@ -23,13 +23,13 @@ pub struct Math {
 }
 
 impl Math {
-    pub fn parser(ind: Indents<'_>) -> ParseMath<'_> {
+    pub(crate) fn parser(ind: Indents<'_>) -> ParseMath<'_> {
         ParseMath { ind }
     }
 }
 
 #[derive(Debug, Clone, Copy, Default)]
-pub struct ParseMath<'a> {
+pub(crate) struct ParseMath<'a> {
     ind: Indents<'a>,
 }
 

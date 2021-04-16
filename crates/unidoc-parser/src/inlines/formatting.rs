@@ -48,7 +48,7 @@ pub enum Formatting {
     Subscript,
 }
 
-pub struct ParseInlineFormat;
+pub(crate) struct ParseInlineFormat;
 
 impl Parse for ParseInlineFormat {
     type Output = InlineFormat;

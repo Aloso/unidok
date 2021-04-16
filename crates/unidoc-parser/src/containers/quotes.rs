@@ -1,5 +1,5 @@
 use crate::utils::{Indents, ParseQuoteMarker, ParseSpaces};
-use crate::{Input, Node, NodeCtx, Parse};
+use crate::{Context, Input, Node, Parse};
 
 #[rustfmt::skip]
 /// A quote (in HTML, `<blockquote>`).
@@ -62,7 +62,7 @@ impl Parse for ParseQuote<'_> {
         input.parse(ParseQuoteMarker)?;
         let ind = ind.push_quote();
 
-        let content = input.parse(Node::multi_parser(NodeCtx::ContainerOrGlobal, ind))?;
+        let content = input.parse(Node::multi_parser(Context::Global, ind))?;
 
         input.apply();
         Some(Quote { content })

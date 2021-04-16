@@ -1,5 +1,5 @@
 use crate::utils::{Indents, ParseLineEnd};
-use crate::{Node, NodeCtx, Parse, WhileChar};
+use crate::{Context, Node, Parse, WhileChar};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct List {
@@ -59,7 +59,7 @@ impl Parse for ParseList<'_> {
 
         let mut content = Vec::new();
         loop {
-            let content_parser = Node::multi_parser(NodeCtx::ContainerOrGlobal, ind);
+            let content_parser = Node::multi_parser(Context::Global, ind);
             content.push(input.parse(content_parser)?);
 
             let mut input2 = input.start();

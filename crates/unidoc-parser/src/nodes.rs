@@ -20,28 +20,31 @@ pub enum Node {
 }
 
 impl Node {
-    pub fn parser(context: NodeCtx, ind: Indents<'_>) -> ParseNode<'_> {
+    pub fn parser(context: Context, ind: Indents<'_>) -> ParseNode<'_> {
         ParseNode { context, ind }
     }
 
-    pub fn multi_parser(context: NodeCtx, ind: Indents<'_>) -> ParseNodes<'_> {
+    pub fn multi_parser(context: Context, ind: Indents<'_>) -> ParseNodes<'_> {
         ParseNodes { context, ind }
     }
 
     pub fn global_parser<'a>() -> ParseNodes<'a> {
-        ParseNodes { context: NodeCtx::ContainerOrGlobal, ind: Indents::new() }
+        ParseNodes { context: Context::Global, ind: Indents::new() }
     }
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub enum NodeCtx {
+pub enum Context {
     Braces,
-    ContainerOrGlobal,
+    Table,
+    LinkOrImg,
+    Heading,
+    Global,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct ParseNode<'a> {
-    context: NodeCtx,
+    context: Context,
     ind: Indents<'a>,
 }
 
@@ -89,7 +92,7 @@ impl Parse for ParseNode<'_> {
 
 #[derive(Debug)]
 pub struct ParseNodes<'a> {
-    context: NodeCtx,
+    context: Context,
     ind: Indents<'a>,
 }
 

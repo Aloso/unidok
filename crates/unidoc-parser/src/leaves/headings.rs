@@ -1,6 +1,8 @@
-use crate::inlines::{Segment, SegmentCtx};
+use crate::inlines::Segment;
 use crate::utils::Indents;
-use crate::{Input, Parse};
+use crate::{Context, Input, Parse};
+
+use super::Paragraph;
 
 /// A heading.
 ///
@@ -67,7 +69,7 @@ impl Parse for ParseHeading<'_> {
         let mut input = input.start();
 
         let level = input.parse(ParseHashes)?;
-        let content = input.parse(Segment::multi_parser(SegmentCtx::Other, self.ind))?;
+        let content = input.parse(Paragraph::parser(self.ind, Context::Heading))?.segments;
 
         input.apply();
         Some(Heading { level, content })

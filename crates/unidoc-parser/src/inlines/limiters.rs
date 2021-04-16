@@ -35,12 +35,12 @@ use crate::{Input, Parse};
 pub struct Limiter;
 
 impl Limiter {
-    pub fn parser() -> ParseLimiter {
+    pub(crate) fn parser() -> ParseLimiter {
         ParseLimiter
     }
 }
 
-pub struct ParseLimiter;
+pub(crate) struct ParseLimiter;
 
 impl Parse for ParseLimiter {
     type Output = Limiter;

@@ -1,9 +1,10 @@
 use std::mem::replace;
 
+use crate::leaves::Paragraph;
 use crate::utils::Indents;
-use crate::{Input, Parse};
+use crate::{Context, Input, Parse};
 
-use super::{Segment, SegmentCtx};
+use super::Segment;
 
 /// A hyperlink.
 ///
@@ -33,12 +34,12 @@ pub struct Link {
 }
 
 impl Link {
-    pub fn parser(ind: Indents<'_>) -> ParseLink<'_> {
+    pub(crate) fn parser(ind: Indents<'_>) -> ParseLink<'_> {
         ParseLink { ind }
     }
 }
 
-pub struct ParseLink<'a> {
+pub(crate) struct ParseLink<'a> {
     ind: Indents<'a>,
 }
 
@@ -49,7 +50,7 @@ impl Parse for ParseLink<'_> {
         let mut input = input.start();
 
         input.parse('[')?;
-        let text = input.parse(Segment::multi_parser(SegmentCtx::LinkOrImg, self.ind))?;
+        let text = input.parse(Paragraph::parser(self.ind, Context::LinkOrImg))?.segments;
         input.parse("](")?;
         let href = input.parse(ParseHref)?;
         let title = input.parse(ParseQuotedText);

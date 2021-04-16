@@ -1,7 +1,8 @@
+use crate::leaves::Paragraph;
 use crate::utils::{Indents, ParseLineBreak, ParseLineEnd};
-use crate::{Input, Node, NodeCtx, Parse};
+use crate::{Context, Input, Node, Parse};
 
-use super::{Segment, SegmentCtx};
+use super::Segment;
 
 /// A block surrounded by `{braces}`. This is used by inline macros.
 ///
@@ -31,13 +32,13 @@ pub struct Braces {
 }
 
 impl Braces {
-    pub fn parser(ind: Indents<'_>) -> ParseBraces<'_> {
+    pub(crate) fn parser(ind: Indents<'_>) -> ParseBraces<'_> {
         ParseBraces { ind }
     }
 }
 
 #[derive(Debug, Default, Clone, Copy)]
-pub struct ParseBraces<'a> {
+pub(crate) struct ParseBraces<'a> {
     ind: Indents<'a>,
 }
 
@@ -53,11 +54,11 @@ impl Parse for ParseBraces<'_> {
             input.try_parse(ParseLineBreak(self.ind));
             None
         } else {
-            let parser = Segment::multi_parser(SegmentCtx::Braces, self.ind);
-            Some(input.parse(parser)?)
+            let parser = Paragraph::parser(self.ind, Context::Braces);
+            Some(input.parse(parser)?.segments)
         };
 
-        let content = input.parse(Node::multi_parser(NodeCtx::Braces, self.ind))?;
+        let content = input.parse(Node::multi_parser(Context::Braces, self.ind))?;
 
         input.parse('}')?;
 

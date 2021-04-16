@@ -1,6 +1,8 @@
-use crate::inlines::{Segment, SegmentCtx};
+use crate::inlines::Segment;
 use crate::utils::{If, Indents, ParseLineBreak, ParseLineEnd, WhileChar};
-use crate::Parse;
+use crate::{Context, Parse};
+
+use super::Paragraph;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Table {
@@ -22,12 +24,12 @@ pub enum ColumnKind {
 }
 
 impl Table {
-    pub fn parser(ind: Indents<'_>) -> ParseTable<'_> {
+    pub(crate) fn parser(ind: Indents<'_>) -> ParseTable<'_> {
         ParseTable { ind }
     }
 }
 
-pub struct ParseTable<'a> {
+pub(crate) struct ParseTable<'a> {
     ind: Indents<'a>,
 }
 
@@ -79,7 +81,7 @@ impl Parse for ParseContentRow<'_> {
         let mut contents = Vec::new();
 
         loop {
-            let content = input.parse(Segment::multi_parser(SegmentCtx::Table, self.ind))?;
+            let content = input.parse(Paragraph::parser(self.ind, Context::Table))?.segments;
 
             contents.push(content);
 
