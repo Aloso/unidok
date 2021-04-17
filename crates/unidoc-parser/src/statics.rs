@@ -34,6 +34,14 @@ impl IsStatic for String {
     }
 }
 
+impl IsStatic for &'static str {
+    type Static = &'static str;
+
+    fn is(&self, s: &'static str, _str: &str) -> bool {
+        *self == s
+    }
+}
+
 impl<T: IsStatic> IsStatic for Option<T> {
     type Static = Option<T::Static>;
 
@@ -231,6 +239,7 @@ impl_is_static! {
     pub enum StaticSegment for Segment {
         LineBreak(LineBreak),
         Text(&'static str),
+        Text2(&'static str),
         Escaped(StaticEscaped),
         Limiter(Limiter),
         Braces(StaticBraces),
@@ -238,7 +247,7 @@ impl_is_static! {
         Link(StaticLink),
         Image(StaticImage),
         Macro(StaticMacro),
-        InlineFormat(StaticInlineFormat),
+        Format(StaticInlineFormat),
     }
 
     pub enum StaticNode for Node {

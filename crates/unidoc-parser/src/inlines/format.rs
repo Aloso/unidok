@@ -125,7 +125,7 @@ impl FlankType {
                 Some(FlankType::Alphanumeric)
             }
             Item::Limiter => Some(FlankType::Limiter),
-            Item::FormatDelim { .. } => None,
+            Item::FormatDelim { .. } => Some(FlankType::Punctuation),
         })
         .next()
         .unwrap_or(FlankType::Whitespace)

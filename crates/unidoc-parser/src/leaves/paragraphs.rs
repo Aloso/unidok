@@ -29,9 +29,10 @@ impl Parse for ParseParagraph<'_> {
     type Output = Paragraph;
 
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+        if input.is_empty() {
+            return None;
+        }
         let items = self.lex_paragraph_items(input)?;
-        dbg!(&items);
-
         let segments = parse_paragraph_part(items);
         Some(Paragraph { segments })
     }
@@ -85,7 +86,6 @@ impl StackItem {
     }
 }
 
-/// Hello **world* this is great**
 fn parse_paragraph_part(items: Vec<Item>) -> Vec<Segment> {
     let mut stack = Vec::new();
     for it in items {
