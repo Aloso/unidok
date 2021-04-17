@@ -14,6 +14,11 @@ impl Input {
         Input { text: text.to_string().into(), idx: 0 }
     }
 
+    #[inline]
+    pub fn text(&self) -> &Str {
+        &self.text
+    }
+
     pub fn start(&mut self) -> ModifyInput<'_> {
         let prev_idx = self.idx;
         ModifyInput { input: self, prev_idx }

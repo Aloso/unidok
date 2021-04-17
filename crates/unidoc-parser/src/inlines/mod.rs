@@ -1,7 +1,7 @@
 pub(crate) mod braces;
 pub(crate) mod code;
 pub(crate) mod escaped;
-pub(crate) mod formatting;
+pub(crate) mod format;
 pub(crate) mod images;
 pub(crate) mod limiters;
 pub(crate) mod line_breaks;
@@ -14,7 +14,7 @@ pub(crate) mod text;
 pub use braces::Braces;
 pub use code::Code;
 pub use escaped::Escaped;
-pub use formatting::{Formatting, InlineFormat};
+pub use format::{Formatting, InlineFormat};
 pub use images::Image;
 pub use limiters::Limiter;
 pub use line_breaks::LineBreak;

@@ -21,15 +21,6 @@ use crate::{Input, Parse};
 /// Another example is if you want to write a macro, like `@TOC`, and then
 /// braces immediately afterwards. To ensure that the braces are not parsed as
 /// part of the macro, insert a `$` in between: `@TOC${...}`
-///
-/// #### TODO:
-/// That's not how markdown (CommonMark) works. Honestly, the rules are quite
-/// confusing, and probably undesired for some cases. Unidoc should have simple,
-/// easy-to-learn rules. However, backwards compatibility with Markdown is
-/// useful, so maybe the behaviour should be a bit closer to Markdown's.
-///
-/// On the other hand, backwards compatibility is not an issue if there is a
-/// simple tool to convert from Markdown (or Asciidoc) to Unidoc.
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Limiter;

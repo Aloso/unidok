@@ -1,9 +1,11 @@
 use super::*;
+use crate::str::StrSlice;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Segment {
     LineBreak(LineBreak),
-    Text(Text),
+    Text(StrSlice),
+    Text2(&'static str),
     Escaped(Escaped),
     Limiter(Limiter),
     Braces(Braces),
@@ -11,7 +13,8 @@ pub enum Segment {
     Link(Link),
     Image(Image),
     Macro(Macro),
-    InlineFormat(InlineFormat),
+    Format(InlineFormat),
+    Code(Code),
 }
 
 // TODO: Think about braces *WITHOUT* macro, i.e.

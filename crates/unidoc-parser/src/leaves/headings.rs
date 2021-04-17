@@ -42,10 +42,6 @@ use super::Paragraph;
 ///     <p>bla bla bla</p>
 /// </div>
 /// ````
-///
-/// #### TODO:
-/// Implement a way to add an attribute only to the heading, not the whole
-/// section
 #[derive(Debug, Clone, PartialEq)]
 pub struct Heading {
     pub level: u8,

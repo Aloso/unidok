@@ -1,11 +1,13 @@
-use std::cmp::Ordering;
+use std::convert::TryFrom;
 
-use super::*;
 use crate::containers::*;
+use crate::inlines::format::{is_in_word, FlankType, Flanking, FormatDelim, Item};
 use crate::inlines::*;
 use crate::str::StrSlice;
 use crate::utils::{Indents, ParseLineBreak, ParseLineEnd, WhileChar};
 use crate::{Context, Input, Parse};
+
+use super::*;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Paragraph {
@@ -27,30 +29,42 @@ impl Parse for ParseParagraph<'_> {
     type Output = Paragraph;
 
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
-        let stack = generate_stack(input, self.context, self.ind)?;
-        dbg!(&stack);
+        let items = self.lex_paragraph_items(input)?;
+        dbg!(&items);
 
-        let mut segments = Vec::new();
-        parse_paragraph_part(stack, 0, &mut segments);
-
+        let segments = parse_paragraph_part(items);
         Some(Paragraph { segments })
     }
 }
 
-fn parse_paragraph_part(_stack: Vec<Item>, _start: usize, _segments: &mut Vec<Segment>) {
-    todo!()
+impl ParseParagraph<'_> {
+    fn can_parse_block(&self, input: &mut Input) -> bool {
+        let ind = self.ind;
+        input.can_parse(CodeBlock::parser(ind))
+            || input.can_parse(Comment::parser(ind))
+            || input.can_parse(Heading::parser(ind))
+            || input.can_parse(ThematicBreak::parser(ind))
+            || input.can_parse(Table::parser(ind))
+            || input.can_parse(List::parser(ind))
+            || input.can_parse(Quote::parser(ind))
+    }
 }
 
-#[derive(Debug, Clone)]
-enum Item {
+#[derive(Debug)]
+enum StackItem {
     Text(StrSlice),
+    Text2(&'static str),
+    Formatted {
+        delim: FormatDelim,
+        content: Vec<StackItem>,
+    },
     FormatDelim {
         /// the type of delimiter
         delim: FormatDelim,
         /// whether the delimiter is left-flanking, right-flanking, or both
         flanking: Flanking,
-        /// true if delimiter run is multiple of 3
-        mult_of_three: bool,
+        /// number of characters in the delimiter (mod 3)
+        count: u8,
     },
     Code(Code),
     Math(Math),
@@ -62,219 +76,297 @@ enum Item {
     Limiter,
 }
 
-impl Default for Item {
-    fn default() -> Self {
-        Item::Text(StrSlice::default())
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum Flanking {
-    /// ` **Hello`
-    Left,
-    /// `Hello** `
-    Right,
-    /// `Hello**world`
-    Both,
-}
-
-impl Flanking {
-    fn from(left: char, right: char) -> Flanking {
-        fn binding_power(c: char) -> u8 {
-            if c == '$' {
-                0
-            } else if c.is_whitespace() {
-                1
-            } else if !c.is_alphanumeric() {
-                2
-            } else {
-                3
-            }
-        }
-
-        let left_bp = binding_power(left);
-        let right_bp = binding_power(right);
-
-        match left_bp.cmp(&right_bp) {
-            Ordering::Less => Flanking::Left,
-            Ordering::Equal => Flanking::Both,
-            Ordering::Greater => Flanking::Right,
+impl StackItem {
+    fn eliminate_delims(self) -> Self {
+        match self {
+            StackItem::FormatDelim { delim, .. } => StackItem::Text2(delim.to_str()),
+            it => it,
         }
     }
 }
 
-#[derive(Debug, Clone, Copy)]
-enum FormatDelim {
-    /// Italic -> bold
-    Star,
-    /// Italic -> bold
-    Underscore,
-    /// Strikethrough
-    Tilde,
-    /// Superscript
-    Caret,
-    /// Subscript
-    NumberSign,
-}
-
-fn can_parse_block(input: &mut Input, ind: Indents) -> bool {
-    input.can_parse(CodeBlock::parser(ind))
-        || input.can_parse(Comment::parser(ind))
-        || input.can_parse(Heading::parser(ind))
-        || input.can_parse(ThematicBreak::parser(ind))
-        || input.can_parse(Table::parser(ind))
-        || input.can_parse(List::parser(ind))
-        || input.can_parse(Quote::parser(ind))
-}
-
-macro_rules! push_fmt {
-    ($input:expr, $stack:expr, $sym:literal, $id:ident) => {{
-        let left = $input.prev_char();
-        let cs = $input.parse(WhileChar($sym))?;
-        let right = $input.peek_char();
-
-        let flanking = Flanking::from(left.unwrap_or('$'), right.unwrap_or('$'));
-        if $sym == '_' && flanking == Flanking::Both {
-            $stack.push(Item::Text(cs));
-        } else {
-            let delim = FormatDelim::$id;
-            let mult_of_three = cs.len() % 3 == 0;
-            for _ in 0..cs.len() {
-                $stack.push(Item::FormatDelim { delim, flanking, mult_of_three });
-            }
-        }
-    }};
-}
-
-fn find_special(c: char) -> bool {
-    matches!(c, '*' | '_' | '~' | '`' | '^' | '#')
-        || matches!(c, '%' | '[' | '!' | '@' | '\\' | '$' | '\n' | '\r')
-}
-
-fn find_special_in_table(c: char) -> bool {
-    matches!(c, '*' | '_' | '~' | '`' | '^' | '#')
-        || matches!(c, '|')
-        || matches!(c, '%' | '[' | '!' | '@' | '\\' | '$' | '\n' | '\r')
-}
-
-fn find_special_in_braces(c: char) -> bool {
-    matches!(c, '*' | '_' | '~' | '`' | '^' | '#')
-        || matches!(c, '}')
-        || matches!(c, '%' | '[' | '!' | '@' | '\\' | '$' | '\n' | '\r')
-}
-
-fn find_special_in_link_or_img(c: char) -> bool {
-    matches!(c, '*' | '_' | '~' | '`' | '^' | '#')
-        || matches!(c, ']')
-        || matches!(c, '%' | '[' | '!' | '@' | '\\' | '$' | '\n' | '\r')
-}
-
-fn generate_stack(input: &mut Input, context: Context, ind: Indents<'_>) -> Option<Vec<Item>> {
+/// Hello **world* this is great**
+fn parse_paragraph_part(items: Vec<Item>) -> Vec<Segment> {
     let mut stack = Vec::new();
-
-    while !input.is_empty() {
-        let special_idx = input.rest().find(match context {
-            Context::Global | Context::Heading => find_special,
-            Context::Braces => find_special_in_braces,
-            Context::Table => find_special_in_table,
-            Context::LinkOrImg => find_special_in_link_or_img,
-        });
-        match special_idx {
-            Some(0) => match input.peek_char().unwrap() {
-                '*' => push_fmt!(input, stack, '*', Star),
-                '_' => push_fmt!(input, stack, '_', Underscore),
-                '~' => push_fmt!(input, stack, '~', Tilde),
-                '^' => push_fmt!(input, stack, '^', Caret),
-                '#' => push_fmt!(input, stack, '#', NumberSign),
-                '`' => {
-                    if let Some(code) = input.parse(Code::parser()) {
-                        stack.push(Item::Code(code));
+    for it in items {
+        match it {
+            Item::Text(t) => stack.push(StackItem::Text(t)),
+            Item::FormatDelim { delim, flanking, count } => {
+                if let Flanking::Right | Flanking::Both = flanking {
+                    if let Some(i) = find_matching_opening_delim(&stack, delim, flanking, count) {
+                        let content =
+                            stack.drain(i + 1..).map(StackItem::eliminate_delims).collect();
+                        stack.pop();
+                        stack.push(StackItem::Formatted { delim, content });
                     } else {
-                        stack.push(Item::Text(input.bump(1)));
+                        stack.push(StackItem::Text2(delim.to_str()));
+                    }
+                } else {
+                    stack.push(StackItem::FormatDelim { delim, flanking, count });
+                }
+            }
+            Item::Code(c) => stack.push(StackItem::Code(c)),
+            Item::Math(m) => stack.push(StackItem::Math(m)),
+            Item::Link(l) => stack.push(StackItem::Link(l)),
+            Item::Image(i) => stack.push(StackItem::Image(i)),
+            Item::Macro(m) => stack.push(StackItem::Macro(m)),
+            Item::Escaped(e) => stack.push(StackItem::Escaped(e)),
+            Item::LineBreak => stack.push(StackItem::LineBreak),
+            Item::Limiter => stack.push(StackItem::Limiter),
+        }
+    }
+
+    stack_to_segments(stack)
+}
+
+fn stack_to_segments(stack: Vec<StackItem>) -> Vec<Segment> {
+    let mut result = Vec::with_capacity(stack.len());
+
+    for it in stack {
+        result.push(match it {
+            StackItem::Text(t) => Segment::Text(t),
+            StackItem::Text2(t) => Segment::Text2(t),
+            StackItem::Formatted { delim, content } => Segment::Format(InlineFormat {
+                formatting: delim.to_format(),
+                content: stack_to_segments(content),
+            }),
+            StackItem::Code(c) => Segment::Code(c),
+            StackItem::Math(m) => Segment::Math(m),
+            StackItem::Link(l) => Segment::Link(l),
+            StackItem::Image(i) => Segment::Image(i),
+            StackItem::Macro(m) => Segment::Macro(m),
+            StackItem::Escaped(e) => Segment::Escaped(e),
+            StackItem::LineBreak => Segment::LineBreak(LineBreak),
+            StackItem::Limiter => Segment::Limiter(Limiter),
+            StackItem::FormatDelim { delim, .. } => Segment::Text2(delim.to_str()),
+        })
+    }
+
+    result
+}
+
+fn find_matching_opening_delim(
+    stack: &[StackItem],
+    right_delim: FormatDelim,
+    right_flanking: Flanking,
+    right_count: u8,
+) -> Option<usize> {
+    let mut same_delim_run = true;
+
+    for (i, el) in stack.iter().enumerate().rev() {
+        if let StackItem::FormatDelim {
+            delim: left_delim,
+            flanking: left_flanking,
+            count: left_count,
+        } = *el
+        {
+            if left_delim == right_delim {
+                if let Flanking::Left | Flanking::Both = left_flanking {
+                    if !same_delim_run
+                        && is_compatible(left_flanking, right_flanking, left_count, right_count)
+                    {
+                        return Some(i);
+                    }
+                }
+            } else {
+                same_delim_run = false;
+            }
+        } else {
+            same_delim_run = false;
+        }
+    }
+
+    None
+}
+
+/// <https://spec.commonmark.org/0.29/#emphasis-and-strong-emphasis>:
+///
+/// > If one of the delimiters can both open and close strong emphasis, then
+/// > the sum of the lengths of the delimiter runs containing the opening and
+/// > closing delimiters must not be a multiple of 3 unless both lengths are
+/// > multiples of 3.
+///
+/// Note that left_count and right_count were taken (mod 3), so they're in
+/// {0, 1, 2}.
+fn is_compatible(left: Flanking, right: Flanking, left_count: u8, right_count: u8) -> bool {
+    if let (Flanking::Left, Flanking::Right) = (left, right) {
+        true
+    } else {
+        left_count + right_count != 3
+    }
+}
+
+#[inline]
+fn find_special(c: char) -> bool {
+    matches!(
+        c,
+        '*' | '_' | '~' | '^' | '#' | '`' | '%' | '[' | '!' | '@' | '\\' | '$' | '\n' | '\r'
+    )
+}
+
+#[inline]
+fn find_special_in_table(c: char) -> bool {
+    matches!(c, '|') || find_special(c)
+}
+
+#[inline]
+fn find_special_in_braces(c: char) -> bool {
+    matches!(c, '}') || find_special(c)
+}
+
+#[inline]
+fn find_special_in_link_or_img(c: char) -> bool {
+    matches!(c, ']') || find_special(c)
+}
+
+fn find_special_for(s: &str, context: Context) -> Option<usize> {
+    match context {
+        Context::Global | Context::Heading => s.find(find_special),
+        Context::Braces => s.find(find_special_in_braces),
+        Context::Table => s.find(find_special_in_table),
+        Context::LinkOrImg => s.find(find_special_in_link_or_img),
+    }
+}
+
+impl ParseParagraph<'_> {
+    fn lex_paragraph_items(&self, input: &mut Input) -> Option<Vec<Item>> {
+        let mut items = Vec::new();
+
+        loop {
+            let skip_bytes =
+                find_special_for(input.rest(), self.context).unwrap_or_else(|| input.len());
+
+            if skip_bytes > 0 {
+                items.push(Item::Text(input.bump(skip_bytes)));
+            }
+
+            if input.is_empty() {
+                break;
+            }
+
+            if self.handle_char(input, &mut items, input.peek_char().unwrap())? {
+                break;
+            }
+        }
+
+        let str = input.text();
+
+        for i in 0..items.len() {
+            if let Item::FormatDelim { .. } = &items[i] {
+                let left = FlankType::from(items[0..i].iter().rev(), str);
+                let right = FlankType::from(items[i + 1..].iter(), str);
+
+                if let Item::FormatDelim { flanking, .. } = &mut items[i] {
+                    *flanking = Flanking::new(left, right);
+                }
+            }
+        }
+
+        Some(items)
+    }
+
+    /// Returns `true` if the loop should be exited
+    fn handle_char(&self, input: &mut Input, items: &mut Vec<Item>, sym: char) -> Option<bool> {
+        let ind = self.ind;
+        let context = self.context;
+
+        if let Ok(delim) = FormatDelim::try_from(sym) {
+            let left = input.prev_char();
+            let cs = input.parse(WhileChar(sym))?;
+            let right = input.peek_char();
+
+            if sym == '_' && is_in_word(left, right) {
+                items.push(Item::Text(cs));
+            } else {
+                let count = (cs.len() % 3) as u8;
+                for _ in 0..cs.len() {
+                    items.push(Item::FormatDelim { delim, count, flanking: Flanking::Both });
+                }
+            }
+        } else {
+            match sym {
+                '`' => {
+                    if let Some(code) = input.parse(Code::parser(ind)) {
+                        items.push(Item::Code(code));
+                    } else {
+                        items.push(Item::Text(input.parse(WhileChar('`')).unwrap()));
                     }
                 }
                 '%' => {
                     if let Some(math) = input.parse(Math::parser(ind)) {
-                        stack.push(Item::Math(math));
+                        items.push(Item::Math(math));
                     } else {
-                        stack.push(Item::Text(input.bump(1)));
+                        items.push(Item::Text(input.bump(1)));
                     }
                 }
                 '[' => {
                     if let Some(link) = input.parse(Link::parser(ind)) {
-                        stack.push(Item::Link(link));
+                        items.push(Item::Link(link));
                     } else {
-                        stack.push(Item::Text(input.bump(1)));
+                        items.push(Item::Text(input.bump(1)));
                     }
                 }
                 '!' => {
                     if let Some(img) = input.parse(Image::parser(ind)) {
-                        stack.push(Item::Image(img));
+                        items.push(Item::Image(img));
                     } else {
-                        stack.push(Item::Text(input.bump(1)));
+                        items.push(Item::Text(input.bump(1)));
                     }
                 }
                 '@' => {
                     if let Some(mac) = input.parse(Macro::parser(ind)) {
-                        stack.push(Item::Macro(mac));
+                        items.push(Item::Macro(mac));
                     } else {
-                        stack.push(Item::Text(input.bump(1)));
+                        items.push(Item::Text(input.bump(1)));
                     }
                 }
                 '\\' => {
                     if let Some(esc) = input.parse(Escaped::parser()) {
-                        stack.push(Item::Escaped(esc));
+                        items.push(Item::Escaped(esc));
                     } else {
-                        stack.push(Item::Text(input.bump(1)));
+                        items.push(Item::Text(input.bump(1)));
                     }
                 }
                 '$' => {
                     if input.parse(Limiter::parser()).is_some() {
-                        stack.push(Item::Limiter);
+                        items.push(Item::Limiter);
                     } else {
-                        stack.push(Item::Text(input.bump(1)));
+                        items.push(Item::Text(input.bump(1)));
                     }
                 }
 
                 '|' if context == Context::Table => {
-                    break;
+                    return Some(true);
                 }
                 ']' if context == Context::LinkOrImg => {
-                    break;
+                    return Some(true);
                 }
                 '}' if context == Context::Braces => {
-                    break;
+                    return Some(true);
                 }
 
                 '\n' | '\r' => {
                     if let Context::Table | Context::LinkOrImg | Context::Heading = context {
-                        break;
+                        return Some(true);
                     }
 
                     if input.parse(ParseLineBreak(ind)).is_some() {
-                        stack.push(Item::LineBreak);
+                        items.push(Item::LineBreak);
                         if input.can_parse(ParseLineEnd) {
                             if input.parse(ParseLineBreak(ind)).is_some() {
-                                stack.push(Item::LineBreak);
-                                break;
-                            } else if can_parse_block(input, ind) {
-                                break;
+                                items.push(Item::LineBreak);
+                                return Some(true);
+                            } else if self.can_parse_block(input) {
+                                return Some(true);
                             }
                         }
                     } else {
-                        break;
+                        return Some(true);
                     }
                 }
                 c => unreachable!("{:?} matches none of the expected characters", c),
-            },
-            Some(bytes) => {
-                stack.push(Item::Text(input.bump(bytes)));
-            }
-            None => {
-                stack.push(Item::Text(input.bump(input.len())));
             }
         }
+        Some(false)
     }
-
-    Some(stack)
 }
