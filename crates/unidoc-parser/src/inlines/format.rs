@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 use std::convert::TryFrom;
 
-use crate::str::{Str, StrSlice};
+use crate::str::StrSlice;
 
 use super::*;
 
@@ -115,25 +115,22 @@ impl FlankType {
             FlankType::Alphanumeric
         }
     }
-
-    pub(crate) fn from<'a>(iter: impl Iterator<Item = &'a Item>, str: &Str) -> FlankType {
-        iter.flat_map(|i| match i {
-            Item::Text(t) => t.to_str(str).chars().last().map(FlankType::from_char),
-            Item::Escaped(s) => s.text.to_str(str).chars().last().map(FlankType::from_char),
-            Item::LineBreak => Some(FlankType::Whitespace),
-            Item::Code(_) | Item::Math(_) | Item::Link(_) | Item::Image(_) | Item::Macro(_) => {
-                Some(FlankType::Alphanumeric)
-            }
-            Item::Limiter => Some(FlankType::Limiter),
-            Item::FormatDelim { .. } => Some(FlankType::Punctuation),
-        })
-        .next()
-        .unwrap_or(FlankType::Whitespace)
-    }
 }
 
 pub(crate) fn is_in_word(prev: Option<char>, next: Option<char>) -> bool {
     prev.filter(|c| c.is_alphanumeric()).is_some() && next.filter(|c| c.is_alphanumeric()).is_some()
+}
+
+pub(crate) fn is_not_flanking(prev: Option<char>, next: Option<char>) -> bool {
+    #[inline]
+    fn is_white(c: Option<char>) -> bool {
+        match c {
+            Some(c) => c.is_whitespace(),
+            None => true,
+        }
+    }
+
+    is_white(prev) && is_white(next)
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

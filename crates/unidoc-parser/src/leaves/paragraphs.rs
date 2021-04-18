@@ -1,7 +1,7 @@
 use std::convert::TryFrom;
 
 use crate::containers::*;
-use crate::inlines::format::{is_in_word, FlankType, Flanking, FormatDelim, Item};
+use crate::inlines::format::{is_in_word, is_not_flanking, FlankType, Flanking, FormatDelim, Item};
 use crate::inlines::*;
 use crate::str::StrSlice;
 use crate::utils::{Indents, ParseLineBreak, ParseLineEnd, WhileChar};
@@ -29,10 +29,11 @@ impl Parse for ParseParagraph<'_> {
     type Output = Paragraph;
 
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
-        if input.is_empty() {
+        let items = self.lex_paragraph_items(input)?;
+        if items.is_empty() {
             return None;
         }
-        let items = self.lex_paragraph_items(input)?;
+
         let segments = parse_paragraph_part(items);
         Some(Paragraph { segments })
     }
@@ -244,21 +245,9 @@ impl ParseParagraph<'_> {
                 break;
             }
 
+            // TODO: Maybe lexically inline this function
             if self.handle_char(input, &mut items, input.peek_char().unwrap())? {
                 break;
-            }
-        }
-
-        let str = input.text();
-
-        for i in 0..items.len() {
-            if let Item::FormatDelim { .. } = &items[i] {
-                let left = FlankType::from(items[0..i].iter().rev(), str);
-                let right = FlankType::from(items[i + 1..].iter(), str);
-
-                if let Item::FormatDelim { flanking, .. } = &mut items[i] {
-                    *flanking = Flanking::new(left, right);
-                }
             }
         }
 
@@ -275,12 +264,17 @@ impl ParseParagraph<'_> {
             let cs = input.parse(WhileChar(sym))?;
             let right = input.peek_char();
 
-            if sym == '_' && is_in_word(left, right) {
+            if (sym == '_' && is_in_word(left, right)) || is_not_flanking(left, right) {
                 items.push(Item::Text(cs));
             } else {
                 let count = (cs.len() % 3) as u8;
+
+                let left_flank = left.map(FlankType::from_char).unwrap_or(FlankType::Whitespace);
+                let right_flank = right.map(FlankType::from_char).unwrap_or(FlankType::Whitespace);
+                let flanking = Flanking::new(left_flank, right_flank);
+
                 for _ in 0..cs.len() {
-                    items.push(Item::FormatDelim { delim, count, flanking: Flanking::Both });
+                    items.push(Item::FormatDelim { delim, count, flanking });
                 }
             }
         } else {
@@ -352,13 +346,15 @@ impl ParseParagraph<'_> {
 
                     if input.parse(ParseLineBreak(ind)).is_some() {
                         items.push(Item::LineBreak);
-                        if input.can_parse(ParseLineEnd) {
-                            if input.parse(ParseLineBreak(ind)).is_some() {
-                                items.push(Item::LineBreak);
-                                return Some(true);
-                            } else if self.can_parse_block(input) {
-                                return Some(true);
-                            }
+                        if input.can_parse(ParseLineEnd)
+                            && input.parse(ParseLineBreak(ind)).is_some()
+                        {
+                            items.push(Item::LineBreak);
+                            return Some(true);
+                        }
+
+                        if self.can_parse_block(input) {
+                            return Some(true);
                         }
                     } else {
                         return Some(true);

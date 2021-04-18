@@ -1,4 +1,4 @@
-use crate::utils::{Indents, ParseLineEnd};
+use crate::utils::{Indents, ParseLineBreak, ParseLineEnd};
 use crate::{Context, Node, Parse, WhileChar};
 
 #[derive(Debug, Clone, PartialEq)]
@@ -61,6 +61,10 @@ impl Parse for ParseList<'_> {
         loop {
             let content_parser = Node::multi_parser(Context::Global, ind);
             content.push(input.parse(content_parser)?);
+
+            if input.parse(ParseLineBreak(self.ind)).is_none() {
+                break;
+            }
 
             let mut input2 = input.start();
             if let Some((is, b)) = input2.parse(ParseBullet { first: false }) {
