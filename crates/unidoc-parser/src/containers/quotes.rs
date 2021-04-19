@@ -1,5 +1,5 @@
 use crate::utils::{Indents, ParseQuoteMarker, ParseSpaces};
-use crate::{Context, Input, Node, Parse};
+use crate::{Block, Context, Input, Parse};
 
 #[rustfmt::skip]
 /// A quote (in HTML, `<blockquote>`).
@@ -38,7 +38,7 @@ use crate::{Context, Input, Node, Parse};
 /// Not > a quote
 #[derive(Debug, Clone, PartialEq)]
 pub struct Quote {
-    pub content: Vec<Node>,
+    pub content: Vec<Block>,
 }
 
 impl Quote {
@@ -62,7 +62,7 @@ impl Parse for ParseQuote<'_> {
         input.parse(ParseQuoteMarker)?;
         let ind = ind.push_quote();
 
-        let content = input.parse(Node::multi_parser(Context::Global, ind))?;
+        let content = input.parse(Block::multi_parser(Context::Global, ind))?;
 
         input.apply();
         Some(Quote { content })

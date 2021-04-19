@@ -1,8 +1,9 @@
+/*
 use crate::containers::*;
 use crate::inlines::*;
 use crate::leaves::*;
 use crate::str::StrSlice;
-use crate::Node;
+use crate::Block;
 
 pub trait IsStatic {
     type Static: 'static;
@@ -62,6 +63,20 @@ where
 
     fn is(&self, s: Self::Static, str: &str) -> bool {
         self.len() == s.len() && self.iter().zip(s.iter()).all(|(a, b)| a.is(*b, str))
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Ref<T: 'static>(pub &'static T);
+
+impl<T: IsStatic> IsStatic for Box<T>
+where
+    T::Static: Copy,
+{
+    type Static = Ref<T::Static>;
+
+    fn is(&self, s: Ref<T::Static>, str: &str) -> bool {
+        (&**self).is(*s.0, str)
     }
 }
 
@@ -186,7 +201,7 @@ impl_is_static! {
     pub struct StaticMacro for Macro {
         pub name: &'static str,
         pub args: Option<&'static str>,
-        pub content: StaticBraces,
+        pub content: Ref<StaticSegment>,
     }
 
     pub struct StaticComment for Comment {
@@ -195,14 +210,19 @@ impl_is_static! {
 
     pub struct StaticThematicBreak for ThematicBreak {
         pub len: usize,
+        pub kind: ThematicBreakKind,
     }
+
+    identity ThematicBreakKind;
 
     pub struct StaticCodeBlock for CodeBlock {
         pub info: &'static str,
-        pub backticks: usize,
+        pub fence: Fence,
         pub lines: &'static [&'static str],
         pub indent: u8,
     }
+
+    identity Fence;
 
     pub struct StaticHeading for Heading {
         pub level: u8,
@@ -225,12 +245,11 @@ impl_is_static! {
         pub content: &'static [StaticTableRow],
     }
 
-    pub enum StaticTableRow for TableRow {
-        Content(&'static [&'static [StaticSegment]]),
-        Line(&'static [ColumnKind]),
+    pub struct StaticTableRow for TableRow {
+        pub contents: &'static [&'static [StaticSegment]],
     }
 
-    identity ColumnKind;
+    identity CellAlignment;
 
     pub struct StaticParagraph for Paragraph {
         pub segments: &'static [StaticSegment],
@@ -250,7 +269,7 @@ impl_is_static! {
         Format(StaticInlineFormat),
     }
 
-    pub enum StaticNode for Node {
+    pub enum StaticNode for Block {
         Paragraph(StaticParagraph),
         Comment(StaticComment),
         ThematicBreak(StaticThematicBreak),
@@ -264,3 +283,4 @@ impl_is_static! {
     identity LineBreak;
     identity Limiter;
 }
+*/

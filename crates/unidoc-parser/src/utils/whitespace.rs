@@ -1,5 +1,6 @@
 use crate::{Input, Parse};
 
+/// Parses 0 or more spaces or tabs. This parser never fails.
 pub struct ParseSpaces;
 
 pub struct ParseNSpaces(pub u8);

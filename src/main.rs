@@ -1,15 +1,12 @@
 use std::time::Instant;
 
-use unidoc_parser::{Input, Node};
+use unidoc_parser::parse;
 
 fn main() {
     let input = std::env::args().nth(1).unwrap();
 
     let start = Instant::now();
-
-    let mut input = Input::new(input);
-    let res = input.parse(Node::global_parser());
-
+    let res = parse(&input);
     let time = start.elapsed();
 
     dbg!(res);

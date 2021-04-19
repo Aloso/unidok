@@ -15,7 +15,7 @@ impl Input {
     }
 
     #[inline]
-    pub fn text(&self) -> &Str {
+    pub fn text(&self) -> &str {
         &self.text
     }
 
@@ -36,12 +36,9 @@ impl Input {
         &self.text[self.idx as usize..]
     }
 
+    #[cfg(test)]
     pub fn prev(&self) -> &str {
         &self.text[..self.idx as usize]
-    }
-
-    pub fn prev_slice(&self) -> StrSlice {
-        self.text.get(..self.idx)
     }
 
     pub fn prev_slice_bytes(&self, bytes: usize) -> StrSlice {
@@ -89,11 +86,7 @@ pub struct ModifyInput<'a> {
 }
 
 impl ModifyInput<'_> {
-    pub fn parsed_bytes(&self) -> usize {
-        self.input.idx - self.prev_idx
-    }
-
-    pub fn apply(&mut self) -> StrSlice {
+    pub fn apply(mut self) -> StrSlice {
         let prev = self.prev_idx;
         self.prev_idx = self.input.idx;
         self.prev_slice_bytes(self.input.idx - prev)

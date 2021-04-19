@@ -45,7 +45,6 @@ impl ParseParagraph<'_> {
         input.can_parse(CodeBlock::parser(ind))
             || input.can_parse(Comment::parser(ind))
             || input.can_parse(Heading::parser(ind))
-            || input.can_parse(ThematicBreak::parser(ind))
             || input.can_parse(Table::parser(ind))
             || input.can_parse(List::parser(ind))
             || input.can_parse(Quote::parser(ind))
@@ -220,12 +219,18 @@ fn find_special_in_link_or_img(c: char) -> bool {
     matches!(c, ']') || find_special(c)
 }
 
+#[inline]
+fn find_special_in_code(c: char) -> bool {
+    matches!(c, ']') || find_special(c)
+}
+
 fn find_special_for(s: &str, context: Context) -> Option<usize> {
     match context {
         Context::Global | Context::Heading => s.find(find_special),
         Context::Braces => s.find(find_special_in_braces),
         Context::Table => s.find(find_special_in_table),
         Context::LinkOrImg => s.find(find_special_in_link_or_img),
+        Context::Code(_) => s.find(find_special_in_code),
     }
 }
 
@@ -245,7 +250,6 @@ impl ParseParagraph<'_> {
                 break;
             }
 
-            // TODO: Maybe lexically inline this function
             if self.handle_char(input, &mut items, input.peek_char().unwrap())? {
                 break;
             }
@@ -280,7 +284,14 @@ impl ParseParagraph<'_> {
         } else {
             match sym {
                 '`' => {
-                    if let Some(code) = input.parse(Code::parser(ind)) {
+                    if let Context::Code(len) = context {
+                        let backticks = input.parse(WhileChar('`')).unwrap().len();
+                        if backticks == len as usize {
+                            return Some(true);
+                        } else {
+                            items.push(Item::Text(input.parse(WhileChar('`')).unwrap()));
+                        }
+                    } else if let Some(code) = input.parse(Code::parser(ind, false)) {
                         items.push(Item::Code(code));
                     } else {
                         items.push(Item::Text(input.parse(WhileChar('`')).unwrap()));

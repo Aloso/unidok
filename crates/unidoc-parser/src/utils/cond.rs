@@ -6,7 +6,7 @@ use crate::{Input, Parse};
 pub struct UntilChar<T>(pub T);
 
 /// Parses while the given `char` parser matches. The first char that doesn't
-/// match isn't included.
+/// match isn't included. This parser never fails.
 pub struct WhileChar<T>(pub T);
 
 /// Parser that returns `Some` if the condition returns `true`, otherwise it

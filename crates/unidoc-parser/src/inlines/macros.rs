@@ -3,11 +3,13 @@ use crate::str::StrSlice;
 use crate::utils::Indents;
 use crate::{Input, Parse, UntilChar};
 
+use super::*;
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct Macro {
     pub name: StrSlice,
     pub args: Option<StrSlice>,
-    pub content: Braces,
+    pub content: Box<Segment>,
 }
 
 impl Macro {
@@ -29,7 +31,26 @@ impl Parse for ParseMacro<'_> {
         input.parse('@')?;
         let name = input.parse(ParseMacroName)?;
         let args = input.parse(ParseMacroArgs);
-        let content = input.parse(Braces::parser(self.ind))?;
+
+        let content = if let Some(braces) = input.parse(Braces::parser(self.ind)) {
+            Segment::Braces(braces)
+        } else if let Some(code) = {
+            let pass = name.to_str(input.text()) == "PASS";
+            input.parse(Code::parser(self.ind, pass))
+        } {
+            Segment::Code(code)
+        } else if let Some(mac) = input.parse(Macro::parser(self.ind)) {
+            Segment::Macro(mac)
+        } else if let Some(img) = input.parse(Image::parser(self.ind)) {
+            Segment::Image(img)
+        } else if let Some(link) = input.parse(Link::parser(self.ind)) {
+            Segment::Link(link)
+        } else if let Some(math) = input.parse(Math::parser(self.ind)) {
+            Segment::Math(math)
+        } else {
+            return None;
+        };
+        let content = Box::new(content);
 
         input.apply();
         Some(Macro { name, args, content })

@@ -23,9 +23,6 @@ use super::Segment;
 ///
 /// The title must be wrapped in double quotes. It can't contain formatting.
 /// Double quotes in the title can be escaped with a backslash.
-///
-/// #### TODO:
-/// - Consider adding support for auto-links.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Link {
     pub href: String,

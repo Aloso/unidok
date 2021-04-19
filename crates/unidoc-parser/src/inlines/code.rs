@@ -1,106 +1,113 @@
-use crate::utils::{Indents, ParseLineBreak, ParseLineEnd, WhileChar};
-use crate::{Input, Parse};
+use std::convert::TryInto;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+use crate::leaves::Paragraph;
+use crate::utils::{Indents, ParseLineBreak, ParseLineEnd, WhileChar};
+use crate::{Context, Input, Parse};
+
+use super::Segment;
+
+#[derive(Debug, Clone, PartialEq)]
 pub struct Code {
-    content: String,
+    pub content: Vec<Segment>,
 }
 
 impl Code {
-    pub(crate) fn parser(ind: Indents<'_>) -> ParseCode<'_> {
-        ParseCode { ind }
+    pub(crate) fn parser(ind: Indents<'_>, pass: bool) -> ParseCode<'_> {
+        ParseCode { ind, pass }
     }
 }
 
 pub(crate) struct ParseCode<'a> {
     ind: Indents<'a>,
+    pass: bool,
 }
-
-// TODO: Only allow delimiter in double backticks, i.e. ``$  $`` but not `$  $`
-
-// TODO: Allow formatting in double backticks, i.e. ``**bold** text``
 
 impl Parse for ParseCode<'_> {
     type Output = Code;
 
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
+
         input.parse('`')?;
-        let double = input.parse('`').is_some();
-        let _ = input.parse('$');
+        let len = (1 + input.parse(WhileChar('`')).unwrap().len()).try_into().ok()?;
 
-        let mut content = String::new();
-        let mut esc = false;
+        let mut content = if self.pass {
+            input.parse(Paragraph::parser(self.ind, Context::Code(len)))?.segments
+        } else {
+            let mut content = Vec::new();
 
-        loop {
-            match input.rest().find(find_special) {
-                Some(i) => {
-                    if i > 0 {
-                        if esc {
-                            content.push('\\');
+            loop {
+                let i = input.rest().find(find_special)?;
+                if i > 0 {
+                    content.push(Segment::Text(input.bump(i)));
+                }
+
+                match input.peek_char().unwrap() {
+                    '`' => {
+                        if input.parse(ParseCodeEndDelimiter { len }).is_some() {
+                            break;
+                        } else {
+                            let backticks = input.parse(WhileChar('`')).unwrap();
+                            content.push(Segment::Text(backticks));
                         }
-                        input.bump(i);
-                        esc = false;
                     }
-                    match input.peek_char().unwrap() {
-                        '`' => {
-                            if esc {
-                                let backticks = input.parse(WhileChar('`')).unwrap();
-                                content.push_str(backticks.to_str(input.text()));
-                                esc = false;
-                            } else if input.parse(ParseCodeEndDelimiter { double }).is_some() {
-                                break;
-                            } else {
-                                input.bump(1);
-                                content.push('`');
-                            }
+                    '\n' | '\r' => {
+                        input.parse(ParseLineBreak(self.ind))?;
+                        content.push(Segment::Text2(" "));
+                        if input.can_parse(ParseLineEnd) {
+                            return None;
                         }
-                        '$' => {
-                            if esc {
-                                input.bump(1);
-                                content.push('$');
-                                esc = false;
-                            } else if input.parse(ParseCodeEndDelimiter { double }).is_some() {
-                                break;
-                            } else {
-                                input.bump(1);
-                                content.push('$');
-                            }
-                        }
-                        '\\' => {
-                            if esc {
-                                content.push('\\');
-                                esc = false;
-                            } else {
-                                esc = true;
-                            }
-                        }
-                        '\n' | '\r' => {
-                            input.parse(ParseLineBreak(self.ind))?;
-                            content.push(' ');
-                            if input.can_parse(ParseLineEnd) {
-                                return None;
-                            }
-                        }
-                        c => unreachable!("{:?} was not expected", c),
+                    }
+                    c => unreachable!("{:?} was not expected", c),
+                }
+            }
+
+            content
+        };
+
+        if let Some(s) = content.first_mut() {
+            match s {
+                Segment::Text(s) => {
+                    if s.to_str(input.text()).starts_with(' ') {
+                        *s = s.get(1..);
                     }
                 }
-                None => {
-                    return None;
+                Segment::Text2(s) => {
+                    if s.starts_with(' ') {
+                        *s = &s[1..];
+                    }
                 }
+                _ => {}
             }
         }
 
+        if let Some(s) = content.last_mut() {
+            match s {
+                Segment::Text(s) => {
+                    if s.to_str(input.text()).ends_with(' ') {
+                        *s = s.get(..s.len() - 1);
+                    }
+                }
+                Segment::Text2(s) => {
+                    if s.ends_with(' ') {
+                        *s = &s[..s.len() - 1];
+                    }
+                }
+                _ => {}
+            }
+        }
+
+        input.apply();
         Some(Code { content })
     }
 }
 
 fn find_special(c: char) -> bool {
-    matches!(c, '`' | '$' | '\\' | '\n' | '\r')
+    matches!(c, '`' | '\\' | '\n' | '\r')
 }
 
 struct ParseCodeEndDelimiter {
-    double: bool,
+    len: u8,
 }
 
 impl Parse for ParseCodeEndDelimiter {
@@ -109,13 +116,8 @@ impl Parse for ParseCodeEndDelimiter {
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
-        let _ = input.parse('$');
-        if self.double {
-            input.parse("``")?;
-        } else {
-            input.parse('`')?;
-        }
-        if let Some('`') = input.peek_char() {
+        let backticks = input.parse(WhileChar('`')).unwrap().len();
+        if backticks != self.len as usize {
             return None;
         }
 

@@ -42,7 +42,7 @@ impl Parse for ParseEscape {
             return None;
         }
         input.bump(1);
-        if matches!(c, '*' | '_' | '`' | '~' | '^') {
+        if matches!(c, '*' | '_' | '`' | '~' | '^' | '#') {
             input.parse(WhileChar(c))?;
         }
 

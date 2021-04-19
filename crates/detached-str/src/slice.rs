@@ -1,8 +1,6 @@
 use std::fmt;
 use std::ops::{Range, RangeFrom, RangeFull, RangeInclusive, RangeTo, RangeToInclusive};
 
-use crate::Str;
-
 /// A memory efficient string slice without a lifetime.
 ///
 /// To get the content of the string slice, the original string
@@ -72,8 +70,8 @@ impl StrSlice {
 
     /// Returns the `&str` corresponding to this slice.
     #[inline]
-    pub fn to_str(self, s: &Str) -> &str {
-        &s[self.range()]
+    pub fn to_str(self, text: &str) -> &str {
+        &text[self.range()]
     }
 }
 

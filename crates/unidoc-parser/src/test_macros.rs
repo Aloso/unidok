@@ -1,24 +1,27 @@
 macro_rules! parse {
     ($text:literal, $parser:expr, None) => {{
-        use crate::statics::IsStatic;
+        use crate::ir::IntoIR;
 
         let str = $text;
         let mut input = crate::Input::new(str);
         let parsed = input.parse($parser);
-        if !parsed.is(None, str) {
-            eprintln!("INPUT: {:?}\n\nEXPECTED: None\n\nGOT: {:#?}\n", str, parsed);
+        if let None = parsed {
+        } else {
+            let ir = parsed.into_ir(str);
+            eprintln!("INPUT: {:?}\n\nEXPECTED: None\n\nGOT: {:#?}\n", str, ir);
             panic!("assertion failed");
         }
     }};
 
     ($text:literal, $parser:expr, $expected:expr) => {{
-        use crate::statics::IsStatic;
+        use crate::ir::IntoIR;
 
         let str = $text;
         let mut input = crate::Input::new(str);
         let parsed = input.parse($parser);
-        if !parsed.is(Some($expected), str) {
-            eprintln!("INPUT: {:?}\n\nEXPECTED: {:#?}\n\nGOT: {:#?}\n", str, $expected, parsed);
+        let ir = parsed.into_ir(str);
+        if ir != Some($expected) {
+            eprintln!("INPUT: {:?}\n\nEXPECTED: {:#?}\n\nGOT: {:#?}\n", str, $expected, ir);
             panic!("assertion failed");
         }
     }};

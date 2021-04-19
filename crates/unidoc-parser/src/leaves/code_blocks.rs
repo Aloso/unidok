@@ -1,3 +1,5 @@
+use std::convert::TryInto;
+
 use crate::str::StrSlice;
 use crate::utils::{If, Indents, ParseLineBreak, ParseLineEnd, ParseNSpaces, ParseSpaces};
 use crate::{Input, Parse, UntilChar, WhileChar};
@@ -60,9 +62,25 @@ use crate::{Input, Parse, UntilChar, WhileChar};
 #[derive(Debug, Clone, PartialEq)]
 pub struct CodeBlock {
     pub info: StrSlice,
-    pub backticks: usize,
+    pub fence: Fence,
     pub lines: Vec<StrSlice>,
     pub indent: u8,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Fence {
+    Backticks(u32),
+    Tildes(u32),
+}
+
+impl Fence {
+    fn can_close(self, opening_fence: Fence) -> bool {
+        match (opening_fence, self) {
+            (Fence::Backticks(a), Fence::Backticks(b)) => a <= b,
+            (Fence::Tildes(a), Fence::Tildes(b)) => a <= b,
+            _ => false,
+        }
+    }
 }
 
 pub(crate) struct ParseCodeBlock<'a> {
@@ -83,29 +101,62 @@ impl Parse for ParseCodeBlock<'_> {
 
         let indent = input.parse(ParseSpaces)?;
 
-        input.parse("```")?;
-        let backticks = 3 + input.parse(WhileChar('`'))?.len();
-        let info = input.parse(UntilChar('\n'))?;
+        let fence = input.parse(ParseFence)?;
+        let info = input.parse(ParseInfo(fence))?;
 
         let mut lines = Vec::new();
         loop {
             input.parse(ParseLineBreak(self.ind))?;
             input.parse(ParseNSpaces(indent))?;
 
-            if input.rest().starts_with("```") {
-                let mut input2 = input.start();
-                let backticks_end = input2.parse(WhileChar('`'))?.len();
-                input2.parse(ParseLineEnd)?;
-                input2.parse(If(backticks == backticks_end))?;
-                input2.apply();
-                break;
+            let mut input2 = input.start();
+            if let Some(closing_fence) = input2.parse(ParseFence) {
+                if input2.can_parse(ParseLineEnd) && closing_fence.can_close(fence) {
+                    input2.apply();
+                    break;
+                }
             }
+            drop(input2);
 
             let line = input.parse(UntilChar('\n'))?;
             lines.push(line);
         }
 
         input.apply();
-        Some(CodeBlock { info, backticks, lines, indent })
+        Some(CodeBlock { info, fence, lines, indent })
+    }
+}
+
+struct ParseFence;
+
+impl Parse for ParseFence {
+    type Output = Fence;
+
+    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+        if input.can_parse("```") {
+            let count = input.parse(WhileChar('`'))?.len();
+            let count = count.try_into().ok()?;
+            Some(Fence::Backticks(count))
+        } else if input.can_parse("~~~") {
+            let count = input.parse(WhileChar('~'))?.len();
+            let count = count.try_into().ok()?;
+            Some(Fence::Tildes(count))
+        } else {
+            None
+        }
+    }
+}
+
+struct ParseInfo(Fence);
+
+impl Parse for ParseInfo {
+    type Output = StrSlice;
+
+    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+        let s = input.parse(UntilChar(|c| matches!(c, '\n' | '\r'))).unwrap();
+        if let Fence::Backticks(_) = self.0 {
+            input.parse(If(!s.to_str(input.text()).contains('`')))?;
+        }
+        Some(s)
     }
 }

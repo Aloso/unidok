@@ -1,11 +1,11 @@
 use crate::utils::{Indents, ParseLineBreak, ParseLineEnd};
-use crate::{Context, Node, Parse, WhileChar};
+use crate::{Block, Context, Parse, WhileChar};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct List {
     pub indent_spaces: u8,
     pub bullet: Bullet,
-    pub content: Vec<Vec<Node>>,
+    pub content: Vec<Vec<Block>>,
 }
 
 impl List {
@@ -59,7 +59,7 @@ impl Parse for ParseList<'_> {
 
         let mut content = Vec::new();
         loop {
-            let content_parser = Node::multi_parser(Context::Global, ind);
+            let content_parser = Block::multi_parser(Context::Global, ind);
             content.push(input.parse(content_parser)?);
 
             if input.parse(ParseLineBreak(self.ind)).is_none() {
@@ -97,8 +97,6 @@ impl Parse for ParseBullet {
             return None;
         }
         let indent = indent as u8 + 2;
-
-        // TODO: If first == true, require number before `.` or `)`
 
         let result = match input.peek_char() {
             Some('-') => (indent, Bullet::Dash),

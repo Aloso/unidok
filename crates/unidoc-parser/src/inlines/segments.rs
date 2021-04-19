@@ -16,7 +16,3 @@ pub enum Segment {
     Format(InlineFormat),
     Code(Code),
 }
-
-// TODO: Think about braces *WITHOUT* macro, i.e.
-//
-// {some {text} and %{math} and @{macro content}!}
