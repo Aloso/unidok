@@ -1,6 +1,6 @@
 use crate::blocks::Paragraph;
-use crate::utils::{Indents, ParseLineBreak, ParseLineEnd};
-use crate::{Block, Context, Input, Parse};
+use crate::utils::Indents;
+use crate::{Context, Input, Parse};
 
 use super::Segment;
 
@@ -27,8 +27,7 @@ use super::Segment;
 /// ````
 #[derive(Debug, Clone, PartialEq)]
 pub struct Braces {
-    pub first_line: Option<Vec<Segment>>,
-    pub content: Vec<Block>,
+    pub segments: Vec<Segment>,
 }
 
 impl Braces {
@@ -49,20 +48,10 @@ impl Parse for ParseBraces<'_> {
         let mut input = input.start();
 
         input.parse('{')?;
-
-        let first_line = if input.can_parse(ParseLineEnd) {
-            input.try_parse(ParseLineBreak(self.ind));
-            None
-        } else {
-            let parser = Paragraph::parser(self.ind, Context::BracesFirstLine);
-            Some(input.parse(parser)?.segments)
-        };
-
-        let content = input.parse(Block::multi_parser(Context::Braces, self.ind))?;
-
+        let segments = input.parse(Paragraph::parser(self.ind, Context::Braces))?.segments;
         input.parse('}')?;
 
         input.apply();
-        Some(Braces { first_line, content })
+        Some(Braces { segments })
     }
 }

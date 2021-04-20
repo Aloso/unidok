@@ -1,6 +1,6 @@
 use crate::blocks::*;
 use crate::inlines::*;
-use crate::StrSlice;
+use crate::{collapse_text, StrSlice};
 
 /// A document, consisting of multiple [`BlockIr`]s.
 #[derive(Debug, Clone, PartialEq)]
@@ -51,7 +51,7 @@ pub enum SegmentIr<'a> {
     Math(MathIr),
     Link(LinkIr<'a>),
     Image(ImageIr<'a>),
-    Macro(MacroIr<'a>),
+    InlineMacro(InlineMacroIr<'a>),
     Format(InlineFormatIr<'a>),
     Code(CodeIr<'a>),
 }
@@ -108,10 +108,9 @@ pub struct QuoteIr<'a> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct BlockMacroIr<'a> {
-    pub name: &'a str,
-    pub args: Option<MacroArgs<'a>>,
-    pub content: Box<BlockIr<'a>>,
+pub enum BlockMacroIr<'a> {
+    AttrMacro { name: &'a str, args: Option<&'a str>, content: Box<BlockIr<'a>> },
+    BraceMacro { name: &'a str, args: Option<&'a str>, content: Vec<BlockIr<'a>> },
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -127,8 +126,7 @@ pub enum MacroArg<'a> {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct BracesIr<'a> {
-    pub first_line: Option<Vec<SegmentIr<'a>>>,
-    pub content: Vec<BlockIr<'a>>,
+    pub segments: Vec<SegmentIr<'a>>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -151,7 +149,7 @@ pub struct ImageIr<'a> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct MacroIr<'a> {
+pub struct InlineMacroIr<'a> {
     pub name: &'a str,
     pub args: Option<MacroArgs<'a>>,
     pub content: Box<SegmentIr<'a>>,
@@ -255,7 +253,7 @@ impl<'a> IntoIR<'a> for Paragraph {
     type IR = ParagraphIr<'a>;
 
     fn into_ir(self, text: &'a str) -> Self::IR {
-        ParagraphIr { segments: self.segments.into_ir(text) }
+        ParagraphIr { segments: collapse_text(self.segments).into_ir(text) }
     }
 }
 
@@ -273,7 +271,7 @@ impl<'a> IntoIR<'a> for Segment {
             Segment::Math(b) => SegmentIr::Math(b.into_ir(text)),
             Segment::Link(b) => SegmentIr::Link(b.into_ir(text)),
             Segment::Image(b) => SegmentIr::Image(b.into_ir(text)),
-            Segment::Macro(b) => SegmentIr::Macro(b.into_ir(text)),
+            Segment::InlineMacro(b) => SegmentIr::InlineMacro(b.into_ir(text)),
             Segment::Format(b) => SegmentIr::Format(b.into_ir(text)),
             Segment::Code(b) => SegmentIr::Code(b.into_ir(text)),
         }
@@ -284,7 +282,7 @@ impl<'a> IntoIR<'a> for Heading {
     type IR = HeadingIr<'a>;
 
     fn into_ir(self, text: &'a str) -> Self::IR {
-        HeadingIr { level: self.level, content: self.content.into_ir(text) }
+        HeadingIr { level: self.level, content: collapse_text(self.content).into_ir(text) }
     }
 }
 
@@ -316,7 +314,10 @@ impl<'a> IntoIR<'a> for TableCell {
     type IR = TableCellIr<'a>;
 
     fn into_ir(self, text: &'a str) -> Self::IR {
-        TableCellIr { meta: self.meta.into_ir(text), segments: self.segments.into_ir(text) }
+        TableCellIr {
+            meta: self.meta.into_ir(text),
+            segments: collapse_text(self.segments).into_ir(text),
+        }
     }
 }
 
@@ -359,10 +360,17 @@ impl<'a> IntoIR<'a> for BlockMacro {
     type IR = BlockMacroIr<'a>;
 
     fn into_ir(self, text: &'a str) -> Self::IR {
-        BlockMacroIr {
-            name: self.name.into_ir(text),
-            args: self.args.map(|_| todo!()),
-            content: self.content.into_ir(text),
+        match self {
+            BlockMacro::AttrMacro { name, args, content } => BlockMacroIr::AttrMacro {
+                name: name.into_ir(text),
+                args: args.into_ir(text),
+                content: content.into_ir(text),
+            },
+            BlockMacro::BraceMacro { name, args, content } => BlockMacroIr::BraceMacro {
+                name: name.into_ir(text),
+                args: args.into_ir(text),
+                content: content.into_ir(text),
+            },
         }
     }
 }
@@ -371,7 +379,7 @@ impl<'a> IntoIR<'a> for Braces {
     type IR = BracesIr<'a>;
 
     fn into_ir(self, text: &'a str) -> Self::IR {
-        BracesIr { first_line: self.first_line.into_ir(text), content: self.content.into_ir(text) }
+        BracesIr { segments: self.segments.into_ir(text) }
     }
 }
 
@@ -387,7 +395,7 @@ impl<'a> IntoIR<'a> for Link {
     type IR = LinkIr<'a>;
 
     fn into_ir(self, text: &'a str) -> Self::IR {
-        LinkIr { href: self.href, text: self.text.into_ir(text), title: self.title }
+        LinkIr { href: self.href, text: collapse_text(self.text).into_ir(text), title: self.title }
     }
 }
 
@@ -395,15 +403,15 @@ impl<'a> IntoIR<'a> for Image {
     type IR = ImageIr<'a>;
 
     fn into_ir(self, text: &'a str) -> Self::IR {
-        ImageIr { href: self.href, alt: self.alt.into_ir(text), title: self.title }
+        ImageIr { href: self.href, alt: collapse_text(self.alt).into_ir(text), title: self.title }
     }
 }
 
-impl<'a> IntoIR<'a> for Macro {
-    type IR = MacroIr<'a>;
+impl<'a> IntoIR<'a> for InlineMacro {
+    type IR = InlineMacroIr<'a>;
 
     fn into_ir(self, text: &'a str) -> Self::IR {
-        MacroIr {
+        InlineMacroIr {
             name: self.name.into_ir(text),
             args: self.args.map(|_| todo!()),
             content: self.content.into_ir(text),
@@ -415,7 +423,10 @@ impl<'a> IntoIR<'a> for InlineFormat {
     type IR = InlineFormatIr<'a>;
 
     fn into_ir(self, text: &'a str) -> Self::IR {
-        InlineFormatIr { formatting: self.formatting, content: self.content.into_ir(text) }
+        InlineFormatIr {
+            formatting: self.formatting,
+            content: collapse_text(self.content).into_ir(text),
+        }
     }
 }
 
@@ -423,6 +434,6 @@ impl<'a> IntoIR<'a> for Code {
     type IR = CodeIr<'a>;
 
     fn into_ir(self, text: &'a str) -> Self::IR {
-        CodeIr { content: self.content.into_ir(text) }
+        CodeIr { content: collapse_text(self.content).into_ir(text) }
     }
 }

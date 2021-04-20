@@ -59,6 +59,17 @@ impl StrSlice {
         StrSlice { start: self.start, end: other.end }
     }
 
+    /// Joins this slice with another slice. It succeeds if the slices are
+    /// adjacent, i.e. `self.end == other.start`.
+    #[inline]
+    pub fn try_join(self, other: Self) -> Option<Self> {
+        if self.end == other.start {
+            Some(StrSlice { start: self.start, end: other.end })
+        } else {
+            None
+        }
+    }
+
     /// Returns a subslice of this slice. This function accepts all kinds of
     /// ranges.
     pub fn get<T>(&self, index: T) -> StrSlice

@@ -12,7 +12,13 @@ pub enum Segment {
     Math(Math),
     Link(Link),
     Image(Image),
-    Macro(Macro),
+    InlineMacro(InlineMacro),
     Format(InlineFormat),
     Code(Code),
+}
+
+impl Default for Segment {
+    fn default() -> Self {
+        Segment::Text2("")
+    }
 }

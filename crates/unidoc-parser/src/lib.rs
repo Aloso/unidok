@@ -6,11 +6,13 @@ pub mod blocks;
 pub mod inlines;
 pub mod ir;
 
+mod collapse_text;
 mod input;
 mod parse;
 mod utils;
 
 use crate::blocks::{Block, Context};
+use crate::collapse_text::collapse_text;
 use crate::input::Input;
 use crate::ir::{DocIr, IntoIR};
 use crate::parse::{Parse, ParseInfallible};

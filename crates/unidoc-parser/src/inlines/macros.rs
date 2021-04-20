@@ -5,24 +5,24 @@ use crate::{Input, Parse, StrSlice};
 use super::*;
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Macro {
+pub struct InlineMacro {
     pub name: StrSlice,
     pub args: Option<StrSlice>,
     pub content: Box<Segment>,
 }
 
-impl Macro {
-    pub(crate) fn parser(ind: Indents<'_>) -> ParseMacro<'_> {
-        ParseMacro { ind }
+impl InlineMacro {
+    pub(crate) fn parser(ind: Indents<'_>) -> ParseInlineMacro<'_> {
+        ParseInlineMacro { ind }
     }
 }
 
-pub struct ParseMacro<'a> {
+pub struct ParseInlineMacro<'a> {
     ind: Indents<'a>,
 }
 
-impl Parse for ParseMacro<'_> {
-    type Output = Macro;
+impl Parse for ParseInlineMacro<'_> {
+    type Output = InlineMacro;
 
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
@@ -38,8 +38,8 @@ impl Parse for ParseMacro<'_> {
             input.parse(Code::parser(self.ind, pass))
         } {
             Segment::Code(code)
-        } else if let Some(mac) = input.parse(Macro::parser(self.ind)) {
-            Segment::Macro(mac)
+        } else if let Some(mac) = input.parse(InlineMacro::parser(self.ind)) {
+            Segment::InlineMacro(mac)
         } else if let Some(img) = input.parse(Image::parser(self.ind)) {
             Segment::Image(img)
         } else if let Some(link) = input.parse(Link::parser(self.ind)) {
@@ -52,7 +52,7 @@ impl Parse for ParseMacro<'_> {
         let content = Box::new(content);
 
         input.apply();
-        Some(Macro { name, args, content })
+        Some(InlineMacro { name, args, content })
     }
 }
 

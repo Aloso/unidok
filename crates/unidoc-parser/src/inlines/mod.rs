@@ -19,6 +19,6 @@ pub use images::Image;
 pub use limiters::Limiter;
 pub use line_breaks::LineBreak;
 pub use links::Link;
-pub use macros::Macro;
+pub use macros::InlineMacro;
 pub use math::Math;
 pub use segments::Segment;

@@ -18,7 +18,7 @@ pub use quotes::Quote;
 pub use tables::{Bius, CellAlignment, CellMeta, Table, TableCell, TableRow};
 pub use thematic_breaks::{ThematicBreak, ThematicBreakKind};
 
-use crate::utils::Indents;
+use crate::utils::{Indents, ParseLineBreak};
 use crate::{Input, Parse};
 
 /// A block
@@ -51,13 +51,19 @@ impl Block {
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Context {
+    BlockBraces,
     Braces,
-    BracesFirstLine,
     Table,
     LinkOrImg,
     Code(u8),
     Heading,
     Global,
+}
+
+impl Context {
+    pub fn can_contain_block_macro(self) -> bool {
+        !matches!(self, Context::Braces | Context::LinkOrImg | Context::Code(_))
+    }
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
@@ -86,7 +92,7 @@ impl Parse for ParseBlock<'_> {
             Some(Block::List(list))
         } else if let Some(quote) = input.parse(Quote::parser(ind)) {
             Some(Block::Quote(quote))
-        } else if let Some(mac) = input.parse(BlockMacro::parser(ind)) {
+        } else if let Some(mac) = input.parse(BlockMacro::parser(self.context, ind)) {
             Some(Block::BlockMacro(mac))
         } else {
             let p = input.parse(Paragraph::parser(ind, self.context))?;
@@ -120,6 +126,15 @@ impl Parse for ParseBlocks<'_> {
     type Output = Vec<Block>;
 
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+        loop {
+            if input.parse(ParseLineBreak(self.ind)).is_none() {
+                break;
+            }
+            if input.is_empty() {
+                return Some(vec![]);
+            }
+        }
+
         let parser = Block::parser(self.context, self.ind);
 
         let mut v = Vec::new();

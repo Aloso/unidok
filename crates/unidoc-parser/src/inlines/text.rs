@@ -1,8 +1,9 @@
 use std::convert::TryFrom;
 
+use crate::blocks::macros::ParseClosingBrace;
 use crate::blocks::paragraphs::ParseParagraph;
 use crate::blocks::Underline;
-use crate::utils::{ParseLineBreak, ParseLineEnd, WhileChar};
+use crate::utils::{ParseLineBreak, WhileChar};
 use crate::{Context, Input, StrSlice};
 
 use super::format::{is_in_word, is_not_flanking, FlankType, Flanking, FormatDelim};
@@ -23,7 +24,7 @@ pub(crate) enum Item {
     Math(Math),
     Link(Link),
     Image(Image),
-    Macro(Macro),
+    Macro(InlineMacro),
     Escaped(Escaped),
     LineBreak,
     Limiter,
@@ -56,7 +57,7 @@ pub(crate) enum StackItem {
     Math(Math),
     Link(Link),
     Image(Image),
-    Macro(Macro),
+    Macro(InlineMacro),
     Escaped(Escaped),
     LineBreak,
     Limiter,
@@ -145,7 +146,7 @@ pub(crate) fn stack_to_segments(stack: Vec<StackItem>) -> Vec<Segment> {
             StackItem::Math(m) => Segment::Math(m),
             StackItem::Link(l) => Segment::Link(l),
             StackItem::Image(i) => Segment::Image(i),
-            StackItem::Macro(m) => Segment::Macro(m),
+            StackItem::Macro(m) => Segment::InlineMacro(m),
             StackItem::Escaped(e) => Segment::Escaped(e),
             StackItem::LineBreak => Segment::LineBreak(LineBreak),
             StackItem::Limiter => Segment::Limiter(Limiter),
@@ -238,7 +239,7 @@ fn find_special_in_code(c: char) -> bool {
 fn find_special_for(s: &str, context: Context) -> Option<usize> {
     match context {
         Context::Global | Context::Heading => s.find(find_special),
-        Context::Braces | Context::BracesFirstLine => s.find(find_special_in_braces),
+        Context::BlockBraces | Context::Braces => s.find(find_special_in_braces),
         Context::Table => s.find(find_special_in_table),
         Context::LinkOrImg => s.find(find_special_in_link_or_img),
         Context::Code(_) => s.find(find_special_in_code),
@@ -353,7 +354,7 @@ impl ParseParagraph<'_> {
                     }
                 }
                 '@' => {
-                    if let Some(mac) = input.parse(Macro::parser(ind)) {
+                    if let Some(mac) = input.parse(InlineMacro::parser(ind)) {
                         items.push(Item::Macro(mac));
                     } else {
                         items.push(Item::Text(input.bump(1)));
@@ -385,8 +386,17 @@ impl ParseParagraph<'_> {
                         *open_brackets -= 1;
                     }
                 }
-                '}' if matches!(context, Context::Braces | Context::BracesFirstLine) => {
+                '}' if context == Context::Braces => {
                     return Some(true);
+                }
+                '}' if context == Context::BlockBraces => {
+                    if matches!(items.last(), Some(Item::LineBreak) | None)
+                        && input.can_parse(ParseClosingBrace(ind))
+                    {
+                        return Some(true);
+                    } else {
+                        items.push(Item::Text(input.bump(1)));
+                    }
                 }
 
                 '\n' | '\r' => {
@@ -397,24 +407,15 @@ impl ParseParagraph<'_> {
                     if input.parse(ParseLineBreak(ind)).is_some() {
                         items.push(Item::LineBreak);
 
-                        if let Context::Global | Context::Braces = context {
+                        if let Context::Global | Context::BlockBraces = context {
                             if let Some(u) = input.parse(Underline::parser(ind)) {
-                                if let Some(Item::LineBreak) = items.last() {
-                                    items.pop();
-                                }
+                                items.pop();
                                 items.push(Item::Underline(u));
                                 return Some(true);
                             }
                         }
 
-                        if input.can_parse(ParseLineEnd)
-                            && input.parse(ParseLineBreak(ind)).is_some()
-                        {
-                            items.push(Item::LineBreak);
-                            return Some(true);
-                        }
-
-                        if self.can_parse_block(input) {
+                        if input.can_parse(ParseLineBreak(ind)) || self.can_parse_block(input) {
                             return Some(true);
                         }
                     } else {

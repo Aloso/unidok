@@ -1,6 +1,6 @@
 use crate::inlines::text::{parse_paragraph_items, stack_to_segments};
 use crate::inlines::Segment;
-use crate::utils::Indents;
+use crate::utils::{Indents, ParseLineBreak};
 use crate::{Context, Input, Parse};
 
 use super::*;
@@ -36,7 +36,16 @@ impl Parse for ParseParagraph<'_> {
         }
 
         let stack = parse_paragraph_items(items);
-        let segments = stack_to_segments(stack);
+        let mut segments = stack_to_segments(stack);
+
+        if let Some(Segment::LineBreak(_)) = segments.last() {
+            segments.pop();
+        }
+
+        if let Context::BlockBraces | Context::Heading | Context::Global = self.context {
+            while input.parse(ParseLineBreak(self.ind)).is_some() && !input.is_empty() {}
+        }
+
         Some(Paragraph { segments, underline })
     }
 }
@@ -51,5 +60,6 @@ impl ParseParagraph<'_> {
             || input.can_parse(List::parser(ind))
             || input.can_parse(ThematicBreak::parser(ind))
             || input.can_parse(Quote::parser(ind))
+            || input.can_parse(BlockMacro::parser(self.context, ind))
     }
 }
