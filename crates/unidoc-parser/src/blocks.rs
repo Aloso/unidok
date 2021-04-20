@@ -36,6 +36,7 @@ impl Block {
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Context {
     Braces,
+    BracesFirstLine,
     Table,
     LinkOrImg,
     Code(u8),
@@ -72,7 +73,18 @@ impl Parse for ParseBlock<'_> {
         } else if let Some(mac) = input.parse(BlockMacro::parser(ind)) {
             Some(Block::BlockMacro(mac))
         } else {
-            Some(Block::Paragraph(input.parse(Paragraph::parser(ind, self.context))?))
+            let p = input.parse(Paragraph::parser(ind, self.context))?;
+            if let Some(u) = p.underline {
+                Some(Block::Heading(Heading {
+                    level: match u {
+                        Underline::Double => 1,
+                        Underline::Single => 2,
+                    },
+                    content: p.segments,
+                }))
+            } else {
+                Some(Block::Paragraph(p))
+            }
         }
     }
 

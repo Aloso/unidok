@@ -33,6 +33,20 @@ pub struct CellMeta {
     pub css: Vec<StrSlice>,
 }
 
+impl Default for CellMeta {
+    fn default() -> Self {
+        CellMeta {
+            is_header_cell: false,
+            alignment: CellAlignment::Unset,
+            vertical_alignment: CellAlignment::Unset,
+            rowspan: 1,
+            colspan: 1,
+            bius: Bius::new(),
+            css: vec![],
+        }
+    }
+}
+
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum CellAlignment {
     Unset,
@@ -127,12 +141,25 @@ impl Parse for ParseCellMata {
     type Output = CellMeta;
 
     fn parse(&self, input: &mut crate::Input) -> Option<Self::Output> {
+        let mut input = input.start();
+
         let is_header_cell = input.parse('#').is_some();
         let alignment = input.parse(ParseCellAlignment).unwrap();
         let vertical_alignment = input.parse(ParseCellAlignment).unwrap();
         let (rowspan, colspan, bius, css) =
             input.parse(ParseCellMetaBraces).unwrap_or_else(|| (1, 1, Bius::new(), vec![]));
 
+        match input.peek_char() {
+            Some(' ' | '\t') => {
+                input.bump(1);
+            }
+            Some('\n') | None => {}
+            _ => {
+                return Some(CellMeta::default());
+            }
+        }
+
+        input.apply();
         Some(CellMeta {
             is_header_cell,
             alignment,
@@ -176,7 +203,7 @@ impl Parse for ParseCellMetaBraces {
         let mut css = vec![];
 
         loop {
-            let idx = input.rest().find(|c| matches!(c, ',' | '}'))?;
+            let idx = input.rest().find(|c| matches!(c, ';' | '}'))?;
             if idx > 0 {
                 let word = input.bump(idx);
                 match word.to_str(input.text()) {
@@ -185,6 +212,8 @@ impl Parse for ParseCellMetaBraces {
                     "U" => bius = bius.underline(),
                     "S" => bius = bius.strikethrough(),
                     s => {
+                        let mut was_num = false;
+
                         if let Ok(n) = s.parse::<u16>() {
                             if bius.is_initial() && css.is_empty() {
                                 match &mut alignment {
@@ -193,26 +222,28 @@ impl Parse for ParseCellMetaBraces {
                                     }
                                     Some((_, v @ None)) => {
                                         *v = Some(n);
-                                        continue;
+                                        was_num = true;
                                     }
                                     h @ None => {
                                         *h = Some((n, None));
-                                        continue;
+                                        was_num = true;
                                     }
                                 }
                             }
                         }
-                        css.push(word);
+                        if !was_num {
+                            css.push(word);
+                        }
                     }
                 }
-                match input.peek_char().unwrap() {
-                    ',' => {
-                        input.bump(1);
-                        continue;
-                    }
-                    '}' => break,
-                    _ => unreachable!(),
-                }
+            }
+
+            let next = input.peek_char().unwrap();
+            input.bump(1);
+            match next {
+                ';' => continue,
+                '}' => break,
+                c => unreachable!("{:?} not expected", c),
             }
         }
 

@@ -1,5 +1,5 @@
 use crate::inlines::Segment;
-use crate::utils::Indents;
+use crate::utils::{Indents, ParseLineBreak, ParseLineEnd, ParseSpaces, WhileChar};
 use crate::{Context, Input, Parse};
 
 use super::Paragraph;
@@ -93,5 +93,49 @@ impl Parse for ParseHashes {
         }
         input.parse(' ')?;
         Some(level)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum Underline {
+    Double,
+    Single,
+}
+
+impl Underline {
+    pub(crate) fn parser(ind: Indents<'_>) -> ParseUnderline<'_> {
+        ParseUnderline { ind }
+    }
+}
+
+pub(crate) struct ParseUnderline<'a> {
+    ind: Indents<'a>,
+}
+
+impl Parse for ParseUnderline<'_> {
+    type Output = Underline;
+
+    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+        let mut input = input.start();
+
+        input.parse(ParseSpaces).unwrap();
+
+        let u = if input.parse("--").is_some() {
+            input.parse(WhileChar('-')).unwrap();
+            Underline::Single
+        } else if input.parse("==").is_some() {
+            input.parse(WhileChar('=')).unwrap();
+            Underline::Double
+        } else {
+            return None;
+        };
+
+        input.parse(ParseSpaces).unwrap();
+        input.parse(ParseLineEnd)?;
+
+        let _ = input.parse(ParseLineBreak(self.ind));
+
+        input.apply();
+        Some(u)
     }
 }

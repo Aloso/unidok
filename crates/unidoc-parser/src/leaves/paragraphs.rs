@@ -12,6 +12,7 @@ use super::*;
 #[derive(Debug, Clone, PartialEq)]
 pub struct Paragraph {
     pub segments: Vec<Segment>,
+    pub underline: Option<Underline>,
 }
 
 pub(crate) struct ParseParagraph<'a> {
@@ -29,13 +30,14 @@ impl Parse for ParseParagraph<'_> {
     type Output = Paragraph;
 
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
-        let items = self.lex_paragraph_items(input)?;
+        let (items, underline) = self.lex_paragraph_items(input)?;
         if items.is_empty() {
             return None;
         }
 
-        let segments = parse_paragraph_part(items);
-        Some(Paragraph { segments })
+        let stack = parse_paragraph_items(items);
+        let segments = stack_to_segments(stack);
+        Some(Paragraph { segments, underline })
     }
 }
 
@@ -47,6 +49,7 @@ impl ParseParagraph<'_> {
             || input.can_parse(Heading::parser(ind))
             || input.can_parse(Table::parser(ind))
             || input.can_parse(List::parser(ind))
+            || input.can_parse(ThematicBreak::parser(ind))
             || input.can_parse(Quote::parser(ind))
     }
 }
@@ -86,7 +89,7 @@ impl StackItem {
     }
 }
 
-fn parse_paragraph_part(items: Vec<Item>) -> Vec<Segment> {
+fn parse_paragraph_items(items: Vec<Item>) -> Vec<StackItem> {
     let mut stack = Vec::new();
     for it in items {
         match it {
@@ -113,10 +116,11 @@ fn parse_paragraph_part(items: Vec<Item>) -> Vec<Segment> {
             Item::Escaped(e) => stack.push(StackItem::Escaped(e)),
             Item::LineBreak => stack.push(StackItem::LineBreak),
             Item::Limiter => stack.push(StackItem::Limiter),
+            Item::Underline(_) => unreachable!("Unexpected underline"),
         }
     }
 
-    stack_to_segments(stack)
+    stack
 }
 
 fn stack_to_segments(stack: Vec<StackItem>) -> Vec<Segment> {
@@ -126,10 +130,35 @@ fn stack_to_segments(stack: Vec<StackItem>) -> Vec<Segment> {
         result.push(match it {
             StackItem::Text(t) => Segment::Text(t),
             StackItem::Text2(t) => Segment::Text2(t),
-            StackItem::Formatted { delim, content } => Segment::Format(InlineFormat {
-                formatting: delim.to_format(),
-                content: stack_to_segments(content),
-            }),
+            StackItem::Formatted { delim, content } => {
+                let delim_inner = match *content.as_slice() {
+                    [StackItem::Formatted { delim, .. }] => Some(delim),
+                    _ => None,
+                };
+
+                let mut content = stack_to_segments(content);
+                if matches!(delim, FormatDelim::Underscore | FormatDelim::Star)
+                    && content.len() == 1
+                    && Some(delim) == delim_inner
+                {
+                    let popped = content.pop().unwrap();
+                    if let Segment::Format(InlineFormat {
+                        formatting: Formatting::Italic,
+                        content: content_inner,
+                    }) = popped
+                    {
+                        Segment::Format(InlineFormat {
+                            formatting: Formatting::Bold,
+                            content: content_inner,
+                        })
+                    } else {
+                        content.push(popped);
+                        Segment::Format(InlineFormat { formatting: delim.to_format(), content })
+                    }
+                } else {
+                    Segment::Format(InlineFormat { formatting: delim.to_format(), content })
+                }
+            }
             StackItem::Code(c) => Segment::Code(c),
             StackItem::Math(m) => Segment::Math(m),
             StackItem::Link(l) => Segment::Link(l),
@@ -227,7 +256,7 @@ fn find_special_in_code(c: char) -> bool {
 fn find_special_for(s: &str, context: Context) -> Option<usize> {
     match context {
         Context::Global | Context::Heading => s.find(find_special),
-        Context::Braces => s.find(find_special_in_braces),
+        Context::Braces | Context::BracesFirstLine => s.find(find_special_in_braces),
         Context::Table => s.find(find_special_in_table),
         Context::LinkOrImg => s.find(find_special_in_link_or_img),
         Context::Code(_) => s.find(find_special_in_code),
@@ -235,7 +264,7 @@ fn find_special_for(s: &str, context: Context) -> Option<usize> {
 }
 
 impl ParseParagraph<'_> {
-    fn lex_paragraph_items(&self, input: &mut Input) -> Option<Vec<Item>> {
+    fn lex_paragraph_items(&self, input: &mut Input) -> Option<(Vec<Item>, Option<Underline>)> {
         let mut items = Vec::new();
 
         loop {
@@ -255,7 +284,14 @@ impl ParseParagraph<'_> {
             }
         }
 
-        Some(items)
+        let underline = if let Some(&Item::Underline(u)) = items.last() {
+            items.pop();
+            Some(u)
+        } else {
+            None
+        };
+
+        Some((items, underline))
     }
 
     /// Returns `true` if the loop should be exited
@@ -346,7 +382,7 @@ impl ParseParagraph<'_> {
                 ']' if context == Context::LinkOrImg => {
                     return Some(true);
                 }
-                '}' if context == Context::Braces => {
+                '}' if matches!(context, Context::Braces | Context::BracesFirstLine) => {
                     return Some(true);
                 }
 
@@ -357,6 +393,17 @@ impl ParseParagraph<'_> {
 
                     if input.parse(ParseLineBreak(ind)).is_some() {
                         items.push(Item::LineBreak);
+
+                        if let Context::Global | Context::Braces = context {
+                            if let Some(u) = input.parse(Underline::parser(ind)) {
+                                if let Some(Item::LineBreak) = items.last() {
+                                    items.pop();
+                                }
+                                items.push(Item::Underline(u));
+                                return Some(true);
+                            }
+                        }
+
                         if input.can_parse(ParseLineEnd)
                             && input.parse(ParseLineBreak(ind)).is_some()
                         {

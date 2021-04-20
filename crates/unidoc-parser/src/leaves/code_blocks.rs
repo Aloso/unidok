@@ -1,7 +1,7 @@
 use std::convert::TryInto;
 
 use crate::str::StrSlice;
-use crate::utils::{If, Indents, ParseLineBreak, ParseLineEnd, ParseNSpaces, ParseSpaces};
+use crate::utils::{Indents, ParseLineBreak, ParseLineEnd, ParseSpaces};
 use crate::{Input, Parse, UntilChar, WhileChar};
 
 #[rustfmt::skip]
@@ -99,15 +99,17 @@ impl Parse for ParseCodeBlock<'_> {
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
-        let indent = input.parse(ParseSpaces)?;
+        let indent = input.parse(ParseSpaces).unwrap();
+        let ind = self.ind.push_indent(indent);
 
         let fence = input.parse(ParseFence)?;
         let info = input.parse(ParseInfo(fence))?;
 
         let mut lines = Vec::new();
-        loop {
-            input.parse(ParseLineBreak(self.ind))?;
-            input.parse(ParseNSpaces(indent))?;
+        while !input.is_empty() {
+            if input.parse(ParseLineBreak(ind)).is_none() {
+                break;
+            }
 
             let mut input2 = input.start();
             if let Some(closing_fence) = input2.parse(ParseFence) {
@@ -118,7 +120,7 @@ impl Parse for ParseCodeBlock<'_> {
             }
             drop(input2);
 
-            let line = input.parse(UntilChar('\n'))?;
+            let line = input.parse(UntilChar(|c| matches!(c, '\n' | '\r')))?;
             lines.push(line);
         }
 
@@ -154,9 +156,15 @@ impl Parse for ParseInfo {
 
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         let s = input.parse(UntilChar(|c| matches!(c, '\n' | '\r'))).unwrap();
-        if let Fence::Backticks(_) = self.0 {
-            input.parse(If(!s.to_str(input.text()).contains('`')))?;
+
+        let c = match self.0 {
+            Fence::Backticks(_) => '`',
+            Fence::Tildes(_) => '~',
+        };
+        if s.to_str(input.text()).contains(c) {
+            return None;
         }
+
         Some(s)
     }
 }

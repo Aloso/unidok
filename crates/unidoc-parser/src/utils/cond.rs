@@ -19,36 +19,24 @@ pub struct Or<T, U>(pub T, pub U);
 impl<F: Fn(char) -> bool> Parse for UntilChar<F> {
     type Output = StrSlice;
 
+    #[inline]
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
-        let mut input = input.start();
-        loop {
-            match input.peek_char() {
-                Some(c) if self.0(c) => break,
-                Some(c) => {
-                    input.bump(c.len_utf8() as usize);
-                }
-                None => break,
-            };
+        match input.rest().find(&self.0) {
+            Some(i) => Some(input.bump(i)),
+            None => Some(input.bump(input.len())),
         }
-        Some(input.apply())
     }
 }
 
 impl Parse for UntilChar<char> {
     type Output = StrSlice;
 
+    #[inline]
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
-        let mut input = input.start();
-        loop {
-            match input.peek_char() {
-                Some(c) if c == self.0 => break,
-                Some(c) => {
-                    input.bump(c.len_utf8() as usize);
-                }
-                None => break,
-            };
+        match input.rest().find(self.0) {
+            Some(i) => Some(input.bump(i)),
+            None => Some(input.bump(input.len())),
         }
-        Some(input.apply())
     }
 }
 
@@ -105,6 +93,7 @@ where
 {
     type Output = T::Output;
 
+    #[inline]
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         match self.0.parse(input) {
             Some(res) => Some(res),

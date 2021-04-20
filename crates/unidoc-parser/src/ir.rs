@@ -4,11 +4,14 @@ use crate::leaves::*;
 use crate::str::StrSlice;
 use crate::Block;
 
+/// A document, consisting of multiple [`BlockIr`]s.
 #[derive(Debug, Clone, PartialEq)]
 pub struct DocIr<'a> {
     pub blocks: Vec<BlockIr<'a>>,
 }
 
+/// A block. This can be a container (list or blockquote) or a leaf block (code
+/// block, comment, heading, table, thematic break, block macro or paragraph).
 #[derive(Debug, Clone, PartialEq)]
 pub enum BlockIr<'a> {
     CodeBlock(CodeBlockIr<'a>),

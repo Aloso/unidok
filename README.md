@@ -339,41 +339,61 @@ https://spec.commonmark.org/0.29/#images
 
 * Code blocks
 
-    * Allow open fenced code blocks
-    * Syntax highlighting
-    * Support the `@PASS` macro
-    * Support callouts
-
-* Setext headings
+  * Syntax highlighting
+  * Support the `@PASS` macro
+  * Support callouts
+  * Allow closing fence to be indented more than the opening one
 
 * HTML tags
 
 * Lists with numbers
 
-* Table row/column/cell styling
+* Table column styling with `@COLS(col1 |col2 |col3 |col3)`
 
-    * Cell: After the bar comes a _cell modifier_, which consists of
-        1. An optional `#` to indicate a header cell
-        2. 0 to 2 alignment symbols for horizontal and vertical alignment
-            * `<` means left/top alignment (the default)
-            * `>` means right/bottom alignment
-            * `^` means center alignment
-        3. Optional braces with a comma-separated list of values:
-            * `{3}` means the cell spans 3 columns
-            * `{1,3}` means the cell spans 3 rows
-            * `{B,I,U,S}` makes the cell bold, italic, underlined and strikethrough
-            * The braces can contain CSS, e.g. `{width:5%}` or `{border:1px solid red}`
-    * Column: `@COLS(|col1 |col2 |col3 |col3)` where `colN` is a cell modifier
-        * For example: `@COLS(|#^ |^ |{B,max-width:30%} | | |{B})`
+* Links
 
-* Auto-links
+  * Auto-links
+  * Link reference definitions
+  * Forbid nested links
+  * URLs in angle brackets?
 
-* Lower to IR, expand macros, then lower IR to HTML
+* Expand macros, then lower IR to HTML
 
 * Char replacements
 
 * Handle indenting properly
 
+* Handle multiple blank lines and leading and trailing whitespace properly
+
+* Customize meaning of online formatting delimiters
+
+  * `*`, `_` and `` ` `` are built-in, but the following chars can be used for anything: `~`, `^`, `#`, `+`, `!`, `?`, `´`, `=`, `:`, `;`
+  * They only work when text is surrounded by a left-flanking delimiter on the left and a right-flanking delimiter on the right, e.g. the following isn't bold: `Hello ** world **!`
+
+* Allow disabling some parsers:
+
+  * Tables
+  * Braces in table cell modifiers
+  * HTML: Either accept only allowlisted tags, or don't accept forbidden tags
+  * Insecure macros
+  * Char replacements (insecure character U+0000 replacement can't be disabled)
+  * Math formulas
+  * Limiter
+  * Checkboxes
+  * Autolinks
+  * ATX headings
+  * Setext headings
+
+  Less important:
+
+  - Lists
+  - Blockquotes
+  - Thematic breaks
+  - Fenced code blocks
+  - Link reference definitions
+  - Code spans
+  - Emphasis, strong emphasis
+  - Links, images
 
 --------
 [1]: #fn1 "Footnote 1"

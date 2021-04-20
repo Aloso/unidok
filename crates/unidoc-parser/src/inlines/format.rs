@@ -1,6 +1,7 @@
 use std::cmp::Ordering;
 use std::convert::TryFrom;
 
+use crate::leaves::Underline;
 use crate::str::StrSlice;
 
 use super::*;
@@ -63,6 +64,7 @@ pub(crate) enum Item {
     Escaped(Escaped),
     LineBreak,
     Limiter,
+    Underline(Underline),
 }
 
 impl Default for Item {
