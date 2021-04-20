@@ -229,7 +229,7 @@ fn is_compatible(left: Flanking, right: Flanking, left_count: u8, right_count: u
 fn find_special(c: char) -> bool {
     matches!(
         c,
-        '*' | '_' | '~' | '^' | '#' | '`' | '%' | '[' | '!' | '@' | '\\' | '$' | '\n' | '\r'
+        '*' | '_' | '~' | '^' | '#' | '`' | '%' | '[' | ']' | '!' | '@' | '\\' | '$' | '\n' | '\r'
     )
 }
 
@@ -266,6 +266,7 @@ fn find_special_for(s: &str, context: Context) -> Option<usize> {
 impl ParseParagraph<'_> {
     fn lex_paragraph_items(&self, input: &mut Input) -> Option<(Vec<Item>, Option<Underline>)> {
         let mut items = Vec::new();
+        let mut open_brackets = 0;
 
         loop {
             let skip_bytes =
@@ -279,7 +280,12 @@ impl ParseParagraph<'_> {
                 break;
             }
 
-            if self.handle_char(input, &mut items, input.peek_char().unwrap())? {
+            if self.handle_char(
+                input,
+                &mut items,
+                input.peek_char().unwrap(),
+                &mut open_brackets,
+            )? {
                 break;
             }
         }
@@ -295,7 +301,13 @@ impl ParseParagraph<'_> {
     }
 
     /// Returns `true` if the loop should be exited
-    fn handle_char(&self, input: &mut Input, items: &mut Vec<Item>, sym: char) -> Option<bool> {
+    fn handle_char(
+        &self,
+        input: &mut Input,
+        items: &mut Vec<Item>,
+        sym: char,
+        open_brackets: &mut u32,
+    ) -> Option<bool> {
         let ind = self.ind;
         let context = self.context;
 
@@ -344,6 +356,7 @@ impl ParseParagraph<'_> {
                     if let Some(link) = input.parse(Link::parser(ind)) {
                         items.push(Item::Link(link));
                     } else {
+                        *open_brackets += 1;
                         items.push(Item::Text(input.bump(1)));
                     }
                 }
@@ -380,7 +393,12 @@ impl ParseParagraph<'_> {
                     return Some(true);
                 }
                 ']' if context == Context::LinkOrImg => {
-                    return Some(true);
+                    if *open_brackets == 0 {
+                        return Some(true);
+                    } else {
+                        items.push(Item::Text(input.bump(1)));
+                        *open_brackets -= 1;
+                    }
                 }
                 '}' if matches!(context, Context::Braces | Context::BracesFirstLine) => {
                     return Some(true);

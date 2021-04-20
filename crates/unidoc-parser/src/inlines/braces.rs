@@ -54,7 +54,7 @@ impl Parse for ParseBraces<'_> {
             input.try_parse(ParseLineBreak(self.ind));
             None
         } else {
-            let parser = Paragraph::parser(self.ind, Context::Braces);
+            let parser = Paragraph::parser(self.ind, Context::BracesFirstLine);
             Some(input.parse(parser)?.segments)
         };
 
