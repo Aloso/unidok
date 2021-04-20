@@ -1,5 +1,5 @@
-use crate::utils::{Indents, ParseLineBreak, ParseSpaces};
-use crate::{Input, Parse, WhileChar};
+use crate::utils::{Indents, ParseLineBreak, ParseSpaces, WhileChar};
+use crate::{Input, Parse};
 
 /// A thematic break, consisting of at least three stars (`***`) or underscores
 /// (`___`).
@@ -35,7 +35,7 @@ impl Parse for ParseThematicBreak<'_> {
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
-        let _ = input.parse(ParseSpaces);
+        input.parse_i(ParseSpaces);
 
         let (kind, parser) = if input.parse("***").is_some() {
             (ThematicBreakKind::Stars, WhileChar('*'))
@@ -46,9 +46,9 @@ impl Parse for ParseThematicBreak<'_> {
         } else {
             return None;
         };
-        let len = 3 + input.parse(parser)?.len();
+        let len = 3 + input.parse_i(parser).len();
 
-        let _ = input.parse(ParseSpaces);
+        input.parse_i(ParseSpaces);
         input.parse(ParseLineBreak(self.ind))?;
 
         input.apply();

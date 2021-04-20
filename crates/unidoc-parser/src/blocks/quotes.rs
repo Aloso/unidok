@@ -57,7 +57,7 @@ impl Parse for ParseQuote<'_> {
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
-        let ind = self.ind.push_indent(input.parse(ParseSpaces)?);
+        let ind = self.ind.push_indent(input.parse_i(ParseSpaces));
 
         input.parse(ParseQuoteMarker)?;
         let ind = ind.push_quote();

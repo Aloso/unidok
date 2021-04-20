@@ -1,4 +1,4 @@
-use crate::{Input, Parse};
+use crate::{Input, Parse, ParseInfallible};
 
 /// Parses 0 or more spaces or tabs. This parser never fails.
 pub struct ParseSpaces;
@@ -7,11 +7,11 @@ pub struct ParseNSpaces(pub u8);
 
 pub struct ParseAtMostNSpaces(pub u8);
 
-impl Parse for ParseSpaces {
+impl ParseInfallible for ParseSpaces {
     type Output = u8;
 
     #[inline]
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse_infallible(&self, input: &mut Input) -> Self::Output {
         let mut res = 0;
         let mut len = 0;
         let rest = input.rest();
@@ -31,7 +31,7 @@ impl Parse for ParseSpaces {
         if len > 0 {
             input.bump(len);
         }
-        Some(res)
+        res
     }
 }
 

@@ -13,9 +13,9 @@ mod utils;
 use crate::blocks::{Block, Context};
 use crate::input::Input;
 use crate::ir::{DocIr, IntoIR};
-use crate::parse::Parse;
-use crate::utils::cond::{UntilChar, WhileChar};
-use detached_str as str;
+use crate::parse::{Parse, ParseInfallible};
+
+pub use detached_str::{Str, StrSlice, StrSliceIndex};
 
 pub fn parse(s: &str) -> DocIr {
     let mut input = Input::new(s);

@@ -1,7 +1,6 @@
 use crate::inlines::Braces;
-use crate::str::StrSlice;
-use crate::utils::Indents;
-use crate::{Input, Parse, UntilChar};
+use crate::utils::{Indents, UntilChar};
+use crate::{Input, Parse, StrSlice};
 
 use super::*;
 
@@ -89,7 +88,7 @@ impl Parse for ParseMacroArgs {
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
         input.parse('(')?;
-        let content = input.parse(UntilChar(|c| c == ')'))?;
+        let content = input.parse_i(UntilChar(|c| c == ')'));
         input.parse(')')?;
         input.apply();
         Some(content)

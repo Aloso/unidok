@@ -21,17 +21,15 @@ pub use thematic_breaks::{ThematicBreak, ThematicBreakKind};
 use crate::utils::Indents;
 use crate::{Input, Parse};
 
+/// A block
 #[derive(Debug, Clone, PartialEq)]
 pub enum Block {
-    // Leaves
     CodeBlock(CodeBlock),
     Comment(Comment),
     Paragraph(Paragraph),
     Heading(Heading),
     Table(Table),
     ThematicBreak(ThematicBreak),
-
-    // Containers
     List(List),
     Quote(Quote),
     BlockMacro(BlockMacro),

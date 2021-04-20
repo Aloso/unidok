@@ -1,64 +1,18 @@
 use std::convert::TryInto;
 
-use crate::str::StrSlice;
-use crate::utils::{Indents, ParseLineBreak, ParseLineEnd, ParseSpaces};
-use crate::{Input, Parse, UntilChar, WhileChar};
+use crate::utils::{Indents, ParseLineBreak, ParseLineEnd, ParseSpaces, UntilChar, WhileChar};
+use crate::{Input, Parse, StrSlice};
 
 #[rustfmt::skip]
-/// A code block.
+/// A code block
 ///
-/// ### Syntax
+/// ### Example
 ///
 /// ````md
 /// ```rust
 /// pub struct Foo;
 /// ```
 /// ````
-///
-/// The code block is enclosed with lines that contain at least 3 backticks. The
-/// number of backticks must be equal at the start and at the end.
-///
-/// At the end of the first line, it's possible to add metadata, which is a
-/// comma-separated list of words. These words can be
-///
-/// - The programming language of the code, which should be syntax highlighted
-/// - The `diff` keyword, which highlights added and removed lines (indicated by
-///   a leading `+` or `-`); this can be combined with a programming language
-/// - Parsing directives, such as `+macros`, which parses and expands macros
-///   within the code block.
-///
-/// ### Syntax highlighting
-///
-/// Syntax highlighting happens _after_ expansion and formatting of the content.
-/// It works like this:
-///
-/// - The _text content_, i.e. the visible text in the document is obtained by
-///   removing all HTML elements.
-/// - The text content is passed to a syntax highlighter. This returns a HTML
-///   tree where parts that should be colored have a CSS class.
-/// - The previously removed HTML elements are inserted into the HTML tree
-///   again. If necessary, elements are split if they overlap with the previous
-///   elements.
-///
-/// Example:
-///
-/// 1.  ```html
-///     fn hello<i class="underscore">_</i>world();
-///     ```
-///
-/// 2.  ```html
-///     fn hello_world();
-///     ```
-///
-/// 3.  ```html
-///     <span class="kw">fn</span> <span class="ident">hello_world</span><span class="punct">();</span>
-///     ```
-///
-/// 4.  ```html
-///     <span class="kw">fn</span> <span class="ident">hello<i class="underscore">_</i>world</span><span class="punct">();</span>
-///     ```
-///
-/// You can configure unidoc to use `<i>` instead of `<span>` elements for syntax highlighting.
 #[derive(Debug, Clone, PartialEq)]
 pub struct CodeBlock {
     pub info: StrSlice,
@@ -99,7 +53,7 @@ impl Parse for ParseCodeBlock<'_> {
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
-        let indent = input.parse(ParseSpaces).unwrap();
+        let indent = input.parse_i(ParseSpaces);
         let ind = self.ind.push_indent(indent);
 
         let fence = input.parse(ParseFence)?;
@@ -120,7 +74,7 @@ impl Parse for ParseCodeBlock<'_> {
             }
             drop(input2);
 
-            let line = input.parse(UntilChar(|c| matches!(c, '\n' | '\r')))?;
+            let line = input.parse_i(UntilChar(|c| matches!(c, '\n' | '\r')));
             lines.push(line);
         }
 
@@ -136,11 +90,11 @@ impl Parse for ParseFence {
 
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         if input.can_parse("```") {
-            let count = input.parse(WhileChar('`'))?.len();
+            let count = input.parse_i(WhileChar('`')).len();
             let count = count.try_into().ok()?;
             Some(Fence::Backticks(count))
         } else if input.can_parse("~~~") {
-            let count = input.parse(WhileChar('~'))?.len();
+            let count = input.parse_i(WhileChar('~')).len();
             let count = count.try_into().ok()?;
             Some(Fence::Tildes(count))
         } else {
@@ -155,7 +109,7 @@ impl Parse for ParseInfo {
     type Output = StrSlice;
 
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
-        let s = input.parse(UntilChar(|c| matches!(c, '\n' | '\r'))).unwrap();
+        let s = input.parse_i(UntilChar(|c| matches!(c, '\n' | '\r')));
 
         let c = match self.0 {
             Fence::Backticks(_) => '`',

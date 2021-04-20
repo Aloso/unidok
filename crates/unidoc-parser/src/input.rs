@@ -1,7 +1,6 @@
 use std::ops::{Deref, DerefMut};
 
-use crate::str::{Str, StrSlice};
-use crate::Parse;
+use crate::{Parse, ParseInfallible, Str, StrSlice};
 
 #[derive(Debug, Clone)]
 pub struct Input {
@@ -65,6 +64,12 @@ impl Input {
     #[must_use]
     pub fn parse<P: Parse>(&mut self, parser: P) -> Option<P::Output> {
         parser.parse(self)
+    }
+
+    /// This parses the specified parser and returns the result. The parser
+    /// can't fail.
+    pub fn parse_i<P: ParseInfallible>(&mut self, parser: P) -> P::Output {
+        parser.parse_infallible(self)
     }
 
     /// This tries to parse the specified parser. If it doesn't succeed, nothing

@@ -1,5 +1,5 @@
 use super::*;
-use crate::str::StrSlice;
+use crate::StrSlice;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Segment {

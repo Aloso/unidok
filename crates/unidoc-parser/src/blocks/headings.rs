@@ -4,43 +4,17 @@ use crate::{Context, Input, Parse};
 
 use super::Paragraph;
 
-/// A heading.
+/// A heading
 ///
-/// A heading can have one of 6 sizes (in HTML: `<h1>` to `<h6>`). The first
-/// heading is the level-1 heading. All level-2 headings after that are
-/// subordinate to this, and the level-3 headings are subordinate to the level-2
-/// headings, and so on.
-///
-/// ### Syntax
-///
-/// ```markdown
-/// ## Level-2 heading
-///
-/// Section
-/// ```
-///
-/// A heading must appear at the beginning of a line. It must start with 1 to 6
-/// number signs, followed by at least one space.
-///
-/// Headings can't contain line breaks, but if a heading contains braces, these
-/// braces can contain line breaks.
-///
-/// Attributes applied to a heading actually applies to the whole section of the
-/// heading. For example, this:
+/// ### Examples
 ///
 /// ````markdown
-/// [.foo]
-/// # Heading
-/// bla bla bla
-/// ````
+/// Heading 1
+/// =======
 ///
-/// generates HTML similar to this:
-///
-/// ````html
-/// <div class="foo">
-///     <h1>Heading</h1>
-///     <p>bla bla bla</p>
-/// </div>
+/// Heading 2
+/// -------
+/// ### Heading 3
 /// ````
 #[derive(Debug, Clone, PartialEq)]
 pub struct Heading {
@@ -127,22 +101,22 @@ impl Parse for ParseUnderline<'_> {
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
-        input.parse(ParseSpaces).unwrap();
+        input.parse_i(ParseSpaces);
 
         let u = if input.parse("--").is_some() {
-            input.parse(WhileChar('-')).unwrap();
+            input.parse_i(WhileChar('-'));
             Underline::Single
         } else if input.parse("==").is_some() {
-            input.parse(WhileChar('=')).unwrap();
+            input.parse_i(WhileChar('='));
             Underline::Double
         } else {
             return None;
         };
 
-        input.parse(ParseSpaces).unwrap();
+        input.parse_i(ParseSpaces);
         input.parse(ParseLineEnd)?;
 
-        let _ = input.parse(ParseLineBreak(self.ind));
+        input.try_parse(ParseLineBreak(self.ind));
 
         input.apply();
         Some(u)

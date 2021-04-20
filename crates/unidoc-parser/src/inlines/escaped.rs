@@ -1,5 +1,5 @@
-use crate::str::StrSlice;
-use crate::{Input, Parse, WhileChar};
+use crate::utils::WhileChar;
+use crate::{Input, Parse, StrSlice};
 
 /// Text escaped with the escape character, `\`. All ASCII characters that are
 /// visible and not whitespace or alphanumeric can be escaped:
@@ -43,7 +43,7 @@ impl Parse for ParseEscape {
         }
         input.bump(1);
         if matches!(c, '*' | '_' | '`' | '~' | '^' | '#') {
-            input.parse(WhileChar(c))?;
+            input.parse_i(WhileChar(c));
         }
 
         let text = input.apply().get(1..);

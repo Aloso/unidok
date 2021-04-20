@@ -1,6 +1,6 @@
 use crate::blocks::*;
 use crate::inlines::*;
-use crate::str::StrSlice;
+use crate::StrSlice;
 
 /// A document, consisting of multiple [`BlockIr`]s.
 #[derive(Debug, Clone, PartialEq)]

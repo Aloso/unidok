@@ -29,7 +29,7 @@ impl Parse for ParseCode<'_> {
         let mut input = input.start();
 
         input.parse('`')?;
-        let len = (1 + input.parse(WhileChar('`')).unwrap().len()).try_into().ok()?;
+        let len = (1 + input.parse_i(WhileChar('`')).len()).try_into().ok()?;
 
         let mut content = if self.pass {
             input.parse(Paragraph::parser(self.ind, Context::Code(len)))?.segments
@@ -47,7 +47,7 @@ impl Parse for ParseCode<'_> {
                         if input.parse(ParseCodeEndDelimiter { len }).is_some() {
                             break;
                         } else {
-                            let backticks = input.parse(WhileChar('`')).unwrap();
+                            let backticks = input.parse_i(WhileChar('`'));
                             content.push(Segment::Text(backticks));
                         }
                     }
@@ -116,7 +116,7 @@ impl Parse for ParseCodeEndDelimiter {
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
-        let backticks = input.parse(WhileChar('`')).unwrap().len();
+        let backticks = input.parse_i(WhileChar('`')).len();
         if backticks != self.len as usize {
             return None;
         }

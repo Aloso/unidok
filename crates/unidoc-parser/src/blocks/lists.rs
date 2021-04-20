@@ -1,6 +1,20 @@
-use crate::utils::{Indents, ParseLineBreak, ParseLineEnd};
-use crate::{Block, Context, Parse, WhileChar};
+use crate::utils::{Indents, ParseLineBreak, ParseLineEnd, WhileChar};
+use crate::{Block, Context, Parse};
 
+/// A list
+///
+/// ### Examples
+///
+/// ````md
+/// - List item 1
+/// - List item 2
+///
+/// + List item 3
+/// + List item 4
+///
+/// 5. List item 5
+/// 0. List item 6
+/// ````
 #[derive(Debug, Clone, PartialEq)]
 pub struct List {
     pub indent_spaces: u8,
@@ -92,7 +106,7 @@ impl Parse for ParseBullet {
     fn parse(&self, input: &mut crate::Input) -> Option<Self::Output> {
         let mut input = input.start();
 
-        let indent = input.parse(WhileChar(' '))?.len();
+        let indent = input.parse_i(WhileChar(' ')).len();
         if indent > 200 {
             return None;
         }

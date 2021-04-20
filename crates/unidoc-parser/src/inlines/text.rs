@@ -2,9 +2,8 @@ use std::convert::TryFrom;
 
 use crate::blocks::paragraphs::ParseParagraph;
 use crate::blocks::Underline;
-use crate::str::StrSlice;
 use crate::utils::{ParseLineBreak, ParseLineEnd, WhileChar};
-use crate::{Context, Input};
+use crate::{Context, Input, StrSlice};
 
 use super::format::{is_in_word, is_not_flanking, FlankType, Flanking, FormatDelim};
 use super::*;
@@ -299,7 +298,7 @@ impl ParseParagraph<'_> {
 
         if let Ok(delim) = FormatDelim::try_from(sym) {
             let left = input.prev_char();
-            let cs = input.parse(WhileChar(sym))?;
+            let cs = input.parse_i(WhileChar(sym));
             let right = input.peek_char();
 
             if (sym == '_' && is_in_word(left, right)) || is_not_flanking(left, right) {
@@ -319,16 +318,16 @@ impl ParseParagraph<'_> {
             match sym {
                 '`' => {
                     if let Context::Code(len) = context {
-                        let backticks = input.parse(WhileChar('`')).unwrap().len();
+                        let backticks = input.parse_i(WhileChar('`')).len();
                         if backticks == len as usize {
                             return Some(true);
                         } else {
-                            items.push(Item::Text(input.parse(WhileChar('`')).unwrap()));
+                            items.push(Item::Text(input.parse_i(WhileChar('`'))));
                         }
                     } else if let Some(code) = input.parse(Code::parser(ind, false)) {
                         items.push(Item::Code(code));
                     } else {
-                        items.push(Item::Text(input.parse(WhileChar('`')).unwrap()));
+                        items.push(Item::Text(input.parse_i(WhileChar('`'))));
                     }
                 }
                 '%' => {

@@ -1,7 +1,6 @@
 use crate::inlines::Segment;
-use crate::str::StrSlice;
 use crate::utils::{If, Indents, ParseLineBreak, ParseLineEnd};
-use crate::{Context, Parse};
+use crate::{Context, Parse, ParseInfallible, StrSlice};
 
 use super::Paragraph;
 
@@ -114,7 +113,7 @@ impl Parse for ParseRow<'_> {
         let mut contents = Vec::new();
 
         loop {
-            let meta = input.parse(ParseCellMata).unwrap();
+            let meta = input.parse_i(ParseCellMeta);
             let segments = input.parse(Paragraph::parser(self.ind, Context::Table))?.segments;
 
             contents.push(TableCell { meta, segments });
@@ -135,17 +134,17 @@ impl Parse for ParseRow<'_> {
     }
 }
 
-struct ParseCellMata;
+struct ParseCellMeta;
 
-impl Parse for ParseCellMata {
+impl ParseInfallible for ParseCellMeta {
     type Output = CellMeta;
 
-    fn parse(&self, input: &mut crate::Input) -> Option<Self::Output> {
+    fn parse_infallible(&self, input: &mut crate::Input) -> Self::Output {
         let mut input = input.start();
 
         let is_header_cell = input.parse('#').is_some();
-        let alignment = input.parse(ParseCellAlignment).unwrap();
-        let vertical_alignment = input.parse(ParseCellAlignment).unwrap();
+        let alignment = input.parse_i(ParseCellAlignment);
+        let vertical_alignment = input.parse_i(ParseCellAlignment);
         let (rowspan, colspan, bius, css) =
             input.parse(ParseCellMetaBraces).unwrap_or_else(|| (1, 1, Bius::new(), vec![]));
 
@@ -154,38 +153,28 @@ impl Parse for ParseCellMata {
                 input.bump(1);
             }
             Some('\n') | None => {}
-            _ => {
-                return Some(CellMeta::default());
-            }
+            _ => return CellMeta::default(),
         }
 
         input.apply();
-        Some(CellMeta {
-            is_header_cell,
-            alignment,
-            vertical_alignment,
-            rowspan,
-            colspan,
-            bius,
-            css,
-        })
+        CellMeta { is_header_cell, alignment, vertical_alignment, rowspan, colspan, bius, css }
     }
 }
 
 struct ParseCellAlignment;
 
-impl Parse for ParseCellAlignment {
+impl ParseInfallible for ParseCellAlignment {
     type Output = CellAlignment;
 
-    fn parse(&self, input: &mut crate::Input) -> Option<Self::Output> {
+    fn parse_infallible(&self, input: &mut crate::Input) -> Self::Output {
         let al = match input.peek_char() {
             Some('<') => CellAlignment::LeftTop,
             Some('>') => CellAlignment::RightBottom,
             Some('^') => CellAlignment::Center,
-            _ => return Some(CellAlignment::Unset),
+            _ => return CellAlignment::Unset,
         };
         input.bump(1);
-        Some(al)
+        al
     }
 }
 

@@ -17,3 +17,11 @@ pub trait Parse {
         self.parse(&mut input.start()).is_some()
     }
 }
+
+/// The trait to implement for parsers.
+pub trait ParseInfallible {
+    type Output;
+
+    /// The parse function.
+    fn parse_infallible(&self, input: &mut Input) -> Self::Output;
+}

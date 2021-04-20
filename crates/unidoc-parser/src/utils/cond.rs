@@ -1,8 +1,8 @@
-use crate::str::StrSlice;
-use crate::{Input, Parse};
+use crate::parse::ParseInfallible;
+use crate::{Input, Parse, StrSlice};
 
 /// Parses until the given `char` parser matches. The matched char itself isn't
-/// included.
+/// included. This parser never fails.
 pub struct UntilChar<T>(pub T);
 
 /// Parses while the given `char` parser matches. The first char that doesn't
@@ -16,34 +16,34 @@ pub struct If(pub bool);
 /// Parses either the left or, if that fails, the right parser.
 pub struct Or<T, U>(pub T, pub U);
 
-impl<F: Fn(char) -> bool> Parse for UntilChar<F> {
+impl<F: Fn(char) -> bool> ParseInfallible for UntilChar<F> {
     type Output = StrSlice;
 
     #[inline]
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse_infallible(&self, input: &mut Input) -> Self::Output {
         match input.rest().find(&self.0) {
-            Some(i) => Some(input.bump(i)),
-            None => Some(input.bump(input.len())),
+            Some(i) => input.bump(i),
+            None => input.bump(input.len()),
         }
     }
 }
 
-impl Parse for UntilChar<char> {
+impl ParseInfallible for UntilChar<char> {
     type Output = StrSlice;
 
     #[inline]
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse_infallible(&self, input: &mut Input) -> Self::Output {
         match input.rest().find(self.0) {
-            Some(i) => Some(input.bump(i)),
-            None => Some(input.bump(input.len())),
+            Some(i) => input.bump(i),
+            None => input.bump(input.len()),
         }
     }
 }
 
-impl<F: Fn(char) -> bool> Parse for WhileChar<F> {
+impl<F: Fn(char) -> bool> ParseInfallible for WhileChar<F> {
     type Output = StrSlice;
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse_infallible(&self, input: &mut Input) -> Self::Output {
         let mut input = input.start();
         loop {
             match input.peek_char() {
@@ -53,14 +53,14 @@ impl<F: Fn(char) -> bool> Parse for WhileChar<F> {
                 _ => break,
             };
         }
-        Some(input.apply())
+        input.apply()
     }
 }
 
-impl Parse for WhileChar<char> {
+impl ParseInfallible for WhileChar<char> {
     type Output = StrSlice;
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse_infallible(&self, input: &mut Input) -> Self::Output {
         let mut input = input.start();
         loop {
             match input.peek_char() {
@@ -70,7 +70,7 @@ impl Parse for WhileChar<char> {
                 _ => break,
             };
         }
-        Some(input.apply())
+        input.apply()
     }
 }
 
