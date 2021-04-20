@@ -340,6 +340,10 @@ https://spec.commonmark.org/0.29/#images
 
 ## Roadmap
 
+* Lists with numbers
+
+* Handle multiple blank lines and leading and trailing whitespace properly
+
 * Code blocks
 
   * Syntax highlighting
@@ -348,8 +352,6 @@ https://spec.commonmark.org/0.29/#images
   * Allow closing fence to be indented more than the opening one
 
 * HTML tags
-
-* Lists with numbers
 
 * Table column styling with `@COLS(col1 |col2 |col3 |col3)`
 
@@ -362,11 +364,30 @@ https://spec.commonmark.org/0.29/#images
 
 * Expand macros, then lower IR to HTML
 
-* Char replacements
+* Replacements
+
+  * U+0000 unsafe character
+  * Quotes: `"`, `'`
+  * Apostrophe: `'`
+  * Arrows: `->`, `=>`, `<-`, `<=`, `<->`, `<=>`
+  * Em dash: `--`
+  * Ellipsis: `...`
+  * Symbols: `(C)`, `(TM)`, `(R)`
+  * Mathematical relations (disabled by default):
+    `=!=`, `=<=`, `=>=`, `=~=`, `===`, `~~`, `-<`, `>-`
+  * Mathematical escape sequences (disabled by default):
+    `%+%`, `%-%`, `%+-%`, `%-+%`, `%/%`, `%:%`, `%*%`, `%.%`, `%~%`, `%<%`, `%>%`, `%<<%`, `%>>%`,
+    `%alpha%`, `%Alpha%`, `%beta%`, ..., `%pi%`, ..., `%Omega%`,
+    `%sqrt%`, `%cross%`, `%x%`, `%o%`, `|->`,
+    `%empty%`, `%in%`, `%not_in%`, `%contains%`, `%not_contains%`,
+    `%c%`, `-c-`, `-!c-`, `%superset%`, `%superset_eq%`, `%proper_superset%`,
+    `%union%`, `%intersection%`, `(-)`,
+    `%not%`, `%or%`, `%and%`, `%ex_or%`, `%forall%`, `%exists%`, `%true%`, `%false%`,
+    `%N%`, `%Z%`, `%Q%`, `%R%`, `%C%`, `%H%`, `%F%`, `%inf%`, `%aleph%` ...
+    * <https://en.wikipedia.org/wiki/Glossary_of_mathematical_symbols>
+  * Custom, e.g.: `?!`, `!?`
 
 * Handle indenting properly
-
-* Handle multiple blank lines and leading and trailing whitespace properly
 
 * Customize meaning of online formatting delimiters
 
