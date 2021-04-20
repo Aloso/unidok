@@ -22,4 +22,3 @@ pub use links::Link;
 pub use macros::Macro;
 pub use math::Math;
 pub use segments::Segment;
-pub use text::Text;

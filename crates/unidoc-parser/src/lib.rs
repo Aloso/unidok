@@ -2,17 +2,13 @@
 #[macro_use]
 mod test_macros;
 
-pub mod containers;
+pub mod blocks;
 pub mod inlines;
 pub mod ir;
-pub mod leaves;
-
-mod utils;
-
-mod blocks;
 
 mod input;
 mod parse;
+mod utils;
 
 use crate::blocks::{Block, Context};
 use crate::input::Input;

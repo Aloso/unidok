@@ -1,6 +1,6 @@
 use std::convert::TryInto;
 
-use crate::leaves::Paragraph;
+use crate::blocks::Paragraph;
 use crate::utils::{Indents, ParseLineBreak, ParseLineEnd, WhileChar};
 use crate::{Context, Input, Parse};
 

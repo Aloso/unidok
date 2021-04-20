@@ -1,4 +1,4 @@
-use crate::leaves::Paragraph;
+use crate::blocks::Paragraph;
 use crate::utils::{Indents, ParseLineBreak, ParseLineEnd};
 use crate::{Block, Context, Input, Parse};
 

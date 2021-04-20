@@ -1,10 +1,7 @@
 use std::cmp::Ordering;
 use std::convert::TryFrom;
 
-use crate::leaves::Underline;
-use crate::str::StrSlice;
-
-use super::*;
+use super::Segment;
 
 /// Inline formatting (bold, italic, etc.)
 ///
@@ -43,34 +40,6 @@ pub enum Formatting {
     StrikeThrough,
     Superscript,
     Subscript,
-}
-
-#[derive(Debug, Clone)]
-pub(crate) enum Item {
-    Text(StrSlice),
-    FormatDelim {
-        /// the type of delimiter
-        delim: FormatDelim,
-        /// whether the delimiter is left-flanking, right-flanking, or both
-        flanking: Flanking,
-        /// number of characters in the delimiter (mod 3)
-        count: u8,
-    },
-    Code(Code),
-    Math(Math),
-    Link(Link),
-    Image(Image),
-    Macro(Macro),
-    Escaped(Escaped),
-    LineBreak,
-    Limiter,
-    Underline(Underline),
-}
-
-impl Default for Item {
-    fn default() -> Self {
-        Item::Text(StrSlice::default())
-    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

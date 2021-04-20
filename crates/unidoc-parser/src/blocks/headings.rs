@@ -45,6 +45,7 @@ use super::Paragraph;
 #[derive(Debug, Clone, PartialEq)]
 pub struct Heading {
     pub level: u8,
+    pub kind: HeadingKind,
     pub content: Vec<Segment>,
 }
 
@@ -52,6 +53,14 @@ impl Heading {
     pub(crate) fn parser(ind: Indents<'_>) -> ParseHeading<'_> {
         ParseHeading { ind }
     }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum HeadingKind {
+    /// A heading with leading number signs
+    Atx,
+    /// A heading underlined with dashes or equal signs
+    Setext,
 }
 
 pub(crate) struct ParseHeading<'a> {
@@ -68,7 +77,7 @@ impl Parse for ParseHeading<'_> {
         let content = input.parse(Paragraph::parser(self.ind, Context::Heading))?.segments;
 
         input.apply();
-        Some(Heading { level, content })
+        Some(Heading { level, content, kind: HeadingKind::Atx })
     }
 
     fn can_parse(&self, input: &mut Input) -> bool {

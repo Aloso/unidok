@@ -1,6 +1,6 @@
 use std::mem::replace;
 
-use crate::leaves::Paragraph;
+use crate::blocks::Paragraph;
 use crate::utils::Indents;
 use crate::{Context, Input, Parse};
 

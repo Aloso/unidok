@@ -1,5 +1,23 @@
-use crate::containers::*;
-use crate::leaves::*;
+pub(crate) mod code_blocks;
+pub(crate) mod comments;
+pub(crate) mod headings;
+pub(crate) mod lists;
+pub(crate) mod macros;
+pub(crate) mod paragraphs;
+pub(crate) mod quotes;
+pub(crate) mod tables;
+pub(crate) mod thematic_breaks;
+
+pub use code_blocks::{CodeBlock, Fence};
+pub use comments::Comment;
+pub use headings::{Heading, HeadingKind, Underline};
+pub use lists::{Bullet, List};
+pub use macros::BlockMacro;
+pub use paragraphs::Paragraph;
+pub use quotes::Quote;
+pub use tables::{Bius, CellAlignment, CellMeta, Table, TableCell, TableRow};
+pub use thematic_breaks::{ThematicBreak, ThematicBreakKind};
+
 use crate::utils::Indents;
 use crate::{Input, Parse};
 
@@ -20,16 +38,16 @@ pub enum Block {
 }
 
 impl Block {
-    pub fn parser(context: Context, ind: Indents<'_>) -> ParseBlock<'_> {
+    pub(crate) fn parser(context: Context, ind: Indents<'_>) -> ParseBlock<'_> {
         ParseBlock { context, ind }
     }
 
-    pub fn multi_parser(context: Context, ind: Indents<'_>) -> ParseNodes<'_> {
-        ParseNodes { context, ind }
+    pub(crate) fn multi_parser(context: Context, ind: Indents<'_>) -> ParseBlocks<'_> {
+        ParseBlocks { context, ind }
     }
 
-    pub fn global_parser<'a>() -> ParseNodes<'a> {
-        ParseNodes { context: Context::Global, ind: Indents::new() }
+    pub(crate) fn global_parser<'a>() -> ParseBlocks<'a> {
+        ParseBlocks { context: Context::Global, ind: Indents::new() }
     }
 }
 
@@ -80,6 +98,7 @@ impl Parse for ParseBlock<'_> {
                         Underline::Double => 1,
                         Underline::Single => 2,
                     },
+                    kind: HeadingKind::Setext,
                     content: p.segments,
                 }))
             } else {
@@ -94,12 +113,12 @@ impl Parse for ParseBlock<'_> {
 }
 
 #[derive(Debug)]
-pub struct ParseNodes<'a> {
+pub(crate) struct ParseBlocks<'a> {
     context: Context,
     ind: Indents<'a>,
 }
 
-impl Parse for ParseNodes<'_> {
+impl Parse for ParseBlocks<'_> {
     type Output = Vec<Block>;
 
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {

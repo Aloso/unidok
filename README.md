@@ -13,7 +13,8 @@ Unidoc should look familiar if you're familiar with Markdown. It follows the Com
 * It does not support indented code blocks, only fenced code blocks;
   this greatly simplifies the rules about indenting
 
-* It does not support _laziness_, i.e. in a list item or blockquote, all lines must be indented or preceded with `>` respectively, not just the first line
+* It does not support _laziness_, i.e. in a list item or blockquote,
+  all lines must be indented or preceded with `>` respectively, not just the first line
 
 * It does not support URLs in angle brackets
 
@@ -22,6 +23,8 @@ Unidoc should look familiar if you're familiar with Markdown. It follows the Com
 * It doesn't have hard line breaks (use `<br>` instead)
 
 * Thematic breaks (e.g. `----`) can't have internal spaces
+
+* Links can be nested
 
 Unidoc tries to only deprecate CommonJS features that are rarely used in practice, and/or that greatly simplify the parsing rules.
 
