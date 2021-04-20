@@ -20,7 +20,7 @@ use super::Paragraph;
 pub struct Heading {
     pub level: u8,
     pub kind: HeadingKind,
-    pub content: Vec<Segment>,
+    pub segments: Vec<Segment>,
 }
 
 impl Heading {
@@ -48,10 +48,10 @@ impl Parse for ParseHeading<'_> {
         let mut input = input.start();
 
         let level = input.parse(ParseHashes)?;
-        let content = input.parse(Paragraph::parser(self.ind, Context::Heading))?.segments;
+        let segments = input.parse(Paragraph::parser(self.ind, Context::Heading))?.segments;
 
         input.apply();
-        Some(Heading { level, content, kind: HeadingKind::Atx })
+        Some(Heading { level, segments, kind: HeadingKind::Atx })
     }
 
     fn can_parse(&self, input: &mut Input) -> bool {

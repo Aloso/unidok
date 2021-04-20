@@ -19,7 +19,7 @@ use crate::{Block, Context, Parse};
 pub struct List {
     pub indent_spaces: u8,
     pub bullet: Bullet,
-    pub content: Vec<Vec<Block>>,
+    pub items: Vec<Vec<Block>>,
 }
 
 impl List {
@@ -71,10 +71,10 @@ impl Parse for ParseList<'_> {
         let (indent_spaces, bullet) = input.parse(ParseBullet { first: true })?;
         let ind = self.ind.push_indent(indent_spaces);
 
-        let mut content = Vec::new();
+        let mut items = Vec::new();
         loop {
             let content_parser = Block::multi_parser(Context::Global, ind);
-            content.push(input.parse(content_parser)?);
+            items.push(input.parse(content_parser)?);
 
             if input.parse(ParseLineBreak(self.ind)).is_none() {
                 break;
@@ -91,7 +91,7 @@ impl Parse for ParseList<'_> {
         }
 
         input.apply();
-        Some(List { indent_spaces, bullet, content })
+        Some(List { indent_spaces, bullet, items })
     }
 }
 

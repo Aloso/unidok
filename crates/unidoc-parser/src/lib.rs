@@ -5,6 +5,7 @@ mod test_macros;
 pub mod blocks;
 pub mod inlines;
 pub mod ir;
+pub mod visitor;
 
 mod collapse_text;
 mod input;

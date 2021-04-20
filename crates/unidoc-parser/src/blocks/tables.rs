@@ -12,7 +12,7 @@ pub struct Table {
 #[derive(Debug, Clone, PartialEq)]
 pub struct TableRow {
     pub is_header_row: bool,
-    pub contents: Vec<TableCell>,
+    pub cells: Vec<TableCell>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -130,7 +130,7 @@ impl Parse for ParseRow<'_> {
         }
 
         input.apply();
-        Some(TableRow { is_header_row, contents })
+        Some(TableRow { is_header_row, cells: contents })
     }
 }
 

@@ -8,7 +8,7 @@ use super::Segment;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Code {
-    pub content: Vec<Segment>,
+    pub segments: Vec<Segment>,
 }
 
 impl Code {
@@ -31,15 +31,15 @@ impl Parse for ParseCode<'_> {
         input.parse('`')?;
         let len = (1 + input.parse_i(WhileChar('`')).len()).try_into().ok()?;
 
-        let mut content = if self.pass {
+        let mut segments = if self.pass {
             input.parse(Paragraph::parser(self.ind, Context::Code(len)))?.segments
         } else {
-            let mut content = Vec::new();
+            let mut segments = Vec::new();
 
             loop {
                 let i = input.rest().find(find_special)?;
                 if i > 0 {
-                    content.push(Segment::Text(input.bump(i)));
+                    segments.push(Segment::Text(input.bump(i)));
                 }
 
                 match input.peek_char().unwrap() {
@@ -48,12 +48,12 @@ impl Parse for ParseCode<'_> {
                             break;
                         } else {
                             let backticks = input.parse_i(WhileChar('`'));
-                            content.push(Segment::Text(backticks));
+                            segments.push(Segment::Text(backticks));
                         }
                     }
                     '\n' | '\r' => {
                         input.parse(ParseLineBreak(self.ind))?;
-                        content.push(Segment::Text2(" "));
+                        segments.push(Segment::Text2(" "));
                         if input.can_parse(ParseLineEnd) {
                             return None;
                         }
@@ -62,10 +62,10 @@ impl Parse for ParseCode<'_> {
                 }
             }
 
-            content
+            segments
         };
 
-        if let Some(s) = content.first_mut() {
+        if let Some(s) = segments.first_mut() {
             match s {
                 Segment::Text(s) => {
                     if s.to_str(input.text()).starts_with(' ') {
@@ -81,7 +81,7 @@ impl Parse for ParseCode<'_> {
             }
         }
 
-        if let Some(s) = content.last_mut() {
+        if let Some(s) = segments.last_mut() {
             match s {
                 Segment::Text(s) => {
                     if s.to_str(input.text()).ends_with(' ') {
@@ -98,7 +98,7 @@ impl Parse for ParseCode<'_> {
         }
 
         input.apply();
-        Some(Code { content })
+        Some(Code { segments })
     }
 }
 

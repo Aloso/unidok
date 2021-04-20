@@ -30,7 +30,7 @@ use super::Segment;
 #[derive(Debug, Clone, PartialEq)]
 pub struct InlineFormat {
     pub formatting: Formatting,
-    pub content: Vec<Segment>,
+    pub segments: Vec<Segment>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

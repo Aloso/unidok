@@ -103,7 +103,7 @@ impl Parse for ParseBlock<'_> {
                         Underline::Single => 2,
                     },
                     kind: HeadingKind::Setext,
-                    content: p.segments,
+                    segments: p.segments,
                 }))
             } else {
                 Some(Block::Paragraph(p))

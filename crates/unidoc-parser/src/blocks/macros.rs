@@ -12,8 +12,8 @@ use crate::{Block, Context, Input, Parse, StrSlice};
 /// ````
 #[derive(Debug, Clone, PartialEq)]
 pub enum BlockMacro {
-    AttrMacro { name: StrSlice, args: Option<StrSlice>, content: Box<Block> },
-    BraceMacro { name: StrSlice, args: Option<StrSlice>, content: Vec<Block> },
+    AttrMacro { name: StrSlice, args: Option<StrSlice>, block: Box<Block> },
+    BraceMacro { name: StrSlice, args: Option<StrSlice>, blocks: Vec<Block> },
 }
 
 impl BlockMacro {
@@ -40,14 +40,14 @@ impl Parse for ParseBlockMacro<'_> {
         let args = input.parse(ParseMacroArgs);
 
         let mac = if input.parse(ParseLineBreak(ind)).is_some() {
-            let content = Box::new(input.parse(Block::parser(self.context, ind))?);
+            let block = Box::new(input.parse(Block::parser(self.context, ind))?);
 
-            BlockMacro::AttrMacro { name, args, content }
+            BlockMacro::AttrMacro { name, args, block }
         } else if input.parse(ParseOpeningBrace(self.ind)).is_some() {
-            let content = input.parse(Block::multi_parser(Context::BlockBraces, ind))?;
+            let blocks = input.parse(Block::multi_parser(Context::BlockBraces, ind))?;
             input.try_parse(ParseClosingBrace(self.ind));
 
-            BlockMacro::BraceMacro { name, args, content }
+            BlockMacro::BraceMacro { name, args, blocks }
         } else {
             return None;
         };

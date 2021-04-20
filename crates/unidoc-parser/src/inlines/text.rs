@@ -127,19 +127,25 @@ pub(crate) fn stack_to_segments(stack: Vec<StackItem>) -> Vec<Segment> {
                     let popped = content.pop().unwrap();
                     if let Segment::Format(InlineFormat {
                         formatting: Formatting::Italic,
-                        content: content_inner,
+                        segments: content_inner,
                     }) = popped
                     {
                         Segment::Format(InlineFormat {
                             formatting: Formatting::Bold,
-                            content: content_inner,
+                            segments: content_inner,
                         })
                     } else {
                         content.push(popped);
-                        Segment::Format(InlineFormat { formatting: delim.to_format(), content })
+                        Segment::Format(InlineFormat {
+                            formatting: delim.to_format(),
+                            segments: content,
+                        })
                     }
                 } else {
-                    Segment::Format(InlineFormat { formatting: delim.to_format(), content })
+                    Segment::Format(InlineFormat {
+                        formatting: delim.to_format(),
+                        segments: content,
+                    })
                 }
             }
             StackItem::Code(c) => Segment::Code(c),
