@@ -18,6 +18,7 @@ impl Input {
         &self.text
     }
 
+    #[must_use]
     pub fn start(&mut self) -> ModifyInput<'_> {
         let prev_idx = self.idx;
         ModifyInput { input: self, prev_idx }

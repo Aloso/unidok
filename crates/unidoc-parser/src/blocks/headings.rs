@@ -89,6 +89,13 @@ impl Underline {
     pub(crate) fn parser(ind: Indents<'_>) -> ParseUnderline<'_> {
         ParseUnderline { ind }
     }
+
+    pub fn level(self) -> u8 {
+        match self {
+            Underline::Double => 1,
+            Underline::Single => 2,
+        }
+    }
 }
 
 pub(crate) struct ParseUnderline<'a> {

@@ -20,6 +20,7 @@ pub trait IrVisitor {
             BlockIr::List(b) => self.visit_list(b),
             BlockIr::Quote(b) => self.visit_quote(b),
             BlockIr::BlockMacro(b) => self.visit_block_macro(b),
+            BlockIr::BlockHtml(h) => self.visit_html_node(h, false),
         }
     }
 
@@ -95,6 +96,7 @@ pub trait IrVisitor {
             SegmentIr::Link(l) => self.visit_link(l),
             SegmentIr::Image(i) => self.visit_image(i),
             SegmentIr::InlineMacro(m) => self.visit_inline_macro(m),
+            SegmentIr::InlineHtml(h) => self.visit_html_node(h, true),
             SegmentIr::Format(f) => self.visit_inline_format(f),
             SegmentIr::Code(c) => self.visit_code(c),
 
@@ -126,7 +128,7 @@ pub trait IrVisitor {
     }
 
     fn visit_inline_macro(&mut self, mac: &mut InlineMacroIr) {
-        self.visit_segment(&mut mac.segments);
+        self.visit_segment(&mut mac.segment);
     }
 
     fn visit_inline_format(&mut self, fmt: &mut InlineFormatIr) {
@@ -140,4 +142,31 @@ pub trait IrVisitor {
             self.visit_segment(segment);
         }
     }
+
+    fn visit_html_node(&mut self, node: &mut HtmlNodeIr, is_inline: bool) {
+        match node {
+            HtmlNodeIr::Element(element) => {
+                self.visit_html_element(element, is_inline);
+            }
+            HtmlNodeIr::ClosingTag(_) => {}
+            HtmlNodeIr::Cdata(_) => {}
+            HtmlNodeIr::Comment(_) => {}
+            HtmlNodeIr::Doctype(_) => {}
+        }
+    }
+
+    fn visit_html_element(&mut self, element: &mut ElementIr, _is_inline: bool) {
+        self.visit_html_attributes(&mut element.attrs);
+
+        if let Some(content) = &mut element.content {
+            use ElemContentIr::*;
+            if let Blocks(blocks) = content {
+                for block in blocks {
+                    self.visit_block(block);
+                }
+            }
+        }
+    }
+
+    fn visit_html_attributes(&mut self, _attrs: &mut Vec<AttrIr>) {}
 }

@@ -1,4 +1,5 @@
 use super::*;
+use crate::html::{ElemName, HtmlNode};
 use crate::StrSlice;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -13,8 +14,15 @@ pub enum Segment {
     Link(Link),
     Image(Image),
     InlineMacro(InlineMacro),
+    InlineHtml(HtmlNode),
     Format(InlineFormat),
     Code(Code),
+}
+
+impl Segment {
+    pub fn is_closing_tag_for(&self, name: ElemName) -> bool {
+        matches!(*self, Segment::InlineHtml(HtmlNode::ClosingTag(n)) if n == name)
+    }
 }
 
 impl Default for Segment {

@@ -30,6 +30,8 @@ impl Parse for ParseParagraph<'_> {
     type Output = Paragraph;
 
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+        use Context::*;
+
         let (items, underline) = self.lex_paragraph_items(input)?;
         if items.is_empty() {
             return None;
@@ -42,7 +44,7 @@ impl Parse for ParseParagraph<'_> {
             segments.pop();
         }
 
-        if let Context::BlockBraces | Context::Heading | Context::Global = self.context {
+        if let BlockBraces | Heading | Global | Html(_) = self.context {
             while input.parse(ParseLineBreak(self.ind)).is_some() && !input.is_empty() {}
         }
 

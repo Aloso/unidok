@@ -8,7 +8,7 @@ use super::*;
 pub struct InlineMacro {
     pub name: StrSlice,
     pub args: Option<StrSlice>,
-    pub segments: Box<Segment>,
+    pub segment: Box<Segment>,
 }
 
 impl InlineMacro {
@@ -31,7 +31,7 @@ impl Parse for ParseInlineMacro<'_> {
         let name = input.parse(ParseMacroName)?;
         let args = input.parse(ParseMacroArgs);
 
-        let segments = if let Some(braces) = input.parse(Braces::parser(self.ind)) {
+        let segment = if let Some(braces) = input.parse(Braces::parser(self.ind)) {
             Segment::Braces(braces)
         } else if let Some(code) = {
             let pass = name.to_str(input.text()) == "PASS";
@@ -49,10 +49,10 @@ impl Parse for ParseInlineMacro<'_> {
         } else {
             return None;
         };
-        let segments = Box::new(segments);
+        let segment = Box::new(segment);
 
         input.apply();
-        Some(InlineMacro { name, args, segments })
+        Some(InlineMacro { name, args, segment })
     }
 }
 

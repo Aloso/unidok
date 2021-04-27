@@ -3,6 +3,7 @@ use std::convert::TryFrom;
 use crate::blocks::macros::ParseClosingBrace;
 use crate::blocks::paragraphs::ParseParagraph;
 use crate::blocks::Underline;
+use crate::html::{Element, HtmlNode};
 use crate::utils::{ParseLineBreak, WhileChar};
 use crate::{Context, Input, StrSlice};
 
@@ -25,6 +26,7 @@ pub(crate) enum Item {
     Link(Link),
     Image(Image),
     Macro(InlineMacro),
+    Html(HtmlNode),
     Escaped(Escaped),
     LineBreak,
     Limiter,
@@ -58,6 +60,7 @@ pub(crate) enum StackItem {
     Link(Link),
     Image(Image),
     Macro(InlineMacro),
+    Html(HtmlNode),
     Escaped(Escaped),
     LineBreak,
     Limiter,
@@ -96,6 +99,7 @@ pub(crate) fn parse_paragraph_items(items: Vec<Item>) -> Vec<StackItem> {
             Item::Link(l) => stack.push(StackItem::Link(l)),
             Item::Image(i) => stack.push(StackItem::Image(i)),
             Item::Macro(m) => stack.push(StackItem::Macro(m)),
+            Item::Html(h) => stack.push(StackItem::Html(h)),
             Item::Escaped(e) => stack.push(StackItem::Escaped(e)),
             Item::LineBreak => stack.push(StackItem::LineBreak),
             Item::Limiter => stack.push(StackItem::Limiter),
@@ -153,6 +157,7 @@ pub(crate) fn stack_to_segments(stack: Vec<StackItem>) -> Vec<Segment> {
             StackItem::Link(l) => Segment::Link(l),
             StackItem::Image(i) => Segment::Image(i),
             StackItem::Macro(m) => Segment::InlineMacro(m),
+            StackItem::Html(h) => Segment::InlineHtml(h),
             StackItem::Escaped(e) => Segment::Escaped(e),
             StackItem::LineBreak => Segment::LineBreak(LineBreak),
             StackItem::Limiter => Segment::Limiter(Limiter),
@@ -215,10 +220,12 @@ fn is_compatible(left: Flanking, right: Flanking, left_count: u8, right_count: u
 }
 
 #[inline]
+#[allow(unused_parens)]
 fn find_special(c: char) -> bool {
     matches!(
         c,
-        '*' | '_' | '~' | '^' | '#' | '`' | '%' | '[' | ']' | '!' | '@' | '\\' | '$' | '\n' | '\r'
+        ('*' | '_' | '~' | '^' | '#' | '`')
+            | ('%' | '[' | ']' | '!' | '@' | '\\' | '$' | '<' | '\n' | '\r')
     )
 }
 
@@ -244,7 +251,7 @@ fn find_special_in_code(c: char) -> bool {
 
 fn find_special_for(s: &str, context: Context) -> Option<usize> {
     match context {
-        Context::Global | Context::Heading => s.find(find_special),
+        Context::Global | Context::Heading | Context::Html(_) => s.find(find_special),
         Context::BlockBraces | Context::Braces => s.find(find_special_in_braces),
         Context::Table => s.find(find_special_in_table),
         Context::LinkOrImg => s.find(find_special_in_link_or_img),
@@ -376,6 +383,20 @@ impl ParseParagraph<'_> {
                 '$' => {
                     if input.parse(Limiter::parser()).is_some() {
                         items.push(Item::Limiter);
+                    } else {
+                        items.push(Item::Text(input.bump(1)));
+                    }
+                }
+                '<' => {
+                    if let Some(html) = input.parse(HtmlNode::parser(ind)) {
+                        items.push(Item::Html(html));
+                    } else if let Context::Html(elem) = context {
+                        if input.parse(Element::closing_tag_parser(elem)).is_some() {
+                            items.push(Item::Html(HtmlNode::ClosingTag(elem)));
+                            return Some(true);
+                        } else {
+                            items.push(Item::Text(input.bump(1)));
+                        }
                     } else {
                         items.push(Item::Text(input.bump(1)));
                     }

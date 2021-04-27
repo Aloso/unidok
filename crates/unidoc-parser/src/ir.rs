@@ -1,4 +1,5 @@
 use crate::blocks::*;
+use crate::html::{Attr, AttrQuotes, ElemClose, ElemContent, ElemName, Element, HtmlNode};
 use crate::inlines::*;
 use crate::{collapse_text, StrSlice};
 
@@ -21,6 +22,7 @@ pub enum BlockIr<'a> {
     List(ListIr<'a>),
     Quote(QuoteIr<'a>),
     BlockMacro(BlockMacroIr<'a>),
+    BlockHtml(HtmlNodeIr<'a>),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -52,6 +54,7 @@ pub enum SegmentIr<'a> {
     Link(LinkIr<'a>),
     Image(ImageIr<'a>),
     InlineMacro(InlineMacroIr<'a>),
+    InlineHtml(HtmlNodeIr<'a>),
     Format(InlineFormatIr<'a>),
     Code(CodeIr<'a>),
 }
@@ -152,7 +155,7 @@ pub struct ImageIr<'a> {
 pub struct InlineMacroIr<'a> {
     pub name: &'a str,
     pub args: Option<&'a str>,
-    pub segments: Box<SegmentIr<'a>>,
+    pub segment: Box<SegmentIr<'a>>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -164,6 +167,37 @@ pub struct InlineFormatIr<'a> {
 #[derive(Debug, Clone, PartialEq)]
 pub struct CodeIr<'a> {
     pub segments: Vec<SegmentIr<'a>>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum HtmlNodeIr<'a> {
+    Element(ElementIr<'a>),
+    ClosingTag(ElemName),
+    Cdata(&'a str),
+    Comment(&'a str),
+    Doctype(&'a str),
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct ElementIr<'a> {
+    pub name: ElemName,
+    pub attrs: Vec<AttrIr<'a>>,
+    pub content: Option<ElemContentIr<'a>>,
+    pub close: ElemClose,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct AttrIr<'a> {
+    pub key: &'a str,
+    pub value: Option<&'a str>,
+    pub quotes: AttrQuotes,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum ElemContentIr<'a> {
+    Blocks(Vec<BlockIr<'a>>),
+    Inline(Vec<SegmentIr<'a>>),
+    Verbatim(&'a str),
 }
 
 pub trait IntoIR<'a> {
@@ -224,6 +258,7 @@ impl<'a> IntoIR<'a> for Block {
             Block::List(b) => BlockIr::List(b.into_ir(text)),
             Block::Quote(b) => BlockIr::Quote(b.into_ir(text)),
             Block::BlockMacro(b) => BlockIr::BlockMacro(b.into_ir(text)),
+            Block::BlockHtml(h) => BlockIr::BlockHtml(h.into_ir(text)),
         }
     }
 }
@@ -272,6 +307,7 @@ impl<'a> IntoIR<'a> for Segment {
             Segment::Link(b) => SegmentIr::Link(b.into_ir(text)),
             Segment::Image(b) => SegmentIr::Image(b.into_ir(text)),
             Segment::InlineMacro(b) => SegmentIr::InlineMacro(b.into_ir(text)),
+            Segment::InlineHtml(h) => SegmentIr::InlineHtml(h.into_ir(text)),
             Segment::Format(b) => SegmentIr::Format(b.into_ir(text)),
             Segment::Code(b) => SegmentIr::Code(b.into_ir(text)),
         }
@@ -379,7 +415,7 @@ impl<'a> IntoIR<'a> for Braces {
     type IR = BracesIr<'a>;
 
     fn into_ir(self, text: &'a str) -> Self::IR {
-        BracesIr { segments: self.segments.into_ir(text) }
+        BracesIr { segments: collapse_text(self.segments).into_ir(text) }
     }
 }
 
@@ -414,7 +450,7 @@ impl<'a> IntoIR<'a> for InlineMacro {
         InlineMacroIr {
             name: self.name.into_ir(text),
             args: self.args.into_ir(text),
-            segments: self.segments.into_ir(text),
+            segment: self.segment.into_ir(text),
         }
     }
 }
@@ -435,5 +471,52 @@ impl<'a> IntoIR<'a> for Code {
 
     fn into_ir(self, text: &'a str) -> Self::IR {
         CodeIr { segments: collapse_text(self.segments).into_ir(text) }
+    }
+}
+
+impl<'a> IntoIR<'a> for HtmlNode {
+    type IR = HtmlNodeIr<'a>;
+
+    fn into_ir(self, text: &'a str) -> Self::IR {
+        match self {
+            HtmlNode::Element(e) => HtmlNodeIr::Element(e.into_ir(text)),
+            HtmlNode::ClosingTag(c) => HtmlNodeIr::ClosingTag(c),
+            HtmlNode::Cdata(c) => HtmlNodeIr::Cdata(c.into_ir(text)),
+            HtmlNode::Comment(c) => HtmlNodeIr::Comment(c.into_ir(text)),
+            HtmlNode::Doctype(d) => HtmlNodeIr::Doctype(d.into_ir(text)),
+        }
+    }
+}
+
+impl<'a> IntoIR<'a> for Element {
+    type IR = ElementIr<'a>;
+
+    fn into_ir(self, text: &'a str) -> Self::IR {
+        ElementIr {
+            name: self.name,
+            attrs: self.attrs.into_ir(text),
+            content: self.content.into_ir(text),
+            close: self.close,
+        }
+    }
+}
+
+impl<'a> IntoIR<'a> for Attr {
+    type IR = AttrIr<'a>;
+
+    fn into_ir(self, text: &'a str) -> Self::IR {
+        AttrIr { key: self.key.into_ir(text), value: self.value.into_ir(text), quotes: self.quotes }
+    }
+}
+
+impl<'a> IntoIR<'a> for ElemContent {
+    type IR = ElemContentIr<'a>;
+
+    fn into_ir(self, text: &'a str) -> Self::IR {
+        match self {
+            ElemContent::Blocks(b) => ElemContentIr::Blocks(b.into_ir(text)),
+            ElemContent::Inline(i) => ElemContentIr::Inline(collapse_text(i).into_ir(text)),
+            ElemContent::Verbatim(v) => ElemContentIr::Verbatim(v.into_ir(text)),
+        }
     }
 }

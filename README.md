@@ -351,7 +351,21 @@ https://spec.commonmark.org/0.29/#images
   * Support callouts
   * Allow closing fence to be indented more than the opening one
 
-* HTML tags
+* HTML
+
+  * HTML attributes
+  * Allow uppercase HTML tags
+  * Support HTML comments, CDATA and a doctype
+  * Support multiple inline elements in a HTML tag, e.g.
+    ```markdown
+    > <p>
+    >   some text
+    >
+    >   more text
+    > </p>
+    ```
+  * Warn when an element is in an element where it is illegal as of HTML5
+  * Warn when a block HTML element isn't followed by a line break
 
 * Table column styling with `@COLS(col1 |col2 |col3 |col3)`
 
@@ -399,8 +413,24 @@ https://spec.commonmark.org/0.29/#images
   * Tables
   * Braces in table cell modifiers
   * HTML: Either accept only allowlisted tags, or don't accept forbidden tags
+    * Enabled by default:
+      - [x] Base document structure
+      - [x] Content sectioning
+      - [x] Text content
+      - [x] Inline text
+      - [x] Table content
+      - [x] Images (`<img>`, `<svg>`)
+      - [x] Other (`<canvas>`, `<command>`, `<del>`, `<ins>`, `<noscript>`, `<template>`)
+      - [ ] Audio/video
+      - [ ] Math
+      - [ ] Forms
+      - [ ] Embedded content
+      - [ ] Stylesheets (`<style>`, `<link rel="stylesheet">`)
+      - [ ] Scripts
+      - [ ] Deprecated elements
+      - [ ] Custom
   * Insecure macros
-  * Char replacements (insecure character U+0000 replacement can't be disabled)
+  * Replacements (insecure character U+0000 replacement can't be disabled)
   * Math formulas
   * Limiter
   * Checkboxes

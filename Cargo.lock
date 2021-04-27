@@ -19,3 +19,10 @@ version = "0.1.0"
 dependencies = [
  "detached-str",
 ]
+
+[[package]]
+name = "unidoc-to-html"
+version = "0.1.0"
+dependencies = [
+ "unidoc-parser",
+]

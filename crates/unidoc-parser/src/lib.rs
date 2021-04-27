@@ -3,6 +3,7 @@
 mod test_macros;
 
 pub mod blocks;
+pub mod html;
 pub mod inlines;
 pub mod ir;
 pub mod visitor;

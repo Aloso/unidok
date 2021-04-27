@@ -18,6 +18,7 @@ pub use quotes::Quote;
 pub use tables::{Bius, CellAlignment, CellMeta, Table, TableCell, TableRow};
 pub use thematic_breaks::{ThematicBreak, ThematicBreakKind};
 
+use crate::html::{ElemName, HtmlNode};
 use crate::utils::{Indents, ParseLineBreak};
 use crate::{Input, Parse};
 
@@ -33,6 +34,7 @@ pub enum Block {
     List(List),
     Quote(Quote),
     BlockMacro(BlockMacro),
+    BlockHtml(HtmlNode),
 }
 
 impl Block {
@@ -57,12 +59,20 @@ pub enum Context {
     LinkOrImg,
     Code(u8),
     Heading,
+    Html(ElemName),
     Global,
 }
 
 impl Context {
     pub fn can_contain_block_macro(self) -> bool {
         !matches!(self, Context::Braces | Context::LinkOrImg | Context::Code(_))
+    }
+
+    pub fn get_parent(self) -> Option<ElemName> {
+        match self {
+            Context::Html(e) => Some(e),
+            _ => None,
+        }
     }
 }
 
@@ -94,14 +104,13 @@ impl Parse for ParseBlock<'_> {
             Some(Block::Quote(quote))
         } else if let Some(mac) = input.parse(BlockMacro::parser(self.context, ind)) {
             Some(Block::BlockMacro(mac))
+        } else if let Some(html) = input.parse(HtmlNode::parser(ind)) {
+            Some(Block::BlockHtml(html))
         } else {
             let p = input.parse(Paragraph::parser(ind, self.context))?;
             if let Some(u) = p.underline {
                 Some(Block::Heading(Heading {
-                    level: match u {
-                        Underline::Double => 1,
-                        Underline::Single => 2,
-                    },
+                    level: u.level(),
                     kind: HeadingKind::Setext,
                     segments: p.segments,
                 }))
@@ -138,8 +147,23 @@ impl Parse for ParseBlocks<'_> {
         let parser = Block::parser(self.context, self.ind);
 
         let mut v = Vec::new();
-        while let Some(node) = input.parse(parser) {
-            v.push(node);
+        if let Context::Html(name) = self.context {
+            while let Some(mut node) = input.parse(parser) {
+                if let Block::Paragraph(p) = &mut node {
+                    if let Some(segment) = p.segments.last() {
+                        if segment.is_closing_tag_for(name) {
+                            p.segments.pop();
+                            v.push(node);
+                            break;
+                        }
+                    }
+                }
+                v.push(node);
+            }
+        } else {
+            while let Some(node) = input.parse(parser) {
+                v.push(node);
+            }
         }
         Some(v)
     }
