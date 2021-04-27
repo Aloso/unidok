@@ -11,7 +11,9 @@ fn main() {
     let html = unidoc_to_html::convert(res);
     let time2 = start.elapsed();
 
-    dbg!(html);
-    eprintln!("Parsed in {:.1?}", time1);
+    for node in &html {
+        println!("{:#?}", node);
+    }
+    eprintln!("\nParsed in {:.1?}", time1);
     eprintln!("Rendered in {:.1?}", time2 - time1);
 }
