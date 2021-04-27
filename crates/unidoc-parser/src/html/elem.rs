@@ -5,12 +5,12 @@ use crate::parse::Parse;
 use crate::utils::{Indents, ParseLineBreak, ParseSpaces, UntilChar};
 use crate::StrSlice;
 
-use super::{Attr, ElemName};
+use super::{ElemName, HtmlAttr};
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Element {
+pub struct HtmlElem {
     pub name: ElemName,
-    pub attrs: Vec<Attr>,
+    pub attrs: Vec<HtmlAttr>,
     pub content: Option<ElemContent>,
     pub close: ElemClose,
 }
@@ -42,7 +42,7 @@ pub enum ElemClose {
     AutoClosing,
 }
 
-impl Element {
+impl HtmlElem {
     pub(crate) fn parser(ind: Indents<'_>) -> ParseElement<'_> {
         ParseElement { ind }
     }
@@ -56,7 +56,7 @@ pub(crate) struct ParseElement<'a> {
 }
 
 impl Parse for ParseElement<'_> {
-    type Output = Element;
+    type Output = HtmlElem;
 
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
@@ -65,15 +65,15 @@ impl Parse for ParseElement<'_> {
         let name = input.parse(ElemName::parser())?;
         input.parse_i(ParseSpaces);
 
-        let attrs = input.parse(Attr::multi_parser())?;
+        let attrs = input.parse(HtmlAttr::multi_parser())?;
 
         if input.parse("/>").is_some() {
             input.apply();
-            Some(Element { name, attrs, content: None, close: ElemClose::SelfClosing })
+            Some(HtmlElem { name, attrs, content: None, close: ElemClose::SelfClosing })
         } else if name.is_self_closing() {
             input.parse('>')?;
             input.apply();
-            Some(Element { name, attrs, close: ElemClose::AutoSelfClosing, content: None })
+            Some(HtmlElem { name, attrs, close: ElemClose::AutoSelfClosing, content: None })
         } else {
             input.parse('>')?;
 
@@ -88,14 +88,14 @@ impl Parse for ParseElement<'_> {
                 let mut input2 = input.start();
                 loop {
                     input2.parse_i(UntilChar('<'));
-                    if input2.can_parse(Element::closing_tag_parser(name)) {
+                    if input2.can_parse(HtmlElem::closing_tag_parser(name)) {
                         break;
                     } else {
                         input2.bump(1);
                     }
                 }
                 let content = input2.apply();
-                input.try_parse(Element::closing_tag_parser(name));
+                input.try_parse(HtmlElem::closing_tag_parser(name));
                 ElemContent::Verbatim(content)
             } else {
                 let mut segments = input.parse(Paragraph::parser(self.ind, context))?.segments;
@@ -107,7 +107,7 @@ impl Parse for ParseElement<'_> {
             let content = Some(content);
 
             input.apply();
-            Some(Element { name, attrs, content, close: ElemClose::Normal })
+            Some(HtmlElem { name, attrs, content, close: ElemClose::Normal })
         }
     }
 }

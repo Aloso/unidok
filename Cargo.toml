@@ -11,3 +11,4 @@ edition = "2018"
 
 [dependencies]
 unidoc-parser = { path = "crates/unidoc-parser", version = "0.1" }
+unidoc-to-html = { path = "crates/unidoc-to-html", version = "0.1" }

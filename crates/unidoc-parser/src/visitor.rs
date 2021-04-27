@@ -155,7 +155,7 @@ pub trait IrVisitor {
         }
     }
 
-    fn visit_html_element(&mut self, element: &mut ElementIr, _is_inline: bool) {
+    fn visit_html_element(&mut self, element: &mut HtmlElemIr, _is_inline: bool) {
         self.visit_html_attributes(&mut element.attrs);
 
         if let Some(content) = &mut element.content {

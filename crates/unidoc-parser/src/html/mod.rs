@@ -6,7 +6,7 @@ mod elem;
 mod elem_name;
 mod node;
 
-pub use attr::{Attr, AttrQuotes};
-pub use elem::{ElemClose, ElemContent, Element};
+pub use attr::{AttrQuotes, HtmlAttr};
+pub use elem::{ElemClose, ElemContent, HtmlElem};
 pub use elem_name::ElemName;
 pub use node::HtmlNode;

@@ -1,5 +1,5 @@
 use crate::blocks::*;
-use crate::html::{Attr, AttrQuotes, ElemClose, ElemContent, ElemName, Element, HtmlNode};
+use crate::html::{AttrQuotes, ElemClose, ElemContent, ElemName, HtmlAttr, HtmlElem, HtmlNode};
 use crate::inlines::*;
 use crate::{collapse_text, StrSlice};
 
@@ -171,7 +171,7 @@ pub struct CodeIr<'a> {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum HtmlNodeIr<'a> {
-    Element(ElementIr<'a>),
+    Element(HtmlElemIr<'a>),
     ClosingTag(ElemName),
     Cdata(&'a str),
     Comment(&'a str),
@@ -179,7 +179,7 @@ pub enum HtmlNodeIr<'a> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct ElementIr<'a> {
+pub struct HtmlElemIr<'a> {
     pub name: ElemName,
     pub attrs: Vec<AttrIr<'a>>,
     pub content: Option<ElemContentIr<'a>>,
@@ -488,11 +488,11 @@ impl<'a> IntoIR<'a> for HtmlNode {
     }
 }
 
-impl<'a> IntoIR<'a> for Element {
-    type IR = ElementIr<'a>;
+impl<'a> IntoIR<'a> for HtmlElem {
+    type IR = HtmlElemIr<'a>;
 
     fn into_ir(self, text: &'a str) -> Self::IR {
-        ElementIr {
+        HtmlElemIr {
             name: self.name,
             attrs: self.attrs.into_ir(text),
             content: self.content.into_ir(text),
@@ -501,7 +501,7 @@ impl<'a> IntoIR<'a> for Element {
     }
 }
 
-impl<'a> IntoIR<'a> for Attr {
+impl<'a> IntoIR<'a> for HtmlAttr {
     type IR = AttrIr<'a>;
 
     fn into_ir(self, text: &'a str) -> Self::IR {

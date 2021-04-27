@@ -3,7 +3,7 @@ use std::convert::TryFrom;
 use crate::blocks::macros::ParseClosingBrace;
 use crate::blocks::paragraphs::ParseParagraph;
 use crate::blocks::Underline;
-use crate::html::{Element, HtmlNode};
+use crate::html::{HtmlElem, HtmlNode};
 use crate::utils::{ParseLineBreak, WhileChar};
 use crate::{Context, Input, StrSlice};
 
@@ -391,7 +391,7 @@ impl ParseParagraph<'_> {
                     if let Some(html) = input.parse(HtmlNode::parser(ind)) {
                         items.push(Item::Html(html));
                     } else if let Context::Html(elem) = context {
-                        if input.parse(Element::closing_tag_parser(elem)).is_some() {
+                        if input.parse(HtmlElem::closing_tag_parser(elem)).is_some() {
                             items.push(Item::Html(HtmlNode::ClosingTag(elem)));
                             return Some(true);
                         } else {

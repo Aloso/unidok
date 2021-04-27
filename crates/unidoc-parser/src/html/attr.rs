@@ -2,7 +2,7 @@ use crate::parse::Parse;
 use crate::StrSlice;
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Attr {
+pub struct HtmlAttr {
     pub key: StrSlice,
     pub value: Option<StrSlice>,
     pub quotes: AttrQuotes,
@@ -15,7 +15,7 @@ pub enum AttrQuotes {
     None,
 }
 
-impl Attr {
+impl HtmlAttr {
     fn parser() -> ParseAttribute {
         ParseAttribute
     }
@@ -30,7 +30,7 @@ pub(crate) struct ParseAttribute;
 pub(crate) struct ParseAttributes;
 
 impl Parse for ParseAttribute {
-    type Output = Attr;
+    type Output = HtmlAttr;
 
     fn parse(&self, _input: &mut crate::input::Input) -> Option<Self::Output> {
         todo!("HTML attributes are unimplemented")
@@ -38,13 +38,13 @@ impl Parse for ParseAttribute {
 }
 
 impl Parse for ParseAttributes {
-    type Output = Vec<Attr>;
+    type Output = Vec<HtmlAttr>;
 
     fn parse(&self, input: &mut crate::input::Input) -> Option<Self::Output> {
         let mut attrs = vec![];
 
         while !matches!(input.peek_char(), Some('>' | '/')) {
-            attrs.push(input.parse(Attr::parser())?);
+            attrs.push(input.parse(HtmlAttr::parser())?);
         }
 
         Some(attrs)

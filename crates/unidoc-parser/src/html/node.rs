@@ -2,11 +2,11 @@ use crate::parse::Parse;
 use crate::utils::Indents;
 use crate::StrSlice;
 
-use super::{ElemName, Element};
+use super::{ElemName, HtmlElem};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum HtmlNode {
-    Element(Element),
+    Element(HtmlElem),
     ClosingTag(ElemName),
     Cdata(StrSlice),
     Comment(StrSlice),
@@ -28,6 +28,6 @@ impl Parse for ParseHtmlNode<'_> {
 
     fn parse(&self, input: &mut crate::input::Input) -> Option<Self::Output> {
         // TODO
-        Some(HtmlNode::Element(input.parse(Element::parser(self.ind))?))
+        Some(HtmlNode::Element(input.parse(HtmlElem::parser(self.ind))?))
     }
 }
