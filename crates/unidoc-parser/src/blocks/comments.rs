@@ -1,4 +1,4 @@
-use crate::utils::{Indents, ParseLineBreak, ParseSpaces, UntilChar};
+use crate::utils::{Indents, ParseLineBreak, ParseSpaces, Until};
 use crate::{Input, Parse, StrSlice};
 
 /// A line comment
@@ -31,7 +31,7 @@ impl Parse for ParseComment<'_> {
 
         input.parse_i(ParseSpaces);
         input.parse("//")?;
-        let content = input.parse_i(UntilChar('\n'));
+        let content = input.parse_i(Until(|c| matches!(c, '\n' | '\r')));
         input.try_parse(ParseLineBreak(self.ind));
 
         input.apply();

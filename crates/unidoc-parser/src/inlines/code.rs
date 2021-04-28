@@ -1,7 +1,7 @@
 use std::convert::TryInto;
 
 use crate::blocks::Paragraph;
-use crate::utils::{Indents, ParseLineBreak, ParseLineEnd, WhileChar};
+use crate::utils::{Indents, ParseLineBreak, ParseLineEnd, While};
 use crate::{Context, Input, Parse};
 
 use super::Segment;
@@ -29,7 +29,7 @@ impl Parse for ParseCode<'_> {
         let mut input = input.start();
 
         input.parse('`')?;
-        let len = (1 + input.parse_i(WhileChar('`')).len()).try_into().ok()?;
+        let len = (1 + input.parse_i(While('`')).len()).try_into().ok()?;
 
         let mut segments = if self.pass {
             input.parse(Paragraph::parser(self.ind, Context::Code(len)))?.segments
@@ -47,7 +47,7 @@ impl Parse for ParseCode<'_> {
                         if input.parse(ParseCodeEndDelimiter { len }).is_some() {
                             break;
                         } else {
-                            let backticks = input.parse_i(WhileChar('`'));
+                            let backticks = input.parse_i(While('`'));
                             segments.push(Segment::Text(backticks));
                         }
                     }
@@ -116,7 +116,7 @@ impl Parse for ParseCodeEndDelimiter {
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
-        let backticks = input.parse_i(WhileChar('`')).len();
+        let backticks = input.parse_i(While('`')).len();
         if backticks != self.len as usize {
             return None;
         }

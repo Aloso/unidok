@@ -4,7 +4,7 @@ use crate::blocks::macros::ParseClosingBrace;
 use crate::blocks::paragraphs::ParseParagraph;
 use crate::blocks::Underline;
 use crate::html::{HtmlElem, HtmlNode};
-use crate::utils::{ParseLineBreak, WhileChar};
+use crate::utils::{ParseLineBreak, While};
 use crate::{Context, Input, StrSlice};
 
 use super::format::{is_in_word, is_not_flanking, FlankType, Flanking, FormatDelim};
@@ -312,7 +312,7 @@ impl ParseParagraph<'_> {
 
         if let Ok(delim) = FormatDelim::try_from(sym) {
             let left = input.prev_char();
-            let cs = input.parse_i(WhileChar(sym));
+            let cs = input.parse_i(While(sym));
             let right = input.peek_char();
 
             if (sym == '_' && is_in_word(left, right)) || is_not_flanking(left, right) {
@@ -332,16 +332,16 @@ impl ParseParagraph<'_> {
             match sym {
                 '`' => {
                     if let Context::Code(len) = context {
-                        let backticks = input.parse_i(WhileChar('`')).len();
+                        let backticks = input.parse_i(While('`')).len();
                         if backticks == len as usize {
                             return Some(true);
                         } else {
-                            items.push(Item::Text(input.parse_i(WhileChar('`'))));
+                            items.push(Item::Text(input.parse_i(While('`'))));
                         }
                     } else if let Some(code) = input.parse(Code::parser(ind, false)) {
                         items.push(Item::Code(code));
                     } else {
-                        items.push(Item::Text(input.parse_i(WhileChar('`'))));
+                        items.push(Item::Text(input.parse_i(While('`'))));
                     }
                 }
                 '%' => {

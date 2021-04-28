@@ -149,7 +149,7 @@ pub trait IrVisitor {
                 self.visit_html_element(element, is_inline);
             }
             HtmlNodeIr::ClosingTag(_) => {}
-            HtmlNodeIr::Cdata(_) => {}
+            HtmlNodeIr::CData(_) => {}
             HtmlNodeIr::Comment(_) => {}
             HtmlNodeIr::Doctype(_) => {}
         }

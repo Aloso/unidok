@@ -355,7 +355,13 @@ https://spec.commonmark.org/0.29/#images
 
   * HTML attributes
   * Allow uppercase HTML tags
-  * Support HTML comments, CDATA and a doctype
+  * Support HTML comments, CDATA
+  * HTML4 doctypes?
+  * Excluding indentation in HTML comments, e.g.
+    ```markdown
+    > <!-- Hello
+    > world! -->
+    ```
   * Support multiple inline elements in a HTML tag, e.g.
     ```markdown
     > <p>

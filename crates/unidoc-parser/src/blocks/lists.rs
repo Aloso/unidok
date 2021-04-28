@@ -1,4 +1,4 @@
-use crate::utils::{Indents, ParseLineBreak, ParseLineEnd, WhileChar};
+use crate::utils::{Indents, ParseLineBreak, ParseLineEnd, While};
 use crate::{Block, Context, Parse};
 
 /// A list
@@ -106,7 +106,7 @@ impl Parse for ParseBullet {
     fn parse(&self, input: &mut crate::Input) -> Option<Self::Output> {
         let mut input = input.start();
 
-        let indent = input.parse_i(WhileChar(' ')).len();
+        let indent = input.parse_i(While(' ')).len();
         if indent > 200 {
             return None;
         }

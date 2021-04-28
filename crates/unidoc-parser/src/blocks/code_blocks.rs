@@ -1,6 +1,6 @@
 use std::convert::TryInto;
 
-use crate::utils::{Indents, ParseLineBreak, ParseLineEnd, ParseSpaces, UntilChar, WhileChar};
+use crate::utils::{Indents, ParseLineBreak, ParseLineEnd, ParseSpaces, Until, While};
 use crate::{Input, Parse, StrSlice};
 
 #[rustfmt::skip]
@@ -74,7 +74,7 @@ impl Parse for ParseCodeBlock<'_> {
             }
             drop(input2);
 
-            let line = input.parse_i(UntilChar(|c| matches!(c, '\n' | '\r')));
+            let line = input.parse_i(Until(|c| matches!(c, '\n' | '\r')));
             lines.push(line);
         }
 
@@ -90,11 +90,11 @@ impl Parse for ParseFence {
 
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         if input.can_parse("```") {
-            let count = input.parse_i(WhileChar('`')).len();
+            let count = input.parse_i(While('`')).len();
             let count = count.try_into().ok()?;
             Some(Fence::Backticks(count))
         } else if input.can_parse("~~~") {
-            let count = input.parse_i(WhileChar('~')).len();
+            let count = input.parse_i(While('~')).len();
             let count = count.try_into().ok()?;
             Some(Fence::Tildes(count))
         } else {
@@ -109,7 +109,7 @@ impl Parse for ParseInfo {
     type Output = StrSlice;
 
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
-        let s = input.parse_i(UntilChar(|c| matches!(c, '\n' | '\r')));
+        let s = input.parse_i(Until(|c| matches!(c, '\n' | '\r')));
 
         let c = match self.0 {
             Fence::Backticks(_) => '`',

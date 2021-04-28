@@ -1,6 +1,6 @@
 use std::num::NonZeroU8;
 
-use super::{Or, ParseAtMostNSpaces, ParseLineEnd};
+use super::{ParseAtMostNSpaces, ParseLineEnd};
 use crate::{Input, Parse};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -78,7 +78,7 @@ impl Parse for ParseLineBreak<'_> {
         if !input.is_empty() {
             let mut input = input.start();
 
-            input.parse(Or('\n', Or("\r\n", '\r')))?;
+            input.parse('\n').or_else(|| input.parse("\r\n")).or_else(|| input.parse('\r'))?;
 
             if let State::Error = parse_indentation_rec(self.0.root, &mut input) {
                 return None;

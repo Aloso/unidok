@@ -1,5 +1,5 @@
 use crate::blocks::*;
-use crate::html::{AttrQuotes, ElemClose, ElemContent, ElemName, HtmlAttr, HtmlElem, HtmlNode};
+use crate::html::*;
 use crate::inlines::*;
 use crate::{collapse_text, StrSlice};
 
@@ -173,7 +173,7 @@ pub struct CodeIr<'a> {
 pub enum HtmlNodeIr<'a> {
     Element(HtmlElemIr<'a>),
     ClosingTag(ElemName),
-    Cdata(&'a str),
+    CData(&'a str),
     Comment(&'a str),
     Doctype(&'a str),
 }
@@ -481,10 +481,34 @@ impl<'a> IntoIR<'a> for HtmlNode {
         match self {
             HtmlNode::Element(e) => HtmlNodeIr::Element(e.into_ir(text)),
             HtmlNode::ClosingTag(c) => HtmlNodeIr::ClosingTag(c),
-            HtmlNode::Cdata(c) => HtmlNodeIr::Cdata(c.into_ir(text)),
+            HtmlNode::CData(c) => HtmlNodeIr::CData(c.into_ir(text)),
             HtmlNode::Comment(c) => HtmlNodeIr::Comment(c.into_ir(text)),
             HtmlNode::Doctype(d) => HtmlNodeIr::Doctype(d.into_ir(text)),
         }
+    }
+}
+
+impl<'a> IntoIR<'a> for Doctype {
+    type IR = &'a str;
+
+    fn into_ir(self, text: &'a str) -> Self::IR {
+        self.text.into_ir(text)
+    }
+}
+
+impl<'a> IntoIR<'a> for HtmlComment {
+    type IR = &'a str;
+
+    fn into_ir(self, text: &'a str) -> Self::IR {
+        self.text.into_ir(text)
+    }
+}
+
+impl<'a> IntoIR<'a> for CDataSection {
+    type IR = &'a str;
+
+    fn into_ir(self, text: &'a str) -> Self::IR {
+        self.text.into_ir(text)
     }
 }
 

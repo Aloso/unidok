@@ -25,7 +25,7 @@ impl<'a> IntoNode<'a> for HtmlNodeIr<'a> {
         match self {
             HtmlNodeIr::Element(e) => e.into_node(),
             HtmlNodeIr::ClosingTag(_) => Node::Text(""),
-            HtmlNodeIr::Cdata(c) => Node::Cdata(c),
+            HtmlNodeIr::CData(c) => Node::Cdata(c),
             HtmlNodeIr::Comment(c) => Node::Comment(c),
             HtmlNodeIr::Doctype(d) => Node::Doctype(d),
         }

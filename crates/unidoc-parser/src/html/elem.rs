@@ -2,7 +2,7 @@ use crate::blocks::{Block, Context, Paragraph};
 use crate::inlines::Segment;
 use crate::input::Input;
 use crate::parse::Parse;
-use crate::utils::{Indents, ParseLineBreak, ParseSpaces, UntilChar};
+use crate::utils::{Indents, ParseLineBreak, ParseSpaces, Until};
 use crate::StrSlice;
 
 use super::{ElemName, HtmlAttr};
@@ -87,7 +87,7 @@ impl Parse for ParseElement<'_> {
             } else if name.contains_plaintext() {
                 let mut input2 = input.start();
                 loop {
-                    input2.parse_i(UntilChar('<'));
+                    input2.parse_i(Until('<'));
                     if input2.can_parse(HtmlElem::closing_tag_parser(name)) {
                         break;
                     } else {

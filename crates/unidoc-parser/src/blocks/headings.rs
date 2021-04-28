@@ -1,5 +1,5 @@
 use crate::inlines::Segment;
-use crate::utils::{Indents, ParseLineBreak, ParseLineEnd, ParseSpaces, WhileChar};
+use crate::utils::{Indents, ParseLineBreak, ParseLineEnd, ParseSpaces, While};
 use crate::{Context, Input, Parse};
 
 use super::Paragraph;
@@ -111,10 +111,10 @@ impl Parse for ParseUnderline<'_> {
         input.parse_i(ParseSpaces);
 
         let u = if input.parse("--").is_some() {
-            input.parse_i(WhileChar('-'));
+            input.parse_i(While('-'));
             Underline::Single
         } else if input.parse("==").is_some() {
-            input.parse_i(WhileChar('='));
+            input.parse_i(While('='));
             Underline::Double
         } else {
             return None;

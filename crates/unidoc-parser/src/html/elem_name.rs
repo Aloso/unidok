@@ -1,7 +1,7 @@
 use std::fmt;
 
 use crate::parse::Parse;
-use crate::utils::{If, WhileChar};
+use crate::utils::While;
 use crate::StrSlice;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -637,13 +637,15 @@ impl Parse for ParseElemName {
     fn parse(&self, input: &mut crate::input::Input) -> Option<Self::Output> {
         let mut input2 = input.start();
 
-        let name = input2
-            .parse_i(WhileChar(|c: char| c.is_ascii_alphanumeric() || matches!(c, '-' | '_')));
+        let name =
+            input2.parse_i(While(|c: char| c.is_ascii_alphanumeric() || matches!(c, '-' | '_')));
         if name.is_empty() {
             return None;
         }
         let next = input2.peek_char();
-        input2.parse(If(matches!(next, Some(' ' | '\t' | '\r' | '\n' | '/' | '>'))))?;
+        if !matches!(next, Some(' ' | '\t' | '\r' | '\n' | '/' | '>')) {
+            return None;
+        }
 
         input2.apply();
         Some(ElemName::from(name.to_str(input.text()), name))

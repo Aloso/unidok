@@ -1,0 +1,31 @@
+use crate::parse::Parse;
+use crate::utils::Until;
+use crate::StrSlice;
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct CDataSection {
+    pub text: StrSlice,
+}
+
+impl CDataSection {
+    pub(crate) fn parser() -> ParseCDataSection {
+        ParseCDataSection
+    }
+}
+
+pub(crate) struct ParseCDataSection;
+
+impl Parse for ParseCDataSection {
+    type Output = CDataSection;
+
+    fn parse(&self, input: &mut crate::input::Input) -> Option<Self::Output> {
+        let mut input = input.start();
+
+        input.parse("<![CDATA[")?;
+        let text = input.parse_i(Until("]]>"));
+        input.try_parse("]]>");
+
+        input.apply();
+        Some(CDataSection { text })
+    }
+}

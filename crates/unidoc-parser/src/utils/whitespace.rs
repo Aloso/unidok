@@ -1,11 +1,34 @@
 use crate::{Input, Parse, ParseInfallible};
 
 /// Parses 0 or more spaces or tabs. This parser never fails.
+///
+/// TODO: This is sometimes used in situations where line breaks are desirable.
+/// Add another parser for _arbitrary_ whitespace?
 pub struct ParseSpaces;
 
+/// Parses 1 whitespace character.
+pub struct ParseOneWS;
+
+/// Parses exactly _n_ spaces. It can also parse tabs, where 1 tab corresponds
+/// to 4 spaces.
 pub struct ParseNSpaces(pub u8);
 
+/// Parses at most _n_ spaces. It can also parse tabs, where 1 tab corresponds
+/// to 4 spaces.
 pub struct ParseAtMostNSpaces(pub u8);
+
+impl Parse for ParseOneWS {
+    type Output = ();
+
+    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+        if let Some(b' ' | b'\t') = input.rest().bytes().next() {
+            input.bump(1);
+            Some(())
+        } else {
+            None
+        }
+    }
+}
 
 impl ParseInfallible for ParseSpaces {
     type Output = u8;

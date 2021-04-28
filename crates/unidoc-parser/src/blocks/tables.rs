@@ -1,5 +1,5 @@
 use crate::inlines::Segment;
-use crate::utils::{If, Indents, ParseLineBreak, ParseLineEnd};
+use crate::utils::{Indents, ParseLineBreak, ParseLineEnd};
 use crate::{Context, Parse, ParseInfallible, StrSlice};
 
 use super::Paragraph;
@@ -68,7 +68,9 @@ impl Parse for ParseTable<'_> {
     type Output = Table;
 
     fn parse(&self, input: &mut crate::Input) -> Option<Self::Output> {
-        input.parse(If(input.rest().starts_with("||") || input.rest().starts_with("#||")))?;
+        if !input.can_parse("||") && !input.can_parse("#||") {
+            return None;
+        }
         let mut input = input.start();
 
         let ind = self.ind;
