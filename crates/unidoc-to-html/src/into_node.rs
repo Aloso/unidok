@@ -6,6 +6,55 @@ use unidoc_parser::ir::*;
 
 use crate::{Attr, Element, Node, ToPlaintext};
 
+fn trim_segments_start(segment: SegmentIr<'_>) -> Option<SegmentIr<'_>> {
+    match segment {
+        SegmentIr::LineBreak | SegmentIr::Limiter => None,
+        SegmentIr::Text(mut t) => {
+            t = t.trim_start_matches(|c| matches!(c, ' ' | '\t'));
+            Some(SegmentIr::Text(t)).filter(|_| !t.is_empty())
+        }
+        SegmentIr::EscapedText(mut t) => {
+            t = t.trim_start_matches(|c| matches!(c, ' ' | '\t'));
+            Some(SegmentIr::EscapedText(t)).filter(|_| !t.is_empty())
+        }
+        s => Some(s),
+    }
+}
+
+fn trim_segments_end(seg: &mut SegmentIr) -> bool {
+    match seg {
+        SegmentIr::LineBreak | SegmentIr::Limiter => true,
+        SegmentIr::Text(t) | SegmentIr::EscapedText(t) => {
+            *t = t.trim_end_matches(|c| matches!(c, ' ' | '\t'));
+            t.is_empty()
+        }
+        _ => false,
+    }
+}
+
+fn into_nodes_trimmed(mut segments: Vec<SegmentIr<'_>>) -> Vec<Node<'_>> {
+    while let Some(seg) = segments.last_mut() {
+        if trim_segments_end(seg) {
+            segments.pop();
+        } else {
+            break;
+        }
+    }
+
+    let mut result = Vec::with_capacity(segments.len());
+    let mut iter = segments.into_iter();
+
+    while let Some(seg) = iter.next() {
+        if let Some(seg) = trim_segments_start(seg) {
+            result.push(seg.into_node());
+            result.extend(iter.map(IntoNode::into_node));
+            break;
+        }
+    }
+
+    result
+}
+
 pub trait IntoNode<'a> {
     fn into_node(self) -> Node<'a>;
 }
@@ -34,10 +83,16 @@ impl<'a> IntoNode<'a> for HtmlNodeIr<'a> {
 
 impl<'a> IntoNode<'a> for HtmlElemIr<'a> {
     fn into_node(self) -> Node<'a> {
+        let content = self.content.map(elem_content_ir_into_nodes);
+        let contains_blocks =
+            content.as_ref().map(|c| c.iter().any(Node::is_block_element)).unwrap_or(false);
+
         Node::Element(Element {
             name: self.name,
             attrs: self.attrs.into_iter().map(From::from).collect(),
-            content: self.content.map(elem_content_ir_into_nodes),
+            content,
+            is_block_level: self.name.is_block_level(),
+            contains_blocks,
         })
     }
 }
@@ -71,18 +126,35 @@ impl<'a> IntoNode<'a> for BlockIr<'a> {
                     name: ElemName::Code,
                     attrs: vec![],
                     content: Some(vec![content]),
+                    is_block_level: false,
+                    contains_blocks: false,
                 });
 
-                Node::Element(Element { name: ElemName::Pre, attrs, content: Some(vec![code]) })
+                Node::Element(Element {
+                    name: ElemName::Pre,
+                    attrs,
+                    content: Some(vec![code]),
+                    is_block_level: true,
+                    contains_blocks: true,
+                })
             }
 
             BlockIr::Comment(_) => Node::Text(""),
 
-            BlockIr::Paragraph(p) => Node::Element(Element {
-                name: ElemName::P,
-                attrs: vec![],
-                content: Some(p.segments.into_nodes()),
-            }),
+            BlockIr::Paragraph(p) => {
+                let segments = into_nodes_trimmed(p.segments);
+                if segments.is_empty() {
+                    Node::Text("")
+                } else {
+                    Node::Element(Element {
+                        name: ElemName::P,
+                        attrs: vec![],
+                        content: Some(segments),
+                        is_block_level: true,
+                        contains_blocks: false,
+                    })
+                }
+            }
 
             BlockIr::Heading(h) => Node::Element(Element {
                 name: match h.level {
@@ -95,12 +167,18 @@ impl<'a> IntoNode<'a> for BlockIr<'a> {
                     l => panic!("Invalid heading level {}", l),
                 },
                 attrs: vec![],
-                content: Some(h.segments.into_nodes()),
+                content: Some(into_nodes_trimmed(h.segments)),
+                is_block_level: true,
+                contains_blocks: false,
             }),
 
-            BlockIr::ThematicBreak(_) => {
-                Node::Element(Element { name: ElemName::Hr, attrs: vec![], content: None })
-            }
+            BlockIr::ThematicBreak(_) => Node::Element(Element {
+                name: ElemName::Hr,
+                attrs: vec![],
+                content: None,
+                is_block_level: true,
+                contains_blocks: false,
+            }),
 
             BlockIr::Table(t) => {
                 let rows = t
@@ -118,16 +196,26 @@ impl<'a> IntoNode<'a> for BlockIr<'a> {
                             name: ElemName::Tr,
                             attrs: vec![],
                             content: Some(cells),
+                            is_block_level: true,
+                            contains_blocks: true,
                         })
                     })
                     .collect();
 
-                Node::Element(Element { name: ElemName::Table, attrs: vec![], content: Some(rows) })
+                Node::Element(Element {
+                    name: ElemName::Table,
+                    attrs: vec![],
+                    content: Some(rows),
+                    is_block_level: true,
+                    contains_blocks: true,
+                })
             }
 
             BlockIr::BlockHtml(h) => h.into_node(),
 
             BlockIr::List(l) => {
+                // TODO: Determine whether the list is loose or tight
+
                 let (name, start) = match l.bullet {
                     Bullet::Dash | Bullet::Plus | Bullet::Star => (ElemName::Ul, 1),
                     Bullet::Dot { start } | Bullet::Paren { start } => (ElemName::Ol, start),
@@ -143,16 +231,35 @@ impl<'a> IntoNode<'a> for BlockIr<'a> {
                     .into_iter()
                     .map(|it| {
                         let content = Some(it.blocks.into_nodes());
-                        Node::Element(Element { name: ElemName::I, attrs: vec![], content })
+                        Node::Element(Element {
+                            name: ElemName::Li,
+                            attrs: vec![],
+                            content,
+                            is_block_level: true,
+                            // TODO: Depends on whether the list is loose or tight!
+                            contains_blocks: false,
+                        })
                     })
                     .collect();
 
-                Node::Element(Element { name, attrs, content: Some(items) })
+                Node::Element(Element {
+                    name,
+                    attrs,
+                    content: Some(items),
+                    is_block_level: true,
+                    contains_blocks: true,
+                })
             }
 
             BlockIr::Quote(q) => {
                 let content = Some(q.content.blocks.into_nodes());
-                Node::Element(Element { name: ElemName::Blockquote, attrs: vec![], content })
+                Node::Element(Element {
+                    name: ElemName::Blockquote,
+                    attrs: vec![],
+                    content,
+                    is_block_level: true,
+                    contains_blocks: true,
+                })
             }
 
             BlockIr::BlockMacro(_) => todo!(),
@@ -222,75 +329,102 @@ fn create_table_cell(is_header_row: bool, cell: TableCellIr<'_>) -> Node<'_> {
         attr!(attrs: "style" = styles);
     }
 
-    Node::Element(Element { name, attrs, content: Some(cell.segments.into_nodes()) })
+    Node::Element(Element {
+        name,
+        attrs,
+        content: Some(into_nodes_trimmed(cell.segments)),
+        is_block_level: true,
+        contains_blocks: false, // TODO: Depends
+    })
 }
 
 impl<'a> IntoNode<'a> for SegmentIr<'a> {
     fn into_node(self) -> Node<'a> {
         match self {
             SegmentIr::Text(t) => Node::Text(t),
-
             SegmentIr::EscapedText(t) => Node::Text(t),
-
-            SegmentIr::LineBreak | SegmentIr::Limiter => Node::Text(""),
-
+            SegmentIr::LineBreak => Node::Text("\n"),
+            SegmentIr::Limiter => Node::Text(""),
             SegmentIr::Braces(b) => Node::Element(Element {
                 name: ElemName::Span,
                 attrs: vec![],
                 content: Some((b.segments).into_nodes()),
+                is_block_level: false,
+                contains_blocks: false,
             }),
-
-            SegmentIr::Link(l) => {
-                let href = Attr { key: "href", value: Some(l.href) };
-                let attrs = if let Some(title) = l.title {
-                    let title = Attr { key: "title", value: Some(title) };
-                    vec![href, title]
-                } else {
-                    vec![href]
-                };
-
-                Node::Element(Element {
-                    name: ElemName::A,
-                    attrs,
-                    content: Some((l.text).into_nodes()),
-                })
-            }
-
-            SegmentIr::Image(i) => {
-                let mut buf = String::new();
-                for a in &i.alt {
-                    a.to_plaintext(&mut buf);
-                }
-
-                let src = Attr { key: "src", value: Some(i.href) };
-                let alt = Attr { key: "alt", value: Some(buf) };
-
-                Node::Element(Element { name: ElemName::Img, attrs: vec![src, alt], content: None })
-            }
-
+            SegmentIr::Link(l) => l.into_node(),
+            SegmentIr::Image(i) => i.into_node(),
             SegmentIr::InlineHtml(h) => h.into_node(),
-
-            SegmentIr::Format(f) => Node::Element(Element {
-                name: match f.formatting {
-                    Formatting::Bold => ElemName::Strong,
-                    Formatting::Italic => ElemName::Em,
-                    Formatting::StrikeThrough => ElemName::S,
-                    Formatting::Superscript => ElemName::Sup,
-                    Formatting::Subscript => ElemName::Sub,
-                },
-                attrs: vec![],
-                content: Some(f.segments.into_nodes()),
-            }),
-
+            SegmentIr::Format(f) => f.into_node(),
             SegmentIr::Code(c) => Node::Element(Element {
                 name: ElemName::Code,
                 attrs: vec![],
                 content: Some(c.segments.into_nodes()),
+                is_block_level: false,
+                contains_blocks: false,
             }),
-
             SegmentIr::InlineMacro(_) => todo!(),
-
             SegmentIr::Math(_) => todo!(),
         }
+    }
+}
+
+impl<'a> IntoNode<'a> for LinkIr<'a> {
+    fn into_node(self) -> Node<'a> {
+        let href = Attr { key: "href", value: Some(self.href) };
+        let attrs = if let Some(title) = self.title {
+            let title = Attr { key: "title", value: Some(title) };
+            vec![href, title]
+        } else {
+            vec![href]
+        };
+
+        Node::Element(Element {
+            name: ElemName::A,
+            attrs,
+            content: Some(self.text.into_nodes()),
+            is_block_level: false,
+            contains_blocks: false,
+        })
+    }
+}
+
+impl<'a> IntoNode<'a> for ImageIr<'a> {
+    fn into_node(self) -> Node<'a> {
+        let mut buf = String::new();
+        for a in &self.alt {
+            a.to_plaintext(&mut buf);
+        }
+
+        let src = Attr { key: "src", value: Some(self.href) };
+        let alt = Attr { key: "alt", value: Some(buf) };
+
+        Node::Element(Element {
+            name: ElemName::Img,
+            attrs: vec![src, alt],
+            content: None,
+            is_block_level: false,
+            contains_blocks: false,
+        })
+    }
+}
+
+impl<'a> IntoNode<'a> for InlineFormatIr<'a> {
+    fn into_node(self) -> Node<'a> {
+        let name = match self.formatting {
+            Formatting::Bold => ElemName::Strong,
+            Formatting::Italic => ElemName::Em,
+            Formatting::StrikeThrough => ElemName::S,
+            Formatting::Superscript => ElemName::Sup,
+            Formatting::Subscript => ElemName::Sub,
+        };
+
+        Node::Element(Element {
+            name,
+            attrs: vec![],
+            content: Some(self.segments.into_nodes()),
+            is_block_level: false,
+            contains_blocks: false,
+        })
     }
 }

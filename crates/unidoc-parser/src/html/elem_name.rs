@@ -372,6 +372,15 @@ impl ElemName {
     }
 
     #[rustfmt::skip]
+    pub fn is_block_level(&self) -> bool {
+        use ElemName::*;
+
+        !matches!(self, A | Abbr | B | Bdi | Bdo | Cite | Code | Data | Dfn | Em
+            | I | Kbd | Mark | Q | Rb | Rp | Rt | Rtc | Ruby | S | Samp | Small
+            | Span | Strong | Sub | Sup | Time | U | Var)
+    }
+
+    #[rustfmt::skip]
     pub fn is_deprecated(&self) -> bool {
         use ElemName::*;
 
@@ -648,6 +657,10 @@ impl Parse for ParseElemName {
         }
 
         input2.apply();
-        Some(ElemName::from(name.to_str(input.text()), name))
+        let elem = ElemName::from(name.to_str(input.text()), name);
+        if let ElemName::Custom(_) = elem {
+            return None;
+        }
+        Some(elem)
     }
 }

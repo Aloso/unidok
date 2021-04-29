@@ -340,27 +340,33 @@ https://spec.commonmark.org/0.29/#images
 
 ## Roadmap
 
+* Tests!!
+
 * Lists with numbers
 
 * Handle multiple blank lines and leading and trailing whitespace properly
 
 * Code blocks
-
   * Syntax highlighting
-  * Support the `@PASS` macro
+  * Support the `@PASS` parser macro
   * Support callouts
   * Allow closing fence to be indented more than the opening one
 
 * HTML
-
   * HTML attributes
   * Allow uppercase HTML tags
-  * Support HTML comments, CDATA
-  * HTML4 doctypes?
+  * Support for doctypes other than HTML5?
   * Excluding indentation in HTML comments, e.g.
     ```markdown
     > <!-- Hello
     > world! -->
+    ```
+    Produces
+    ```html
+    <blockquote>
+      <p> <!-- Hello
+    > world! --></p>
+    </blockquote>
     ```
   * Support multiple inline elements in a HTML tag, e.g.
     ```markdown
@@ -373,19 +379,18 @@ https://spec.commonmark.org/0.29/#images
   * Warn when an element is in an element where it is illegal as of HTML5
   * Warn when a block HTML element isn't followed by a line break
 
-* Table column styling with `@COLS(col1 |col2 |col3 |col3)`
+* Tables
+  * Table column styling with `@COLS(col1 |col2 |col3 |col3)`
 
 * Links
-
   * Auto-links
   * Link reference definitions
-  * Forbid nested links
+  * Forbid nested links?
   * URLs in angle brackets?
 
-* Expand macros, then lower IR to HTML
+* Expanding macros
 
 * Replacements
-
   * U+0000 unsafe character
   * Quotes: `"`, `'`
   * Apostrophe: `'`
@@ -394,7 +399,7 @@ https://spec.commonmark.org/0.29/#images
   * Ellipsis: `...`
   * Symbols: `(C)`, `(TM)`, `(R)`
   * Mathematical relations (disabled by default):
-    `=!=`, `=<=`, `=>=`, `=~=`, `===`, `~~`, `-<`, `>-`
+    `=!=`, `=/=`, `=<=`, `=>=`, `=~=`, `===`, `~~`, `-<`, `>-`
   * Mathematical escape sequences (disabled by default):
     `%+%`, `%-%`, `%+-%`, `%-+%`, `%/%`, `%:%`, `%*%`, `%.%`, `%~%`, `%<%`, `%>%`, `%<<%`, `%>>%`,
     `%alpha%`, `%Alpha%`, `%beta%`, ..., `%pi%`, ..., `%Omega%`,
@@ -407,15 +412,80 @@ https://spec.commonmark.org/0.29/#images
     * <https://en.wikipedia.org/wiki/Glossary_of_mathematical_symbols>
   * Custom, e.g.: `?!`, `!?`
 
+* Macros
+  * Table of contents (`@TOC`)
+  * Include file (`@INCLUDE`) -- only includes content, but doesn't bring macros, functions, config, link reference definitions or other things into scope
+  * Import macros, functions, config, link reference definitions, etc. defined in another file (`@IMPORT`)
+  * Define custom macros in a plugin
+
+* Plugins
+  * Maintain some plugins in-tree in the same workspace, which can share dependencies and are safe to use
+  * To check if a plugin is safe to use, it
+  * Asciidoc communicates with plugins over stdin/out via JSON. Example:
+    ```json
+    {
+      "status": "connect",
+      "api_version": "1.4",
+      "auth_challenge": "f73d287a",
+    }
+    {
+      "status": "connect",
+      "plugin_name": "hello-world",
+      "plugin_version": "1.1",
+      "safe": true,
+      "auth_token": "7245a74b57e57c5",
+    }
+    {
+      "status": "ok"
+    }
+    {
+      "status": "ok",
+      "actions": [
+        {
+          "type": "register substitution",
+          "name": "coypright",
+          "find": "(C)",
+          "replace": "&copy;",
+        },
+        {
+          "type": "register substitution",
+          "name": "ellipsis",
+          "find": "...",
+          "replace": "&hellip;",
+          "validate": true
+        },
+        {
+          "type": "register macro",
+          "name": "FOO"
+        }
+      ]
+    }
+    {
+      "status": "close"
+    }
+    ```
+
 * Handle indenting properly
 
-* Customize meaning of online formatting delimiters
+* PHP, Liquid, Handlebars, other preprocessors?
 
-  * `*`, `_` and `` ` `` are built-in, but the following chars can be used for anything: `~`, `^`, `#`, `+`, `!`, `?`, `´`, `=`, `:`, `;`
+* XML?
+
+* Ideas:
+  * PHP, XML, Liquid, Handlebars, other preprocessors
+  * Admonition blocks (e.g. `@TIP`)
+  * Sidebar blocks (e.g. `@SIDEBAR`)
+  * Math blocks (like inline math, but not within a `<p>`)
+  * Example blocks (e.g. `@EXAMPLE(title)`)
+  * Labeled lists (e.g. `Label:: content`), Q&A lists, glossary lists
+  * Bibliography lists (e.g. `- [[[id]]] Author. 'Name'. Publisher. Year. ISBN.`)
+
+* Customize meaning of inline formatting delimiters
+  * `*`, `_` and `` ` `` are built-in, they can't be disabled
+  * The following chars could be used for anything: `~`, `^`, `#`, `+`, `?`, `´`, `=`, `:`, `;`
   * They only work when text is surrounded by a left-flanking delimiter on the left and a right-flanking delimiter on the right, e.g. the following isn't bold: `Hello ** world **!`
 
 * Allow disabling some parsers:
-
   * Tables
   * Braces in table cell modifiers
   * HTML: Either accept only allowlisted tags, or don't accept forbidden tags
