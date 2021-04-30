@@ -66,14 +66,14 @@ pub trait IrVisitor {
         }
     }
 
-    fn visit_list_item(&mut self, list_item: &mut DocIr) {
-        for block in &mut list_item.blocks {
+    fn visit_list_item(&mut self, list_item: &mut Vec<BlockIr>) {
+        for block in list_item {
             self.visit_block(block);
         }
     }
 
     fn visit_quote(&mut self, quote: &mut QuoteIr) {
-        for block in &mut quote.content.blocks {
+        for block in &mut quote.content {
             self.visit_block(block);
         }
     }

@@ -14,9 +14,13 @@ fn main() {
 
     println!("{}", html);
 
-    for node in &nodes {
-        eprintln!("{:#?}", node);
+    if let Ok(o) = std::env::var("DEBUG") {
+        if &*o == "1" {
+            for node in &nodes {
+                eprintln!("{:#?}", node);
+            }
+            eprintln!("\nParsed in {:.1?}", time1);
+            eprintln!("Rendered in {:.1?}", time2 - time1);
+        }
     }
-    eprintln!("\nParsed in {:.1?}", time1);
-    eprintln!("Rendered in {:.1?}", time2 - time1);
 }

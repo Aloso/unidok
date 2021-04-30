@@ -1,4 +1,4 @@
-use crate::utils::{Indents, ParseLineBreak, ParseLineEnd, While};
+use crate::utils::{Indents, ParseLineBreak, ParseLineEnd, ParseNSpaces, While};
 use crate::{Block, Context, Parse};
 
 /// A list
@@ -110,19 +110,42 @@ impl Parse for ParseBullet {
         if indent > 200 {
             return None;
         }
-        let indent = indent as u8 + 2;
+        let indent = indent as u8;
 
         let result = match input.peek_char() {
-            Some('-') => (indent, Bullet::Dash),
-            Some('+') => (indent, Bullet::Plus),
-            Some('*') => (indent, Bullet::Star),
-            Some('.') => (indent, Bullet::Dot { start: 1 }),
-            Some(')') => (indent, Bullet::Paren { start: 1 }),
+            Some('-') => {
+                input.bump(1);
+                (indent + 2, Bullet::Dash)
+            }
+            Some('+') => {
+                input.bump(1);
+                (indent + 2, Bullet::Plus)
+            }
+            Some('*') => {
+                input.bump(1);
+                (indent + 2, Bullet::Star)
+            }
+            Some('0'..='9') => {
+                let num = input.parse_i(While(|c: char| c.is_ascii_digit()));
+                if num.len() > 9 {
+                    return None;
+                }
+                let start = num.to_str(input.text()).parse::<u32>().unwrap();
+
+                let bullet = if input.parse('.').is_some() {
+                    Bullet::Dot { start }
+                } else if input.parse(')').is_some() {
+                    Bullet::Paren { start }
+                } else {
+                    return None;
+                };
+
+                (indent + num.len() as u8 + 2, bullet)
+            }
             _ => return None,
         };
-        input.bump(1);
 
-        if input.parse(' ').is_none() && input.parse(ParseLineEnd).is_none() {
+        if input.parse(ParseNSpaces(1)).is_none() && !input.can_parse(ParseLineEnd) {
             return None;
         }
 

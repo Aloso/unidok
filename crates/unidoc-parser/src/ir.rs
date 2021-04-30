@@ -102,12 +102,13 @@ pub struct CellMetaIr<'a> {
 #[derive(Debug, Clone, PartialEq)]
 pub struct ListIr<'a> {
     pub bullet: Bullet,
-    pub items: Vec<DocIr<'a>>,
+    pub items: Vec<Vec<BlockIr<'a>>>,
+    pub is_loose: bool,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct QuoteIr<'a> {
-    pub content: DocIr<'a>,
+    pub content: Vec<BlockIr<'a>>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -377,10 +378,7 @@ impl<'a> IntoIR<'a> for List {
     type IR = ListIr<'a>;
 
     fn into_ir(self, text: &'a str) -> Self::IR {
-        ListIr {
-            bullet: self.bullet,
-            items: self.items.into_iter().map(|b| DocIr { blocks: b.into_ir(text) }).collect(),
-        }
+        ListIr { bullet: self.bullet, items: self.items.into_ir(text), is_loose: false }
     }
 }
 
@@ -388,7 +386,7 @@ impl<'a> IntoIR<'a> for Quote {
     type IR = QuoteIr<'a>;
 
     fn into_ir(self, text: &'a str) -> Self::IR {
-        QuoteIr { content: DocIr { blocks: self.content.into_ir(text) } }
+        QuoteIr { content: self.content.into_ir(text) }
     }
 }
 

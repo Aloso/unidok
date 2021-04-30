@@ -9,8 +9,9 @@ pub struct ParseSpaces;
 /// Parses 1 whitespace character.
 pub struct ParseOneWS;
 
-/// Parses exactly _n_ spaces. It can also parse tabs, where 1 tab corresponds
-/// to 4 spaces.
+/// Parses at least _n_ spaces. It can also parse tabs, where 1 tab corresponds
+/// to 4 spaces. It _tries_ to parse _exactly_ n spaces, but this is not always
+/// possible in the presence of tabs.
 pub struct ParseNSpaces(pub u8);
 
 /// Parses at most _n_ spaces. It can also parse tabs, where 1 tab corresponds
@@ -77,7 +78,7 @@ impl Parse for ParseNSpaces {
                 }
                 _ => break,
             }
-            if visual_spaces == self.0 {
+            if visual_spaces >= self.0 {
                 input.bump(bytes);
                 return Some(());
             }

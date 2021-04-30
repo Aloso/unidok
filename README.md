@@ -32,6 +32,30 @@ Less important:
 
 * Numbered lists can interrupt a paragraph, even if it doesn't start with 1
 
+## Basics
+
+Type                | Or                | ...to Get
+--------------------|-------------------|-----------------
+`*Italic*`          | `_Italic_`        | *Italic*
+`**Bold**`          | `__Bold__`        | **Bold**
+`~Strikethrough~`   |                   | ~~Strikethrough~~
+`x^Superscript^`    |                   | x<sup>Superscript</sup>
+`x#Subscript#`      |                   | x<sub>Subscript</sub>
+`` `Inline code` `` |                   | `Inline code`
+`# Heading 1`       | <code>Heading 1<br>=========</code> | <h1>Heading 1</h1>
+`## Heading 2`      | <code>Heading 2<br>---------</code> | <h2>Heading 2</h2>
+`[Link](https://a.com)` |               | [Link](https://a.com)
+`![Image](https://a.com)` |             | ![Image](http://diagramcenter.org/wp-content/uploads/2016/03/image.png)
+`> Blockquote`      |                   | <blockquote>Blockquote</blockquote>
+<code>* List<br>* List<br>* List</code> | <code>- List<br>- List<br>- List</code> | <ul><li>List</li><li>List</li><li>List</li></ul>
+<code>1. List<br>2. List<br>3. List</code> | <code>1) List<br>2) List<br>3) List</code> | <ol><li>List</li><li>List</li><li>List</li></ol>
+<code>Horizontal rule:<br><br>---</code> | <code>Horizontal rule:<br><br>***</code> | <p>Horizontal rule:</p><hr>
+<code>\```<br>&lt;code block&gt;<br>\```</code> | | <pre><code>&lt;code block&gt;</code></pre>
+<code>\|\| Table cell \| Table cell<br>\|\| Table cell \| Table cell</code> | | <table><tr><td>Table cell</td><td>Table cell</td></tr><tr><td>Table cell</td><td>Table cell</td></tr></table>
+`%{sqrt(16)=2^2}`   |                   | √<span style="text-decoration: overline">16</span> = 2<sup>2</sup>
+<code>@(.css-class)<br>Section</code><p>(Requires stylesheet to have a visible effect)</p> | <code>@(.css-class){<br>Section<br>}</code> | <span style="color:orange">___SECTION___</span>
+
+
 ## Specification
 
 ### Paragraphs
@@ -76,14 +100,17 @@ Heading level 2
 More text
 ```
 
-The underline can be any length, it can even be as little as 1 character long:
+The underline must be at least 2 characters long
 
 ```markdown
 Heading level 1
-=
+==
 
 Heading level 2
 ----------------------
+
+Not a heading
+-
 ```
 
 Contrary to ATX headings, setext headings can contain line breaks (but no blank<sup>[1]</sup> lines):
@@ -172,9 +199,7 @@ A numbered list can start with any non-negative integer with at most 9 digits. T
 500. List item
   1. List item
 ```
-
 Is rendered as
-
 
   4. List item
   6. List item
@@ -204,28 +229,6 @@ Here's an example how elements in a list must be indented:
       - Another sublist
       - > containing a quote
         > * containing another list
-
-A list is either loose or tight. In a loose list, each list item's text is wrapped in an HTML paragraph (`<p>`), but not in a tight list.
-
-A list is _loose_ if a blank line is anywhere between two list items, or any list item contains two block-level elements with a blank line between them. Otherwise, the list is _tight_:
-
-````markdown
-* This list
-* is tight.
-
-- This list
-
-- is loose.
-
-* This list is also loose.
-* > A quote
-
-  ```
-  A code block
-  ```
-````
-
-The difference is that in a tight list, the paragraphs aren't wrappend in HTML `<p>` elements.
 
 ### Tables
 
@@ -342,15 +345,12 @@ https://spec.commonmark.org/0.29/#images
 
 * Tests!!
 
-* Lists with numbers
-
 * Handle multiple blank lines and leading and trailing whitespace properly
 
 * Code blocks
   * Syntax highlighting
   * Support the `@PASS` parser macro
   * Support callouts
-  * Allow closing fence to be indented more than the opening one
 
 * HTML
   * HTML attributes
@@ -380,7 +380,7 @@ https://spec.commonmark.org/0.29/#images
   * Warn when a block HTML element isn't followed by a line break
 
 * Tables
-  * Table column styling with `@COLS(col1 |col2 |col3 |col3)`
+  * Table column styling with `@COLS('^' '' '#' '{B,I,U}')`
 
 * Links
   * Auto-links

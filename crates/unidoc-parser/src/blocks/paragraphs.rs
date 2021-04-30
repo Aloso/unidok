@@ -1,5 +1,5 @@
 use crate::inlines::text::{parse_paragraph_items, stack_to_segments};
-use crate::inlines::Segment;
+use crate::inlines::{LineBreak, Segment};
 use crate::utils::{Indents, ParseLineBreak};
 use crate::{Context, Input, Parse};
 
@@ -40,12 +40,10 @@ impl Parse for ParseParagraph<'_> {
         let stack = parse_paragraph_items(items);
         let mut segments = stack_to_segments(stack);
 
-        if let Some(Segment::LineBreak(_)) = segments.last() {
-            segments.pop();
-        }
-
         if let BlockBraces | Heading | Global | Html(_) = self.context {
-            while input.parse(ParseLineBreak(self.ind)).is_some() && !input.is_empty() {}
+            while input.parse(ParseLineBreak(self.ind)).is_some() && !input.is_empty() {
+                segments.push(Segment::LineBreak(LineBreak));
+            }
         }
 
         Some(Paragraph { segments, underline })
