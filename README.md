@@ -86,6 +86,8 @@ ATX headings start on a new line with 1 to 6 number signs (`#`), followed by a s
 ## Heading level 2
 ```
 
+ATX headings can't be empty.
+
 #### Setext headings
 
 Setext headings can only be level-1 or level-2. Level-1 headings are underlined with equals (`=`) characters, level-2 headings are underlined with dashes (`-`). They can't be empty. If they appear after a paragraph, that paragraph must be followed by a blank<sup>[1]</sup> line:
@@ -343,9 +345,7 @@ https://spec.commonmark.org/0.29/#images
 
 ## Roadmap
 
-* Tests!!
-
-* Handle multiple blank lines and leading and trailing whitespace properly
+* Handle leading and trailing whitespace properly everywhere
 
 * Code blocks
   * Syntax highlighting
@@ -387,6 +387,9 @@ https://spec.commonmark.org/0.29/#images
   * Link reference definitions
   * Forbid nested links?
   * URLs in angle brackets?
+
+* Lists
+  * Implement loose lists
 
 * Expanding macros
 

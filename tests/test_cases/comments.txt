@@ -1,0 +1,27 @@
+Text
+// Comment
+Text
+        // Comment
+> // Comment
+
+A paragraph can't end with a // comment
+
+|| // No comment allowed here
+
+\// Escaped comment
+
+$// Escaped comment
+
+............................................................
+<p>Text</p>
+<p>Text</p>
+<blockquote>
+</blockquote>
+<p>A paragraph can't end with a // comment</p>
+<table>
+<tr>
+<td>// No comment allowed here</td>
+</tr>
+</table>
+<p>// Escaped comment</p>
+<p>// Escaped comment</p>

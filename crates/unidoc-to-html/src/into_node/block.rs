@@ -34,14 +34,17 @@ fn into_nodes_tight(blocks: Vec<BlockIr<'_>>) -> Vec<Node<'_>> {
             BlockIr::CodeBlock(c) => result.push(c.into_node()),
             BlockIr::Comment(_) => result.push(Node::Text("")),
             BlockIr::Paragraph(p) => {
-                result.extend(p.segments.into_nodes());
-                result.push(Node::Element(Element {
-                    name: ElemName::Br,
-                    attrs: vec![],
-                    content: None,
-                    is_block_level: true,
-                    contains_blocks: false,
-                }))
+                let segments = into_nodes_trimmed(p.segments);
+                if !segments.is_empty() {
+                    result.extend(segments);
+                    result.push(Node::Element(Element {
+                        name: ElemName::Br,
+                        attrs: vec![],
+                        content: None,
+                        is_block_level: true,
+                        contains_blocks: false,
+                    }))
+                }
             }
             BlockIr::Heading(h) => result.push(h.into_node()),
             BlockIr::ThematicBreak(t) => result.push(t.into_node()),
@@ -61,16 +64,24 @@ fn into_nodes_tight(blocks: Vec<BlockIr<'_>>) -> Vec<Node<'_>> {
 
 impl<'a> IntoNode<'a> for CodeBlockIr<'a> {
     fn into_node(self) -> Node<'a> {
-        let attrs = if self.info.trim_start() != "" {
-            vec![Attr { key: "data-language", value: Some(self.info.to_string()) }]
+        let info = self.info.trim_start();
+        let attrs = if !info.is_empty() {
+            let lang = info.split(|c| matches!(c, ' ' | '\t' | ',' | ';')).next().unwrap();
+            vec![Attr { key: "data-language", value: Some(lang.to_string()) }]
         } else {
             vec![]
         };
 
-        let content = Node::Text2(self.lines.into_iter().join("\n"));
+        let text = if self.lines.is_empty() {
+            String::new()
+        } else {
+            self.lines.into_iter().join("\n") + "\n"
+        };
+
+        let content = Node::Text2(text);
         let code = Node::Element(Element {
             name: ElemName::Code,
-            attrs: vec![],
+            attrs,
             content: Some(vec![content]),
             is_block_level: false,
             contains_blocks: false,
@@ -78,10 +89,10 @@ impl<'a> IntoNode<'a> for CodeBlockIr<'a> {
 
         Node::Element(Element {
             name: ElemName::Pre,
-            attrs,
+            attrs: vec![],
             content: Some(vec![code]),
             is_block_level: true,
-            contains_blocks: true,
+            contains_blocks: false,
         })
     }
 }
@@ -256,13 +267,13 @@ fn create_table_cell(is_header_row: bool, cell: TableCellIr<'_>) -> Node<'_> {
     match cell.meta.vertical_alignment {
         CellAlignment::Unset => {}
         CellAlignment::LeftTop => {
-            attr!(attrs: "align" = "top".to_string());
+            attr!(attrs: "valign" = "top".to_string());
         }
         CellAlignment::RightBottom => {
-            attr!(attrs: "align" = "bottom".to_string());
+            attr!(attrs: "valign" = "bottom".to_string());
         }
         CellAlignment::Center => {
-            attr!(attrs: "align" = "middle".to_string());
+            attr!(attrs: "valign" = "middle".to_string());
         }
     }
 

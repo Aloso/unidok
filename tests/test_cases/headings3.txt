@@ -1,0 +1,24 @@
+- Not a heading
+===============
+
+$Heading
+--------
+
+<kbd>Not a heading</kbd>
+===================
+
+$<kbd>Heading</kbd>
+===================
+
+// TODO: Debug this
+
+............................................................
+<ul>
+<li>Not a heading</li>
+</ul>
+<p>===============</p>
+<h2>Heading</h2>
+<kbd>Not a heading
+</kbd><p>===================</p>
+<p><kbd>Heading
+</kbd>===================</p>

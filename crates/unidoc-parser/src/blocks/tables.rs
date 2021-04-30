@@ -151,10 +151,7 @@ impl ParseInfallible for ParseCellMeta {
             input.parse(ParseCellMetaBraces).unwrap_or_else(|| (1, 1, Bius::new(), vec![]));
 
         match input.peek_char() {
-            Some(' ' | '\t') => {
-                input.bump(1);
-            }
-            Some('\n') | None => {}
+            Some(' ' | '\t') | Some('\n') | None => {}
             _ => return CellMeta::default(),
         }
 

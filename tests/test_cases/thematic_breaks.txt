@@ -1,0 +1,47 @@
+# Title followed by a thematic break
+---------
+And another thematic break:
+---------------------------
+   ***
+And another one:
+__________________________________
+
+Fewer than 3 characters don't work.
+
+**
+
+Internal spaces don't work.
+
+* * * * *
+
+Text in the same line is forbidden.
+
+-------------- ~
+
+............................................................
+<h1>Title followed by a thematic break</h1>
+<hr/>
+<h2>And another thematic break:</h2>
+<hr/>
+<p>And another one:</p>
+<hr/>
+<p>Fewer than 3 characters don't work.</p>
+<p>**</p>
+<p>Internal spaces don't work.</p>
+<ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>Text in the same line is forbidden.</p>
+<p>-------------- ~</p>

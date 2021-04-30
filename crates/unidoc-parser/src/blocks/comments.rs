@@ -39,6 +39,6 @@ impl Parse for ParseComment<'_> {
     }
 
     fn can_parse(&self, input: &mut Input) -> bool {
-        input.rest().starts_with("//")
+        input.rest().trim_start_matches(|c| matches!(c, ' ' | '\t')).starts_with("//")
     }
 }

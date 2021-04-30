@@ -1,0 +1,36 @@
+````
+```
+```
+````
+```rust, no_run
+fn hello_world() -> &'static str {
+    html! {
+        <a href="test">Hello &nbsp; world</a>
+    }
+}
+```
+    ```
+    ``````
+> ```
+> Unclosed code block
+
+```
+Another unclosed code block
+............................................................
+<pre><code>```
+```
+</code></pre>
+<pre><code data-language="rust">fn hello_world() -&gt; &amp;'static str {
+    html! {
+        &lt;a href=&quot;test&quot;&gt;Hello &amp;nbsp; world&lt;/a&gt;
+    }
+}
+</code></pre>
+<pre><code></code></pre>
+<blockquote>
+<pre><code>Unclosed code block
+
+</code></pre>
+</blockquote>
+<pre><code>Another unclosed code block
+</code></pre>

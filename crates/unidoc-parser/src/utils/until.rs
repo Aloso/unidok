@@ -14,7 +14,7 @@ use crate::StrSlice;
 ///
 /// ### Example for the infallible version
 ///
-/// ```no_test
+/// ```compile_fail
 /// let mut input = Input::new("****!");
 /// input.parse_i(Until('!'));
 /// assert_eq!(input.rest(), "!");
@@ -22,7 +22,7 @@ use crate::StrSlice;
 ///
 /// ### Example for the fallible version
 ///
-/// ```no_test
+/// ```compile_fail
 /// let mut input = Input::new("****!");
 /// assert!(input.parse(Until('!')).is_some());
 /// assert!(input.parse(Until('#')).is_none());

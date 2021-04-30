@@ -1,0 +1,47 @@
+Heading 1
+=========
+Heading 2
+---------
+
+Heading 2
+    --
+    Heading 2
+--
+
+Not a heading
+-
+Not a heading
+=
+
+This is a
+_multiline_ heading
+====
+
+# Heading
+=========
+
+## Heading
+----------
+
+Escaped heading
+\==
+
+............................................................
+<h1>Heading 1</h1>
+<h2>Heading 2</h2>
+<h2>Heading 2</h2>
+<h2>Heading 2</h2>
+<p>Not a heading</p>
+<ul>
+<li></li>
+</ul>
+<p>Not a heading
+=</p>
+<h1>This is a
+<em>multiline</em> heading</h1>
+<h1>Heading</h1>
+<p>=========</p>
+<h2>Heading</h2>
+<hr/>
+<p>Escaped heading
+==</p>

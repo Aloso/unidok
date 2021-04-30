@@ -1,0 +1,75 @@
+|| A table | with several
+|| table cells
+
+#|| This is a | header row
+|| nice, right?
+#|| And another header | (or footer) row
+
+||^ Centered |< Left aligned |> Right aligned
+||^^ Centered vertically and horizontally |<> Aligned left bottom |# Header cell
+||{B} Bold cell |{I;U;S;color:red} Fancy cell |#^{} Blub
+||Table cells can contain **formatting**. Bars can be \| escaped or `|` wrapped in code.
+|| | Table cells can be empty.
+
+||| Not a table
+
+| Also not a table
+
+$|| Definitely not a table
+
+\|| Definitely not a table
+
+\#|| Definitely not a table
+
+............................................................
+<table>
+<tr>
+<td>A table</td>
+<td>with several</td>
+</tr>
+<tr>
+<td>table cells</td>
+</tr>
+</table>
+<table>
+<tr>
+<th>This is a</th>
+<th>header row</th>
+</tr>
+<tr>
+<td>nice, right?</td>
+</tr>
+<tr>
+<th>And another header</th>
+<th>(or footer) row</th>
+</tr>
+</table>
+<table>
+<tr>
+<td align="center">Centered</td>
+<td align="left">Left aligned</td>
+<td align="right">Right aligned</td>
+</tr>
+<tr>
+<td align="center" valign="middle">Centered vertically and horizontally</td>
+<td align="left" valign="bottom">Aligned left bottom</td>
+<th>Header cell</th>
+</tr>
+<tr>
+<td style="font-weight:bold;">Bold cell</td>
+<td style="font-style:italic;text-decoration:underline line-through;color:red;">Fancy cell</td>
+<th align="center">Blub</th>
+</tr>
+<tr>
+<td>Table cells can contain <strong>formatting</strong>. Bars can be | escaped or <code>|</code> wrapped in code.</td>
+</tr>
+<tr>
+<td></td>
+<td>Table cells can be empty.</td>
+</tr>
+</table>
+<p>||| Not a table</p>
+<p>| Also not a table</p>
+<p>|| Definitely not a table</p>
+<p>|| Definitely not a table</p>
+<p>#|| Definitely not a table</p>
