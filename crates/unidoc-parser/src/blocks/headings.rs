@@ -47,6 +47,7 @@ impl Parse for ParseHeading<'_> {
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
+        input.parse_i(ParseSpaces);
         let level = input.parse(ParseHashes)?;
         let segments = input.parse(Paragraph::parser(self.ind, Context::Heading))?.segments;
 
@@ -55,6 +56,8 @@ impl Parse for ParseHeading<'_> {
     }
 
     fn can_parse(&self, input: &mut Input) -> bool {
+        let mut input = input.start();
+        input.parse_i(ParseSpaces);
         input.can_parse(ParseHashes)
     }
 }

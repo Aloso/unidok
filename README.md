@@ -345,8 +345,6 @@ https://spec.commonmark.org/0.29/#images
 
 ## Roadmap
 
-* Handle leading and trailing whitespace properly everywhere
-
 * Code blocks
   * Syntax highlighting
   * Support the `@PASS` parser macro
@@ -417,7 +415,7 @@ https://spec.commonmark.org/0.29/#images
 
 * Macros
   * Table of contents (`@TOC`)
-  * Include file (`@INCLUDE`) -- only includes content, but doesn't bring macros, functions, config, link reference definitions or other things into scope
+  * Include file (`@INCLUDE`) -- only includes content, but doesn't bring plugins, config, link reference definitions or other things into scope
   * Import macros, functions, config, link reference definitions, etc. defined in another file (`@IMPORT`)
   * Define custom macros in a plugin
 

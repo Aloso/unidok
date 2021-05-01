@@ -1,15 +1,15 @@
 || A table | with several
 || table cells
 
-#|| This is a | header row
-|| nice, right?
-#|| And another header | (or footer) row
+  #|| This is a | header row
+  || nice, right?
+  #|| And another header | (or footer) row
 
 ||^ Centered |< Left aligned |> Right aligned
 ||^^ Centered vertically and horizontally |<> Aligned left bottom |# Header cell
 ||{B} Bold cell |{I;U;S;color:red} Fancy cell |#^{} Blub
 ||Table cells can contain **formatting**. Bars can be \| escaped or `|` wrapped in code.
-|| | Table cells can be empty.
+|| | Table cells can be empty.|
 
 ||| Not a table
 
