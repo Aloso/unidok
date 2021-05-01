@@ -1,0 +1,25 @@
+`hello world` `` from the other side``!
+`<code can [contain](arbitrary) @things{!}`
+
+```this is not a fenced code block```
+```but this is
+```
+$```
+whereas this is not
+```
+
+**bold text `can contain code`** `**but not vice versa**` unless...
+
+@PASS`This code **can** [contain](formatting)`.
+
+@PASS(@)`This code **should** @(.cls){only} [contain](macros)`.
+
+............................................................
+<p><code>hello world</code> <code>from the other side</code>!
+<code>&lt;code can [contain](arbitrary) @things{!}</code></p>
+<p><code>this is not a fenced code block</code></p>
+<pre><code data-language="but"></code></pre>
+<p><code>whereas this is not</code></p>
+<p><strong>bold text <code>can contain code</code></strong> <code>**but not vice versa**</code> unless...</p>
+<p><code>This code <strong>can</strong> <a href="formatting">contain</a></code>.</p>
+<p><code>This code <strong>should</strong> <span class="cls">only</span> <a href="macros">contain</a></code>.</p>

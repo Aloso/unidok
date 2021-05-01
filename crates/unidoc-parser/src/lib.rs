@@ -11,6 +11,7 @@ pub mod visitor;
 mod collapse_text;
 mod input;
 mod parse;
+mod parsing_mode;
 mod utils;
 
 use crate::blocks::{Block, Context};

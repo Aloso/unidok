@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use unidoc_parser::html::ElemName;
 use unidoc_parser::inlines::Formatting;
 use unidoc_parser::ir::*;
@@ -17,7 +18,7 @@ impl<'a> IntoNode<'a> for SegmentIr<'a> {
             SegmentIr::InlineHtml(h) => h.into_node(),
             SegmentIr::Format(f) => f.into_node(),
             SegmentIr::Code(c) => c.into_node(),
-            SegmentIr::InlineMacro(_) => todo!(),
+            SegmentIr::InlineMacro(m) => m.into_node(),
             SegmentIr::Math(_) => todo!(),
         }
     }
@@ -104,5 +105,59 @@ impl<'a> IntoNode<'a> for CodeIr<'a> {
             is_block_level: false,
             contains_blocks: false,
         })
+    }
+}
+
+impl<'a> IntoNode<'a> for InlineMacroIr<'a> {
+    fn into_node(self) -> Node<'a> {
+        match self.name {
+            "PASS" | "NOPASS" => self.segment.into_node(),
+            "" => {
+                let node = self.segment.into_node();
+
+                if let Node::Element(mut elem) = node {
+                    if let Some(args) = self.args {
+                        let mut classes = Vec::new();
+
+                        for arg in args.split_ascii_whitespace() {
+                            if !arg.is_empty() {
+                                if let Some(arg) = arg.strip_prefix('.') {
+                                    classes.push(arg);
+                                } else if let Some(arg) = arg.strip_prefix('#') {
+                                    elem.attrs
+                                        .push(Attr { key: "id", value: Some(arg.to_string()) })
+                                } else {
+                                    let mut parts = arg.splitn(2, '=');
+                                    let key = parts.next().unwrap();
+                                    let value = parts.next().map(|s| {
+                                        let value = if (s.starts_with('"') && s.ends_with('"'))
+                                            || (s.starts_with('\'') && s.ends_with('\''))
+                                        {
+                                            &s[1..s.len() - 1]
+                                        } else {
+                                            s
+                                        };
+                                        value.to_string()
+                                    });
+
+                                    elem.attrs.push(Attr { key, value })
+                                }
+                            }
+                        }
+
+                        if !classes.is_empty() {
+                            elem.attrs.push(Attr {
+                                key: "class",
+                                value: Some(classes.into_iter().join(" ")),
+                            })
+                        }
+                    }
+                    Node::Element(elem)
+                } else {
+                    node
+                }
+            }
+            _ => todo!(),
+        }
     }
 }

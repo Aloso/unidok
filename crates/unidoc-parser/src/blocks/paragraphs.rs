@@ -1,6 +1,7 @@
-use crate::inlines::text::{parse_paragraph_items, stack_to_segments};
-use crate::inlines::{LineBreak, Segment};
-use crate::utils::{Indents, ParseLineBreak};
+use crate::inlines::segments::Segments;
+use crate::inlines::Segment;
+use crate::parsing_mode::ParsingMode;
+use crate::utils::Indents;
 use crate::{Context, Input, Parse};
 
 use super::*;
@@ -30,36 +31,11 @@ impl Parse for ParseParagraph<'_> {
     type Output = Paragraph;
 
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
-        use Context::*;
+        let parser = Segments::parser(self.ind, self.context, ParsingMode::Everything);
 
-        let (items, underline) = self.lex_paragraph_items(input)?;
-        if items.is_empty() {
-            return None;
+        match input.parse(parser)? {
+            Segments::Empty => None,
+            Segments::Some { segments, underline } => Some(Paragraph { segments, underline }),
         }
-
-        let stack = parse_paragraph_items(items);
-        let mut segments = stack_to_segments(stack);
-
-        if let BlockBraces | Heading | Global | Html(_) = self.context {
-            while input.parse(ParseLineBreak(self.ind)).is_some() && !input.is_empty() {
-                segments.push(Segment::LineBreak(LineBreak));
-            }
-        }
-
-        Some(Paragraph { segments, underline })
-    }
-}
-
-impl ParseParagraph<'_> {
-    pub(crate) fn can_parse_block(&self, input: &mut Input) -> bool {
-        let ind = self.ind;
-        input.can_parse(CodeBlock::parser(ind))
-            || input.can_parse(Comment::parser(ind))
-            || input.can_parse(Heading::parser(ind))
-            || input.can_parse(Table::parser(ind))
-            || input.can_parse(List::parser(ind))
-            || input.can_parse(ThematicBreak::parser(ind))
-            || input.can_parse(Quote::parser(ind))
-            || input.can_parse(BlockMacro::parser(self.context, ind))
     }
 }

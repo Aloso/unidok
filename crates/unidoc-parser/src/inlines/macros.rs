@@ -1,4 +1,5 @@
 use crate::inlines::Braces;
+use crate::parsing_mode::ParsingMode;
 use crate::utils::{Indents, Until};
 use crate::{Input, Parse, StrSlice};
 
@@ -12,13 +13,14 @@ pub struct InlineMacro {
 }
 
 impl InlineMacro {
-    pub(crate) fn parser(ind: Indents<'_>) -> ParseInlineMacro<'_> {
-        ParseInlineMacro { ind }
+    pub(crate) fn parser(ind: Indents<'_>, mode: ParsingMode) -> ParseInlineMacro<'_> {
+        ParseInlineMacro { ind, mode }
     }
 }
 
 pub struct ParseInlineMacro<'a> {
     ind: Indents<'a>,
+    mode: ParsingMode,
 }
 
 impl Parse for ParseInlineMacro<'_> {
@@ -31,14 +33,17 @@ impl Parse for ParseInlineMacro<'_> {
         let name = input.parse(ParseMacroName)?;
         let args = input.parse(ParseMacroArgs);
 
+        let parsing_mode = ParsingMode::try_from_macro(
+            name.to_str(input.text()),
+            args.map(|s| s.to_str(input.text())),
+        )
+        .unwrap_or(self.mode);
+
         let segment = if let Some(braces) = input.parse(Braces::parser(self.ind)) {
             Segment::Braces(braces)
-        } else if let Some(code) = {
-            let pass = name.to_str(input.text()) == "PASS";
-            input.parse(Code::parser(self.ind, pass))
-        } {
+        } else if let Some(code) = input.parse(Code::parser(self.ind, parsing_mode)) {
             Segment::Code(code)
-        } else if let Some(mac) = input.parse(InlineMacro::parser(self.ind)) {
+        } else if let Some(mac) = input.parse(InlineMacro::parser(self.ind, parsing_mode)) {
             Segment::InlineMacro(mac)
         } else if let Some(img) = input.parse(Image::parser(self.ind)) {
             Segment::Image(img)

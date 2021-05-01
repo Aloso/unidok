@@ -1,6 +1,7 @@
 use std::convert::TryInto;
 
 use crate::blocks::Paragraph;
+use crate::parsing_mode::ParsingMode;
 use crate::utils::{Indents, ParseLineBreak, ParseLineEnd, While};
 use crate::{Context, Input, Parse};
 
@@ -12,14 +13,14 @@ pub struct Code {
 }
 
 impl Code {
-    pub(crate) fn parser(ind: Indents<'_>, pass: bool) -> ParseCode<'_> {
-        ParseCode { ind, pass }
+    pub(crate) fn parser(ind: Indents<'_>, mode: ParsingMode) -> ParseCode<'_> {
+        ParseCode { ind, mode }
     }
 }
 
 pub(crate) struct ParseCode<'a> {
     ind: Indents<'a>,
-    pass: bool,
+    mode: ParsingMode,
 }
 
 impl Parse for ParseCode<'_> {
@@ -31,70 +32,52 @@ impl Parse for ParseCode<'_> {
         input.parse('`')?;
         let len = (1 + input.parse_i(While('`')).len()).try_into().ok()?;
 
-        let mut segments = if self.pass {
-            input.parse(Paragraph::parser(self.ind, Context::Code(len)))?.segments
-        } else {
-            let mut segments = Vec::new();
+        let mut segments = match self.mode {
+            ParsingMode::Nothing => {
+                let mut segments = Vec::new();
 
-            loop {
-                let i = input.rest().find(find_special)?;
-                if i > 0 {
-                    segments.push(Segment::Text(input.bump(i)));
+                loop {
+                    let i = input.rest().find(find_special)?;
+                    if i > 0 {
+                        segments.push(Segment::Text(input.bump(i)));
+                    }
+
+                    match input.peek_char().unwrap() {
+                        '`' => {
+                            if input.parse(ParseCodeEndDelimiter { len }).is_some() {
+                                break;
+                            } else {
+                                let backticks = input.parse_i(While('`'));
+                                segments.push(Segment::Text(backticks));
+                            }
+                        }
+                        '\n' | '\r' => {
+                            input.parse(ParseLineBreak(self.ind))?;
+                            segments.push(Segment::Text2(" "));
+                            if input.can_parse(ParseLineEnd) {
+                                return None;
+                            }
+                        }
+                        c => unreachable!("{:?} was not expected", c),
+                    }
                 }
 
-                match input.peek_char().unwrap() {
-                    '`' => {
-                        if input.parse(ParseCodeEndDelimiter { len }).is_some() {
-                            break;
-                        } else {
-                            let backticks = input.parse_i(While('`'));
-                            segments.push(Segment::Text(backticks));
-                        }
-                    }
-                    '\n' | '\r' => {
-                        input.parse(ParseLineBreak(self.ind))?;
-                        segments.push(Segment::Text2(" "));
-                        if input.can_parse(ParseLineEnd) {
-                            return None;
-                        }
-                    }
-                    c => unreachable!("{:?} was not expected", c),
-                }
+                segments
             }
-
-            segments
+            ParsingMode::Macros => {
+                // TODO
+                input.parse(Paragraph::parser(self.ind, Context::Code(len)))?.segments
+            }
+            ParsingMode::Everything => {
+                input.parse(Paragraph::parser(self.ind, Context::Code(len)))?.segments
+            }
         };
 
         if let Some(s) = segments.first_mut() {
-            match s {
-                Segment::Text(s) => {
-                    if s.to_str(input.text()).starts_with(' ') {
-                        *s = s.get(1..);
-                    }
-                }
-                Segment::Text2(s) => {
-                    if s.starts_with(' ') {
-                        *s = &s[1..];
-                    }
-                }
-                _ => {}
-            }
+            s.strip_space_start(&input);
         }
-
         if let Some(s) = segments.last_mut() {
-            match s {
-                Segment::Text(s) => {
-                    if s.to_str(input.text()).ends_with(' ') {
-                        *s = s.get(..s.len() - 1);
-                    }
-                }
-                Segment::Text2(s) => {
-                    if s.ends_with(' ') {
-                        *s = &s[..s.len() - 1];
-                    }
-                }
-                _ => {}
-            }
+            s.strip_space_end(&input);
         }
 
         input.apply();

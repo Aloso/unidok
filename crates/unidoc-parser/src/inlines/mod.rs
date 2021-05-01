@@ -9,7 +9,6 @@ pub(crate) mod links;
 pub(crate) mod macros;
 pub(crate) mod math;
 pub(crate) mod segments;
-pub(crate) mod text;
 
 pub use braces::Braces;
 pub use code::Code;

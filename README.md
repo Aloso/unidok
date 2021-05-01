@@ -392,16 +392,13 @@ https://spec.commonmark.org/0.29/#images
 * Expanding macros
 
 * Replacements
-  * U+0000 unsafe character
-  * Quotes: `"`, `'`
-  * Apostrophe: `'`
-  * Arrows: `->`, `=>`, `<-`, `<=`, `<->`, `<=>`
-  * Em dash: `--`
-  * Ellipsis: `...`
-  * Symbols: `(C)`, `(TM)`, `(R)`
-  * Mathematical relations (disabled by default):
-    `=!=`, `=/=`, `=<=`, `=>=`, `=~=`, `===`, `~~`, `-<`, `>-`
-  * Mathematical escape sequences (disabled by default):
+  * Enabled by default:
+    * Quotes, apostrophe: `"`, `'`
+    * Arrows: `->`, `=>`, `<-`, `<=`, `<->`, `<=>`
+    * Em dash, ellipsis: `--`, `...`
+    * Symbols: `(C)`, `(TM)`, `(R)`
+  * Math
+    `=!=`, `=/=`, `=<=`, `=>=`, `=~=`, `===`, `~~`, `-<`, `>-`,
     `%+%`, `%-%`, `%+-%`, `%-+%`, `%/%`, `%:%`, `%*%`, `%.%`, `%~%`, `%<%`, `%>%`, `%<<%`, `%>>%`,
     `%alpha%`, `%Alpha%`, `%beta%`, ..., `%pi%`, ..., `%Omega%`,
     `%sqrt%`, `%cross%`, `%x%`, `%o%`, `|->`,
