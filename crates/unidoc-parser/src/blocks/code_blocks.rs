@@ -1,6 +1,6 @@
 use std::convert::TryInto;
 
-use crate::utils::{Indents, ParseLineBreak, ParseSpaces, ParseWsAndLineEnd, Until, While};
+use crate::utils::{Indents, ParseLineBreak, ParseSpacesU8, ParseWsAndLineEnd, Until, While};
 use crate::{Input, Parse, StrSlice};
 
 #[rustfmt::skip]
@@ -53,7 +53,7 @@ impl Parse for ParseCodeBlock<'_> {
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
-        let indent = input.parse_i(ParseSpaces);
+        let indent = input.parse(ParseSpacesU8)?;
         let ind = self.ind.push_indent(indent);
 
         let fence = input.parse(ParseFence)?;

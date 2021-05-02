@@ -1,6 +1,5 @@
-use crate::parse::Parse;
 use crate::utils::{AsciiCI, ClosingQuoteMark, ParseOneWS, ParseSpaces, QuoteMark};
-use crate::StrSlice;
+use crate::{Parse, StrSlice};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Doctype {

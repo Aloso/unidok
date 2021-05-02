@@ -1,6 +1,5 @@
 use crate::input::Input;
-use crate::parse::{Parse, ParseInfallible};
-use crate::StrSlice;
+use crate::{Parse, ParseInfallible, StrSlice};
 
 /// Parses until the given pattern (a `&str`, `char` or a closure accepting a
 /// `char`) matches.

@@ -378,7 +378,7 @@ https://spec.commonmark.org/0.29/#images
   * Warn when a block HTML element isn't followed by a line break
 
 * Tables
-  * Table column styling with `@COLS('^' '' '#' '{B,I,U}')`
+  * Table column styling with `@COLS(^ | |# |{B,I,U})`
 
 * Links
   * Auto-links

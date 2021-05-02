@@ -1,5 +1,6 @@
-use crate::utils::ParseSpaces;
 use crate::{Input, Parse};
+
+use super::ParseSpaces;
 
 /// This parser matches if the next character is a line break. The line break is
 /// not consumed.

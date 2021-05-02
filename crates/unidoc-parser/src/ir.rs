@@ -1,6 +1,9 @@
+use crate::blocks::macros::BlockMacroContent;
 use crate::blocks::*;
 use crate::html::*;
 use crate::inlines::*;
+use crate::macros::{MacroArgs, TokenTree, TokenTreeAtom};
+use crate::parsing_mode::ParsingMode;
 use crate::{collapse_text, StrSlice};
 
 /// A document, consisting of multiple [`BlockIr`]s.
@@ -112,20 +115,39 @@ pub struct QuoteIr<'a> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum BlockMacroIr<'a> {
-    AttrMacro { name: &'a str, args: Option<&'a str>, block: Box<BlockIr<'a>> },
-    BraceMacro { name: &'a str, args: Option<&'a str>, blocks: Vec<BlockIr<'a>> },
+pub struct BlockMacroIr<'a> {
+    pub name: &'a str,
+    pub args: Option<MacroArgsIr<'a>>,
+    pub content: BlockMacroContentIr<'a>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct MacroArgs<'a> {
-    args: Vec<MacroArg<'a>>,
+pub enum BlockMacroContentIr<'a> {
+    Prefixed(Box<BlockIr<'a>>),
+    Braces(Vec<BlockIr<'a>>),
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum MacroArg<'a> {
-    Atom(&'a str),
-    KeyValue(&'a str, &'a str),
+pub enum MacroArgsIr<'a> {
+    Raw(&'a str),
+    TokenTrees(Vec<TokenTreeIr<'a>>),
+    Attrs(Vec<AttrIr<'a>>),
+    CellMeta(Vec<CellMetaIr<'a>>),
+    ParsingMode(ParsingMode),
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum TokenTreeIr<'a> {
+    Atom(TokenTreeAtomIr<'a>),
+    KV(&'a str, TokenTreeAtomIr<'a>),
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum TokenTreeAtomIr<'a> {
+    Word(&'a str),
+    QuotedWord(String),
+    Tuple(Vec<TokenTreeIr<'a>>),
+    Braces(BracesIr<'a>),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -155,7 +177,7 @@ pub struct ImageIr<'a> {
 #[derive(Debug, Clone, PartialEq)]
 pub struct InlineMacroIr<'a> {
     pub name: &'a str,
-    pub args: Option<&'a str>,
+    pub args: Option<MacroArgsIr<'a>>,
     pub segment: Box<SegmentIr<'a>>,
 }
 
@@ -190,8 +212,7 @@ pub struct HtmlElemIr<'a> {
 #[derive(Debug, Clone, PartialEq)]
 pub struct AttrIr<'a> {
     pub key: &'a str,
-    pub value: Option<&'a str>,
-    pub quotes: AttrQuotes,
+    pub value: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -394,17 +415,59 @@ impl<'a> IntoIR<'a> for BlockMacro {
     type IR = BlockMacroIr<'a>;
 
     fn into_ir(self, text: &'a str) -> Self::IR {
+        BlockMacroIr {
+            name: self.name.into_ir(text),
+            args: self.args.into_ir(text),
+            content: self.content.into_ir(text),
+        }
+    }
+}
+
+impl<'a> IntoIR<'a> for BlockMacroContent {
+    type IR = BlockMacroContentIr<'a>;
+
+    fn into_ir(self, text: &'a str) -> Self::IR {
         match self {
-            BlockMacro::AttrMacro { name, args, block } => BlockMacroIr::AttrMacro {
-                name: name.into_ir(text),
-                args: args.into_ir(text),
-                block: block.into_ir(text),
-            },
-            BlockMacro::BraceMacro { name, args, blocks } => BlockMacroIr::BraceMacro {
-                name: name.into_ir(text),
-                args: args.into_ir(text),
-                blocks: blocks.into_ir(text),
-            },
+            BlockMacroContent::Prefixed(p) => BlockMacroContentIr::Prefixed(p.into_ir(text)),
+            BlockMacroContent::Braces(b) => BlockMacroContentIr::Braces(b.into_ir(text)),
+        }
+    }
+}
+
+impl<'a> IntoIR<'a> for MacroArgs {
+    type IR = MacroArgsIr<'a>;
+
+    fn into_ir(self, text: &'a str) -> Self::IR {
+        match self {
+            MacroArgs::Raw(r) => MacroArgsIr::Raw(r.into_ir(text)),
+            MacroArgs::TokenTrees(t) => MacroArgsIr::TokenTrees(t.into_ir(text)),
+            MacroArgs::Attrs(a) => MacroArgsIr::Attrs(a.into_ir(text)),
+            MacroArgs::CellMeta(m) => MacroArgsIr::CellMeta(m.into_ir(text)),
+            MacroArgs::ParsingMode(p) => MacroArgsIr::ParsingMode(p),
+        }
+    }
+}
+
+impl<'a> IntoIR<'a> for TokenTree {
+    type IR = TokenTreeIr<'a>;
+
+    fn into_ir(self, text: &'a str) -> Self::IR {
+        match self {
+            TokenTree::Atom(a) => TokenTreeIr::Atom(a.into_ir(text)),
+            TokenTree::KV(k, v) => TokenTreeIr::KV(k.into_ir(text), v.into_ir(text)),
+        }
+    }
+}
+
+impl<'a> IntoIR<'a> for TokenTreeAtom {
+    type IR = TokenTreeAtomIr<'a>;
+
+    fn into_ir(self, text: &'a str) -> Self::IR {
+        match self {
+            TokenTreeAtom::Word(w) => TokenTreeAtomIr::Word(w.into_ir(text)),
+            TokenTreeAtom::QuotedWord(q) => TokenTreeAtomIr::QuotedWord(q),
+            TokenTreeAtom::Tuple(t) => TokenTreeAtomIr::Tuple(t.into_ir(text)),
+            TokenTreeAtom::Braces(b) => TokenTreeAtomIr::Braces(b.into_ir(text)),
         }
     }
 }
@@ -527,7 +590,7 @@ impl<'a> IntoIR<'a> for HtmlAttr {
     type IR = AttrIr<'a>;
 
     fn into_ir(self, text: &'a str) -> Self::IR {
-        AttrIr { key: self.key.into_ir(text), value: self.value.into_ir(text), quotes: self.quotes }
+        AttrIr { key: self.key.into_ir(text), value: self.value }
     }
 }
 

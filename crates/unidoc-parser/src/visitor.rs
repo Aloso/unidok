@@ -79,9 +79,9 @@ pub trait IrVisitor {
     }
 
     fn visit_block_macro(&mut self, mac: &mut BlockMacroIr) {
-        match mac {
-            BlockMacroIr::AttrMacro { block, .. } => self.visit_block(block),
-            BlockMacroIr::BraceMacro { blocks, .. } => {
+        match &mut mac.content {
+            BlockMacroContentIr::Prefixed(block) => self.visit_block(block),
+            BlockMacroContentIr::Braces(blocks) => {
                 for block in blocks {
                     self.visit_block(block);
                 }

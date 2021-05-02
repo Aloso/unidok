@@ -1,6 +1,5 @@
 use crate::input::Input;
-use crate::parse::ParseInfallible;
-use crate::StrSlice;
+use crate::{ParseInfallible, StrSlice};
 
 /// Parses while the given pattern matches. The first occurrence that doesn't
 /// match isn't included. This parser never fails.

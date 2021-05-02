@@ -6,10 +6,9 @@ use crate::blocks::macros::ParseClosingBrace;
 use crate::blocks::*;
 use crate::html::{ElemName, HtmlElem, HtmlNode};
 use crate::input::Input;
-use crate::parse::Parse;
 use crate::parsing_mode::ParsingMode;
 use crate::utils::{Indents, ParseLineBreak, While};
-use crate::StrSlice;
+use crate::{Parse, StrSlice};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Segment {
@@ -80,6 +79,13 @@ impl Segments {
         mode: ParsingMode,
     ) -> ParseSegments<'_> {
         ParseSegments { ind, context, mode }
+    }
+
+    pub fn into_segments_no_underline(self) -> Option<Vec<Segment>> {
+        match self {
+            Segments::Some { segments, underline: None } => Some(segments),
+            _ => None,
+        }
     }
 }
 
@@ -438,7 +444,8 @@ impl ParseSegments<'_> {
                         } else {
                             items.push(Item::Text(input.parse_i(While('`'))));
                         }
-                    } else if let Some(code) = input.parse(Code::parser(ind, ParsingMode::Nothing))
+                    } else if let Some(code) =
+                        input.parse(Code::parser(ind, ParsingMode::new_nothing()))
                     {
                         items.push(Item::Code(code));
                     } else {

@@ -1,4 +1,5 @@
 use std::fs;
+use std::time::{Duration, Instant};
 
 use similar::{ChangeTag, TextDiff};
 
@@ -40,22 +41,29 @@ fn main() {
         let unidoc = split.next().unwrap();
         let expected = split.next();
 
-        match test_case(unidoc, expected, update) {
+        let (result, parsing_time, rendering_time) = test_case(
+            file_name.to_string(),
+            unidoc.to_string(),
+            expected.map(ToString::to_string),
+            update,
+        );
+
+        match result {
             TcResult::Write(s) => {
-                eprintln!("{}write{}   {}", CYAN, RESET, file_name);
+                print_line(CYAN, "write", &file_name, parsing_time, rendering_time);
                 fs::write(path, format!("{}{}{}", unidoc, SPLIT, s)).unwrap();
                 c_write += 1;
             }
             TcResult::Update(s) => {
-                eprintln!("{}update{}  {}", YELLOW, RESET, file_name);
+                print_line(YELLOW, "update", &file_name, parsing_time, rendering_time);
                 fs::write(path, format!("{}{}{}", unidoc, SPLIT, s)).unwrap();
                 c_update += 1;
             }
             TcResult::Success => {
-                eprintln!("{}success{} {}", GREEN, RESET, file_name);
+                print_line(GREEN, "success", &file_name, parsing_time, rendering_time);
             }
             TcResult::Failure { got, expected } => {
-                eprintln!("{}{}error{}   {}", RED, BOLD, RESET, file_name);
+                print_line(RED, "error", &file_name, parsing_time, rendering_time);
                 eprintln!("{}{}DIFF:{}", CYAN, BOLD, RESET);
 
                 let diff = TextDiff::from_lines(&expected, &got);
@@ -102,18 +110,68 @@ enum TcResult {
     Failure { got: String, expected: String },
 }
 
-fn test_case(unidoc: &str, expected: Option<&str>, update: bool) -> TcResult {
-    let res = unidoc_parser::parse(unidoc);
-    let nodes = unidoc_to_html::convert(res);
-    let mut html = unidoc_to_html::to_html(&nodes);
+fn test_case(
+    file_name: String,
+    unidoc: String,
+    expected: Option<String>,
+    update: bool,
+) -> (TcResult, Duration, Duration) {
+    use std::sync::atomic::{AtomicBool, Ordering};
+    use std::sync::Arc;
+    use std::thread;
+
+    let finished = Arc::new(AtomicBool::new(false));
+    let finished2 = Arc::clone(&finished);
+
+    let handle = thread::spawn(move || {
+        let start = Instant::now();
+        let res = unidoc_parser::parse(&unidoc);
+        let parsing_time = start.elapsed();
+
+        let nodes = unidoc_to_html::convert(res);
+        let html = unidoc_to_html::to_html(&nodes);
+        let rendering_time = start.elapsed() - parsing_time;
+
+        finished.store(true, Ordering::Release);
+        (html, parsing_time, rendering_time)
+    });
+
+    thread::spawn(move || {
+        for _ in 0..1000 {
+            thread::sleep(Duration::from_millis(5));
+            if finished2.load(Ordering::Acquire) {
+                return;
+            }
+        }
+        eprintln!("  ...   {}{}{}  is taking very long!", CYAN, file_name, RESET);
+    });
+
+    let (mut html, parsing_time, rendering_time) = handle.join().unwrap();
     if html.ends_with("\n\n") {
         html.pop();
     }
 
-    match expected {
-        None => TcResult::Write(html),
-        Some(expected) if html == expected => TcResult::Success,
-        Some(_) if update => TcResult::Update(html),
-        Some(expected) => TcResult::Failure { got: html, expected: expected.into() },
-    }
+    (
+        match expected {
+            None => TcResult::Write(html),
+            Some(expected) if html == expected => TcResult::Success,
+            Some(_) if update => TcResult::Update(html),
+            Some(expected) => TcResult::Failure { got: html, expected },
+        },
+        parsing_time,
+        rendering_time,
+    )
+}
+
+fn print_line(
+    color: &str,
+    status: &str,
+    file_name: &str,
+    parsing_time: Duration,
+    rendering_time: Duration,
+) {
+    eprintln!(
+        "{}{:7}{} {:25} parsed in {:.1?}, rendered in {:.1?}",
+        color, status, RESET, file_name, parsing_time, rendering_time,
+    );
 }

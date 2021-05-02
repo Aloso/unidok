@@ -1,9 +1,8 @@
 use crate::blocks::{Block, Context, Paragraph};
 use crate::inlines::Segment;
 use crate::input::Input;
-use crate::parse::Parse;
 use crate::utils::{Indents, ParseLineBreak, ParseSpaces, Until};
-use crate::StrSlice;
+use crate::{Parse, StrSlice};
 
 use super::{ElemName, HtmlAttr};
 
@@ -65,7 +64,7 @@ impl Parse for ParseElement<'_> {
         let name = input.parse(ElemName::parser())?;
         input.parse_i(ParseSpaces);
 
-        let attrs = input.parse(HtmlAttr::multi_parser())?;
+        let attrs = input.parse(HtmlAttr::multi_parser(self.ind))?;
 
         if input.parse("/>").is_some() {
             input.apply();

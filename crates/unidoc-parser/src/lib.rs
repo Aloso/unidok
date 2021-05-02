@@ -6,6 +6,7 @@ pub mod blocks;
 pub mod html;
 pub mod inlines;
 pub mod ir;
+pub mod macros;
 pub mod visitor;
 
 mod collapse_text;

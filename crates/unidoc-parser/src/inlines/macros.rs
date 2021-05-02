@@ -1,6 +1,7 @@
 use crate::inlines::Braces;
+use crate::macros::MacroArgs;
 use crate::parsing_mode::ParsingMode;
-use crate::utils::{Indents, Until};
+use crate::utils::Indents;
 use crate::{Input, Parse, StrSlice};
 
 use super::*;
@@ -8,7 +9,7 @@ use super::*;
 #[derive(Debug, Clone, PartialEq)]
 pub struct InlineMacro {
     pub name: StrSlice,
-    pub args: Option<StrSlice>,
+    pub args: Option<MacroArgs>,
     pub segment: Box<Segment>,
 }
 
@@ -31,13 +32,13 @@ impl Parse for ParseInlineMacro<'_> {
 
         input.parse('@')?;
         let name = input.parse(ParseMacroName)?;
-        let args = input.parse(ParseMacroArgs);
+        let name_str = name.to_str(input.text()).to_string();
+        let args = input.parse(MacroArgs::parser(&name_str, self.ind))?;
 
-        let parsing_mode = ParsingMode::try_from_macro(
-            name.to_str(input.text()),
-            args.map(|s| s.to_str(input.text())),
-        )
-        .unwrap_or(self.mode);
+        let parsing_mode = match args {
+            Some(MacroArgs::ParsingMode(p)) => p,
+            _ => self.mode,
+        };
 
         let segment = if let Some(braces) = input.parse(Braces::parser(self.ind)) {
             Segment::Braces(braces)
@@ -82,21 +83,5 @@ impl Parse for ParseMacroName {
         } else {
             Some(input.bump(input.len()))
         }
-    }
-}
-
-pub(crate) struct ParseMacroArgs;
-
-impl Parse for ParseMacroArgs {
-    type Output = StrSlice;
-
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
-        let mut input = input.start();
-        input.parse('(')?;
-        // TODO: Parse quotes
-        let content = input.parse_i(Until(')'));
-        input.parse(')')?;
-        input.apply();
-        Some(content)
     }
 }

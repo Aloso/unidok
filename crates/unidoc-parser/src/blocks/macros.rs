@@ -1,5 +1,6 @@
-use crate::inlines::macros::{ParseMacroArgs, ParseMacroName};
-use crate::utils::{Indents, ParseLineBreak, ParseLineEnd, ParseSpaces};
+use crate::inlines::macros::ParseMacroName;
+use crate::macros::MacroArgs;
+use crate::utils::{Indents, ParseLineBreak, ParseLineEnd, ParseSpaces, ParseSpacesU8};
 use crate::{Block, Context, Input, Parse, StrSlice};
 
 /// A block macro
@@ -11,9 +12,16 @@ use crate::{Block, Context, Input, Parse, StrSlice};
 /// The macro applies to this paragraph
 /// ````
 #[derive(Debug, Clone, PartialEq)]
-pub enum BlockMacro {
-    AttrMacro { name: StrSlice, args: Option<StrSlice>, block: Box<Block> },
-    BraceMacro { name: StrSlice, args: Option<StrSlice>, blocks: Vec<Block> },
+pub struct BlockMacro {
+    pub name: StrSlice,
+    pub args: Option<MacroArgs>,
+    pub content: BlockMacroContent,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum BlockMacroContent {
+    Prefixed(Box<Block>),
+    Braces(Vec<Block>),
 }
 
 impl BlockMacro {
@@ -33,46 +41,28 @@ impl Parse for ParseBlockMacro<'_> {
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
-        let ind = self.ind.push_indent(input.parse_i(ParseSpaces));
+        let ind = self.ind.push_indent(input.parse(ParseSpacesU8)?);
 
         input.parse('@')?;
         let name = input.parse(ParseMacroName)?;
-        let args = input.parse(ParseMacroArgs);
+        let name_str = name.to_str(input.text()).to_string();
+        let args = input.parse(MacroArgs::parser(&name_str, ind))?;
 
         let mac = if input.parse(ParseLineBreak(ind)).is_some() {
             let block = Box::new(input.parse(Block::parser(self.context, ind))?);
 
-            BlockMacro::AttrMacro { name, args, block }
+            BlockMacro { name, args, content: BlockMacroContent::Prefixed(block) }
         } else if input.parse(ParseOpeningBrace(self.ind)).is_some() {
             let blocks = input.parse(Block::multi_parser(Context::BlockBraces, ind))?;
             input.try_parse(ParseClosingBrace(self.ind));
 
-            BlockMacro::BraceMacro { name, args, blocks }
+            BlockMacro { name, args, content: BlockMacroContent::Braces(blocks) }
         } else {
             return None;
         };
 
         input.apply();
         Some(mac)
-    }
-
-    fn can_parse(&self, input: &mut Input) -> bool {
-        let mut input = input.start();
-
-        let ind = self.ind.push_indent(input.parse_i(ParseSpaces));
-
-        if input.parse('@').is_none() || input.parse(ParseMacroName).is_none() {
-            return false;
-        }
-        input.try_parse(ParseMacroArgs);
-
-        if input.parse(ParseLineBreak(ind)).is_some() {
-            input.can_parse(Block::parser(Context::Global, ind))
-        } else if input.parse(ParseOpeningBrace(self.ind)).is_some() {
-            input.can_parse(Block::multi_parser(Context::BlockBraces, ind))
-        } else {
-            false
-        }
     }
 }
 

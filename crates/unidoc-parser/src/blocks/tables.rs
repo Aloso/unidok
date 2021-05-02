@@ -1,5 +1,5 @@
 use crate::inlines::Segment;
-use crate::utils::{Indents, ParseLineBreak, ParseLineEnd, ParseSpaces};
+use crate::utils::{Indents, ParseLineBreak, ParseLineEnd, ParseSpacesU8};
 use crate::{Context, Parse, ParseInfallible, StrSlice};
 
 use super::Paragraph;
@@ -30,6 +30,12 @@ pub struct CellMeta {
     pub colspan: u16,
     pub bius: Bius,
     pub css: Vec<StrSlice>,
+}
+
+impl CellMeta {
+    pub(crate) fn parser() -> ParseCellMeta {
+        ParseCellMeta
+    }
 }
 
 impl Default for CellMeta {
@@ -69,7 +75,7 @@ impl Parse for ParseTable<'_> {
 
     fn parse(&self, input: &mut crate::Input) -> Option<Self::Output> {
         let mut input = input.start();
-        let ind = self.ind.push_indent(input.parse_i(ParseSpaces));
+        let ind = self.ind.push_indent(input.parse(ParseSpacesU8)?);
 
         if !input.can_parse("||") && !input.can_parse("#||") {
             return None;
@@ -116,7 +122,7 @@ impl Parse for ParseRow<'_> {
         let mut contents = Vec::new();
 
         loop {
-            let meta = input.parse_i(ParseCellMeta);
+            let meta = input.parse_i(CellMeta::parser());
             let segments = input.parse(Paragraph::parser(self.ind, Context::Table))?.segments;
 
             contents.push(TableCell { meta, segments });
@@ -137,7 +143,7 @@ impl Parse for ParseRow<'_> {
     }
 }
 
-struct ParseCellMeta;
+pub(crate) struct ParseCellMeta;
 
 impl ParseInfallible for ParseCellMeta {
     type Output = CellMeta;

@@ -1,8 +1,7 @@
 use std::fmt;
 
-use crate::parse::Parse;
 use crate::utils::While;
-use crate::StrSlice;
+use crate::{Parse, StrSlice};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ElemName {

@@ -1,5 +1,5 @@
-use crate::parse::Parse;
 use crate::utils::Indents;
+use crate::Parse;
 
 use super::{CDataSection, Doctype, ElemName, HtmlComment, HtmlElem};
 

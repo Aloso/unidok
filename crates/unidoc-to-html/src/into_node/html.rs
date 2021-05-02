@@ -33,6 +33,6 @@ impl<'a> IntoNode<'a> for HtmlElemIr<'a> {
 
 impl<'a> From<AttrIr<'a>> for Attr<'a> {
     fn from(attr: AttrIr<'a>) -> Self {
-        Attr { key: attr.key, value: attr.value.map(ToString::to_string) }
+        Attr { key: attr.key, value: attr.value }
     }
 }

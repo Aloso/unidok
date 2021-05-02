@@ -31,7 +31,7 @@ impl Parse for ParseParagraph<'_> {
     type Output = Paragraph;
 
     fn parse(&self, input: &mut Input) -> Option<Self::Output> {
-        let parser = Segments::parser(self.ind, self.context, ParsingMode::Everything);
+        let parser = Segments::parser(self.ind, self.context, ParsingMode::new_all());
 
         match input.parse(parser)? {
             Segments::Empty => None,

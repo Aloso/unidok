@@ -1,9 +1,15 @@
+use std::convert::TryInto;
+
+use crate::utils::ParseLineBreak;
 use crate::{Input, Parse, ParseInfallible};
 
+use super::{Indents, While};
+
+/// Parses 0-255 spaces or tabs. One tab counts as 4 spaces. This parser never
+/// fails.
+pub struct ParseSpacesU8;
+
 /// Parses 0 or more spaces or tabs. This parser never fails.
-///
-/// TODO: This is sometimes used in situations where line breaks are desirable.
-/// Add another parser for _arbitrary_ whitespace?
 pub struct ParseSpaces;
 
 /// Parses 1 whitespace character.
@@ -31,12 +37,12 @@ impl Parse for ParseOneWS {
     }
 }
 
-impl ParseInfallible for ParseSpaces {
+impl Parse for ParseSpacesU8 {
     type Output = u8;
 
     #[inline]
-    fn parse_infallible(&self, input: &mut Input) -> Self::Output {
-        let mut res = 0;
+    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+        let mut res = 0usize;
         let mut len = 0;
         let rest = input.rest();
         for c in rest.bytes() {
@@ -55,7 +61,16 @@ impl ParseInfallible for ParseSpaces {
         if len > 0 {
             input.bump(len);
         }
-        res
+        res.try_into().ok()
+    }
+}
+
+impl ParseInfallible for ParseSpaces {
+    type Output = ();
+
+    #[inline]
+    fn parse_infallible(&self, input: &mut Input) -> Self::Output {
+        input.parse_i(While(|c| matches!(c, ' ' | '\t')));
     }
 }
 
@@ -115,5 +130,23 @@ impl Parse for ParseAtMostNSpaces {
             input.bump(bytes);
         }
         Some(visual_spaces)
+    }
+}
+
+pub struct ParseWs<'a>(pub Indents<'a>);
+
+impl ParseInfallible for ParseWs<'_> {
+    type Output = ();
+
+    fn parse_infallible(&self, input: &mut Input) -> Self::Output {
+        input.parse_i(While(|c| matches!(c, ' ' | '\t')));
+
+        while matches!(input.peek_char(), Some('\n' | '\r')) {
+            if input.parse(ParseLineBreak(self.0)).is_none() {
+                break;
+            }
+
+            input.parse_i(While(|c| matches!(c, ' ' | '\t')));
+        }
     }
 }
