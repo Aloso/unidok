@@ -1,5 +1,5 @@
-use std::fs;
 use std::time::{Duration, Instant};
+use std::{fs, process};
 
 use similar::{ChangeTag, TextDiff};
 
@@ -97,6 +97,10 @@ fn main() {
     }
     if c_update > 0 {
         eprintln!("{}{}{} test(s) were updated", YELLOW, c_update, RESET);
+    }
+
+    if c_failure > 0 {
+        process::abort();
     }
 }
 
