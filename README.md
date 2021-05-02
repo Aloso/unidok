@@ -1,4 +1,8 @@
-# Unidoc: A powerful, readable, easy-to-learn markup language
+# Unidoc
+
+A powerful, readable, easy-to-learn markup language
+
+![Logo](doc/unidoc.svg)
 
 This language is inspired by AsciiDoc, but has a syntax that resembles Markdown. It tries to be as simple as possible while offering powerful features such as macros.
 
@@ -45,7 +49,7 @@ Type                | Or                | ...to Get
 `# Heading 1`       | <code>Heading 1<br>=========</code> | <h1>Heading 1</h1>
 `## Heading 2`      | <code>Heading 2<br>---------</code> | <h2>Heading 2</h2>
 `[Link](https://a.com)` |               | [Link](https://a.com)
-`![Image](https://a.com)` |             | ![Image](http://diagramcenter.org/wp-content/uploads/2016/03/image.png)
+`![Image](https://a.com)` |             | ![Logo](doc/unidoc.svg)
 `> Blockquote`      |                   | <blockquote>Blockquote</blockquote>
 <code>* List<br>* List<br>* List</code> | <code>- List<br>- List<br>- List</code> | <ul><li>List</li><li>List</li><li>List</li></ul>
 <code>1. List<br>2. List<br>3. List</code> | <code>1) List<br>2) List<br>3) List</code> | <ol><li>List</li><li>List</li><li>List</li></ol>
