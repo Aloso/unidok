@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use unidoc_parser::html::ElemName;
 use unidoc_parser::inlines::Formatting;
 use unidoc_parser::ir::*;
@@ -10,7 +11,7 @@ impl<'a> IntoNode<'a> for SegmentIr<'a> {
             SegmentIr::Text(t) => Node::Text(t),
             SegmentIr::EscapedText(t) => Node::Text(t),
             SegmentIr::LineBreak => Node::Text("\n"),
-            SegmentIr::Limiter => Node::Text(""),
+            SegmentIr::Limiter => Node::Fragment(vec![]),
             SegmentIr::Braces(b) => b.into_node(),
             SegmentIr::Link(l) => l.into_node(),
             SegmentIr::Image(i) => i.into_node(),
@@ -115,9 +116,34 @@ impl<'a> IntoNode<'a> for InlineMacroIr<'a> {
                 let node = self.segment.into_node();
 
                 if let Node::Element(mut elem) = node {
-                    if let Some(MacroArgsIr::Attrs(attrs)) = self.args {
-                        elem.attrs
-                            .extend(attrs.into_iter().map(|a| Attr { key: a.key, value: a.value }));
+                    if let Some(MacroArgsIr::TokenTrees(tts)) = self.args {
+                        let mut classes = Vec::new();
+
+                        for tt in tts {
+                            match tt {
+                                TokenTreeIr::Atom(TokenTreeAtomIr::Word(arg)) => {
+                                    if let Some(arg) = arg.strip_prefix('.') {
+                                        classes.push(arg);
+                                    } else if let Some(arg) = arg.strip_prefix('#') {
+                                        elem.attrs.push(Attr { key: "id", value: Some(arg.into()) })
+                                    } else {
+                                        elem.attrs.push(Attr { key: arg, value: None })
+                                    }
+                                }
+                                TokenTreeIr::KV(key, TokenTreeAtomIr::Word(word)) => {
+                                    elem.attrs.push(Attr { key, value: Some(word.into()) });
+                                }
+                                TokenTreeIr::KV(key, TokenTreeAtomIr::QuotedWord(word)) => {
+                                    elem.attrs.push(Attr { key, value: Some(word) });
+                                }
+                                _ => {}
+                            }
+                        }
+
+                        if !classes.is_empty() {
+                            let value = Some(classes.into_iter().join(" "));
+                            elem.attrs.push(Attr { key: "class", value })
+                        }
                     }
                     Node::Element(elem)
                 } else {

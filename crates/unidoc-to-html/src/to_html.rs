@@ -44,6 +44,11 @@ impl ToHtml for Node<'_> {
                 buf.push_str("-->");
             }
             &Node::Doctype(d) => push_noesc(d, buf),
+            Node::Fragment(f) => {
+                for n in f {
+                    n.to_html(buf);
+                }
+            }
         }
     }
 }

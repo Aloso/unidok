@@ -20,16 +20,14 @@
 ............................................................
 <ol>
 <li>A paragraph
-with two lines.<br/>
-<pre><code></code></pre>
+with two lines.<br/><pre><code></code></pre>
 <blockquote>
 <p>A block quote.</p>
 </blockquote>
 </li>
 </ol>
 <ul>
-<li>one<br/>
-two</li>
+<li>one<br/>two</li>
 <li>one
 two</li>
 </ul>

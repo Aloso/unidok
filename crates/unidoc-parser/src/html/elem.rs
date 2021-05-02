@@ -1,6 +1,8 @@
-use crate::blocks::{Block, Context, Paragraph};
+use crate::blocks::{Block, Context};
+use crate::inlines::segments::Segments;
 use crate::inlines::Segment;
 use crate::input::Input;
+use crate::parsing_mode::ParsingMode;
 use crate::utils::{Indents, ParseLineBreak, ParseSpaces, Until};
 use crate::{Parse, StrSlice};
 
@@ -78,12 +80,9 @@ impl Parse for ParseElement<'_> {
 
             let context = Context::Html(name);
 
-            let content = if name.must_contain_blocks()
-                || (name.can_contain_blocks() && input.parse(ParseLineBreak(self.ind)).is_some())
-            {
-                let blocks = input.parse(Block::multi_parser(context, self.ind))?;
-                ElemContent::Blocks(blocks)
-            } else if name.contains_plaintext() {
+            let content = if name.contains_plaintext() {
+                // TODO: Auto-close when ParseLineBreak fails
+
                 let mut input2 = input.start();
                 loop {
                     input2.parse_i(Until('<'));
@@ -96,11 +95,18 @@ impl Parse for ParseElement<'_> {
                 let content = input2.apply();
                 input.try_parse(HtmlElem::closing_tag_parser(name));
                 ElemContent::Verbatim(content)
+            } else if name.must_contain_blocks()
+                || (name.can_contain_blocks() && input.parse(ParseLineBreak(self.ind)).is_some())
+            {
+                let blocks = input.parse(Block::multi_parser(context, self.ind))?;
+                input.try_parse(ParseClosingTag { elem: name });
+                ElemContent::Blocks(blocks)
             } else {
-                let mut segments = input.parse(Paragraph::parser(self.ind, context))?.segments;
-                if segments.last().map(|segment| segment.is_closing_tag_for(name)) == Some(true) {
-                    segments.pop();
-                }
+                let segments = input
+                    .parse(Segments::parser(self.ind, context, ParsingMode::new_all()))?
+                    .into_segments_no_underline_zero()?;
+                input.try_parse(ParseClosingTag { elem: name });
+
                 ElemContent::Inline(segments)
             };
             let content = Some(content);

@@ -1,8 +1,7 @@
-use crate::blocks::Paragraph;
+use super::segments::{Segment, Segments};
+use crate::parsing_mode::ParsingMode;
 use crate::utils::Indents;
 use crate::{Context, Input, Parse};
-
-use super::Segment;
 
 /// A block surrounded by `{braces}`. This is used by inline macros.
 ///
@@ -48,7 +47,9 @@ impl Parse for ParseBraces<'_> {
         let mut input = input.start();
 
         input.parse('{')?;
-        let segments = input.parse(Paragraph::parser(self.ind, Context::Braces))?.segments;
+        let segments = input
+            .parse(Segments::parser(self.ind, Context::Braces, ParsingMode::new_all()))?
+            .into_segments_no_underline_zero()?;
         input.parse('}')?;
 
         input.apply();

@@ -1,3 +1,5 @@
+use std::mem::take;
+
 use itertools::Itertools;
 use unidoc_parser::blocks::{Bullet, CellAlignment};
 use unidoc_parser::html::ElemName;
@@ -13,7 +15,7 @@ impl<'a> IntoNode<'a> for BlockIr<'a> {
     fn into_node(self) -> Node<'a> {
         match self {
             BlockIr::CodeBlock(c) => c.into_node(),
-            BlockIr::Comment(_) => Node::Text(""),
+            BlockIr::Comment(_) => Node::Fragment(vec![]),
             BlockIr::Paragraph(p) => p.into_node(),
             BlockIr::Heading(h) => h.into_node(),
             BlockIr::ThematicBreak(t) => t.into_node(),
@@ -32,7 +34,7 @@ fn into_nodes_tight(blocks: Vec<BlockIr<'_>>) -> Vec<Node<'_>> {
     for block in blocks {
         match block {
             BlockIr::CodeBlock(c) => result.push(c.into_node()),
-            BlockIr::Comment(_) => result.push(Node::Text("")),
+            BlockIr::Comment(_) => result.push(Node::Fragment(vec![])),
             BlockIr::Paragraph(p) => {
                 let segments = into_nodes_trimmed(p.segments);
                 if !segments.is_empty() {
@@ -41,7 +43,7 @@ fn into_nodes_tight(blocks: Vec<BlockIr<'_>>) -> Vec<Node<'_>> {
                         name: ElemName::Br,
                         attrs: vec![],
                         content: None,
-                        is_block_level: true,
+                        is_block_level: false,
                         contains_blocks: false,
                     }))
                 }
@@ -99,10 +101,51 @@ impl<'a> IntoNode<'a> for CodeBlockIr<'a> {
 
 impl<'a> IntoNode<'a> for ParagraphIr<'a> {
     fn into_node(self) -> Node<'a> {
-        let segments = into_nodes_trimmed(self.segments);
+        let mut segments = into_nodes_trimmed(self.segments);
 
         if segments.is_empty() {
-            Node::Text("")
+            Node::Fragment(vec![])
+        } else if segments.len() == 1 && should_make_block_single(&segments[0]) {
+            segments.pop().unwrap()
+        } else if segments.iter().any(|s| should_make_block_multi(s)) {
+            let mut fragment = Vec::<Node>::new();
+            let mut new_segs = Vec::<Node>::new();
+
+            for s in segments {
+                if should_make_block_multi(&s) {
+                    if !new_segs.is_empty() {
+                        if new_segs.iter().all(Node::is_whitespace) {
+                            new_segs.clear();
+                        } else {
+                            fragment.push(Node::Element(Element {
+                                name: ElemName::P,
+                                attrs: vec![],
+                                content: Some(take(&mut new_segs)),
+                                is_block_level: true,
+                                contains_blocks: false,
+                            }))
+                        }
+                    }
+                    fragment.push(s);
+                } else {
+                    new_segs.push(s);
+                }
+            }
+            if !new_segs.is_empty() {
+                if new_segs.iter().all(Node::is_whitespace) {
+                    new_segs.clear();
+                } else {
+                    fragment.push(Node::Element(Element {
+                        name: ElemName::P,
+                        attrs: vec![],
+                        content: Some(take(&mut new_segs)),
+                        is_block_level: true,
+                        contains_blocks: false,
+                    }))
+                }
+            }
+
+            Node::Fragment(fragment)
         } else {
             Node::Element(Element {
                 name: ElemName::P,
@@ -112,6 +155,24 @@ impl<'a> IntoNode<'a> for ParagraphIr<'a> {
                 contains_blocks: false,
             })
         }
+    }
+}
+
+fn should_make_block_single(node: &Node) -> bool {
+    match node {
+        &Node::Element(Element { is_block_level, .. }) => is_block_level,
+        Node::Text(_) | Node::Text2(_) => false,
+        Node::Cdata(_) | Node::Comment(_) | Node::Doctype(_) => true,
+        Node::Fragment(f) => f.len() == 1 && should_make_block_single(&f[0]),
+    }
+}
+
+fn should_make_block_multi(node: &Node) -> bool {
+    match node {
+        &Node::Element(Element { is_block_level, .. }) => is_block_level,
+        Node::Fragment(f) => f.len() == 1 && should_make_block_multi(&f[0]),
+        Node::Text(_) | Node::Text2(_) | Node::Cdata(_) | Node::Comment(_) => false,
+        Node::Doctype(_) => true,
     }
 }
 

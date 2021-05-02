@@ -11,6 +11,7 @@ impl fmt::Debug for Node<'_> {
             Node::Cdata(d) => write!(f, "<![CDATA[{}]]>", d),
             Node::Comment(c) => write!(f, "<!--{}-->", c),
             Node::Doctype(d) => fmt::Display::fmt(d, f),
+            Node::Fragment(ref d) => fmt::Debug::fmt(d, f),
         }
     }
 }
@@ -33,9 +34,7 @@ impl fmt::Debug for Element<'_> {
 
             let mut t = &mut f.debug_tuple(&s);
             for b in content {
-                if !matches!(b, Node::Text("")) {
-                    t = t.field(b);
-                }
+                t = t.field(b);
             }
             t.finish()
         } else {

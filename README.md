@@ -351,7 +351,7 @@ https://spec.commonmark.org/0.29/#images
   * Support callouts
 
 * HTML
-  * HTML attributes
+  * HTML entities
   * Allow uppercase HTML tags
   * Support for doctypes other than HTML5?
   * Excluding indentation in HTML comments, e.g.
@@ -381,8 +381,8 @@ https://spec.commonmark.org/0.29/#images
   * Table column styling with `@COLS(^ | |# |{B,I,U})`
 
 * Links
-  * Auto-links
   * Link reference definitions
+  * Auto-links?
   * Forbid nested links?
   * URLs in angle brackets?
 

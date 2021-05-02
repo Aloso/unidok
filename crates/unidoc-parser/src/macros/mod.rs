@@ -1,5 +1,4 @@
 use crate::blocks::CellMeta;
-use crate::html::HtmlAttr;
 use crate::input::Input;
 use crate::parsing_mode::ParsingMode;
 use crate::utils::{Indents, Until};
@@ -13,7 +12,6 @@ pub use token_trees::{TokenTree, TokenTreeAtom};
 pub enum MacroArgs {
     Raw(StrSlice),
     TokenTrees(Vec<TokenTree>),
-    Attrs(Vec<HtmlAttr>),
     CellMeta(Vec<CellMeta>),
     ParsingMode(ParsingMode),
 }

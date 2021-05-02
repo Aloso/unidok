@@ -1,8 +1,8 @@
+use crate::inlines::segments::Segments;
 use crate::inlines::Segment;
+use crate::parsing_mode::ParsingMode;
 use crate::utils::{Indents, ParseLineBreak, ParseLineEnd, ParseSpaces, While};
 use crate::{Context, Input, Parse};
-
-use super::Paragraph;
 
 /// A heading
 ///
@@ -49,7 +49,9 @@ impl Parse for ParseHeading<'_> {
 
         input.parse_i(ParseSpaces);
         let level = input.parse(ParseHashes)?;
-        let segments = input.parse(Paragraph::parser(self.ind, Context::Heading))?.segments;
+        let segments = input
+            .parse(Segments::parser(self.ind, Context::Heading, ParsingMode::new_all()))?
+            .into_segments_no_underline_zero()?;
 
         input.apply();
         Some(Heading { level, segments, kind: HeadingKind::Atx })

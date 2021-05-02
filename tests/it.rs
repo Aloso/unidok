@@ -11,6 +11,12 @@ const BOLD: &str = "\u{001b}[1m";
 const RESET: &str = "\u{001b}[0m";
 
 fn main() {
+    if run_test() != 0 {
+        process::abort();
+    }
+}
+
+fn run_test() -> usize {
     let update = matches!(std::env::var("UPDATE_TESTS"), Ok(s) if s == "1");
 
     if update {
@@ -90,18 +96,16 @@ fn main() {
 
     eprintln!();
     if c_failure > 0 {
-        eprintln!("{}{}{} test(s) failed", RED, c_failure, RESET);
+        eprintln!("{}{}{} test case(s) failed", RED, c_failure, RESET);
     }
     if c_write > 0 {
-        eprintln!("{}{}{} test(s) were written", CYAN, c_write, RESET);
+        eprintln!("{}{}{} test case(s) were written", CYAN, c_write, RESET);
     }
     if c_update > 0 {
-        eprintln!("{}{}{} test(s) were updated", YELLOW, c_update, RESET);
+        eprintln!("{}{}{} test case(s) were updated", YELLOW, c_update, RESET);
     }
 
-    if c_failure > 0 {
-        process::abort();
-    }
+    c_failure
 }
 
 const SPLIT: &str = "\n............................................................\n";

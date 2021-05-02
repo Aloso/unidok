@@ -131,7 +131,6 @@ pub enum BlockMacroContentIr<'a> {
 pub enum MacroArgsIr<'a> {
     Raw(&'a str),
     TokenTrees(Vec<TokenTreeIr<'a>>),
-    Attrs(Vec<AttrIr<'a>>),
     CellMeta(Vec<CellMetaIr<'a>>),
     ParsingMode(ParsingMode),
 }
@@ -195,7 +194,6 @@ pub struct CodeIr<'a> {
 #[derive(Debug, Clone, PartialEq)]
 pub enum HtmlNodeIr<'a> {
     Element(HtmlElemIr<'a>),
-    ClosingTag(ElemName),
     CData(&'a str),
     Comment(&'a str),
     Doctype(&'a str),
@@ -441,7 +439,6 @@ impl<'a> IntoIR<'a> for MacroArgs {
         match self {
             MacroArgs::Raw(r) => MacroArgsIr::Raw(r.into_ir(text)),
             MacroArgs::TokenTrees(t) => MacroArgsIr::TokenTrees(t.into_ir(text)),
-            MacroArgs::Attrs(a) => MacroArgsIr::Attrs(a.into_ir(text)),
             MacroArgs::CellMeta(m) => MacroArgsIr::CellMeta(m.into_ir(text)),
             MacroArgs::ParsingMode(p) => MacroArgsIr::ParsingMode(p),
         }
@@ -541,7 +538,6 @@ impl<'a> IntoIR<'a> for HtmlNode {
     fn into_ir(self, text: &'a str) -> Self::IR {
         match self {
             HtmlNode::Element(e) => HtmlNodeIr::Element(e.into_ir(text)),
-            HtmlNode::ClosingTag(c) => HtmlNodeIr::ClosingTag(c),
             HtmlNode::CData(c) => HtmlNodeIr::CData(c.into_ir(text)),
             HtmlNode::Comment(c) => HtmlNodeIr::Comment(c.into_ir(text)),
             HtmlNode::Doctype(d) => HtmlNodeIr::Doctype(d.into_ir(text)),

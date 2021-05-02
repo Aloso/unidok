@@ -2,6 +2,8 @@ use unidoc_parser::ir::{ElemContentIr, SegmentIr};
 
 use crate::{IntoNode, IntoNodes, Node};
 
+/// Converts the segments into nodes, while removing whitespace at the start and
+/// end of the node.
 pub(super) fn into_nodes_trimmed(mut segments: Vec<SegmentIr<'_>>) -> Vec<Node<'_>> {
     while let Some(seg) = segments.last_mut() {
         if trim_segments_end(seg) {

@@ -1,8 +1,8 @@
+use crate::inlines::segments::Segments;
 use crate::inlines::Segment;
+use crate::parsing_mode::ParsingMode;
 use crate::utils::{Indents, ParseLineBreak, ParseLineEnd, ParseSpacesU8};
 use crate::{Context, Parse, ParseInfallible, StrSlice};
-
-use super::Paragraph;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Table {
@@ -123,7 +123,9 @@ impl Parse for ParseRow<'_> {
 
         loop {
             let meta = input.parse_i(CellMeta::parser());
-            let segments = input.parse(Paragraph::parser(self.ind, Context::Table))?.segments;
+            let segments = input
+                .parse(Segments::parser(self.ind, Context::Table, ParsingMode::new_all()))?
+                .into_segments_no_underline()?;
 
             contents.push(TableCell { meta, segments });
 

@@ -27,12 +27,22 @@ pub enum Node<'a> {
     Cdata(&'a str),
     Comment(&'a str),
     Doctype(&'a str),
+    Fragment(Vec<Node<'a>>),
 }
 
 impl Node<'_> {
-    pub fn is_block_element(&self) -> bool {
+    pub fn is_block_level(&self) -> bool {
         match self {
             Node::Element(e) => e.is_block_level,
+            Node::Fragment(f) => f.iter().any(Node::is_block_level),
+            _ => false,
+        }
+    }
+
+    pub fn is_whitespace(&self) -> bool {
+        match self {
+            &Node::Text(t) => t.trim_start_matches(|c| matches!(c, ' ' | '\t' | '\n')).is_empty(),
+            Node::Text2(t) => t.trim_start_matches(|c| matches!(c, ' ' | '\t' | '\n')).is_empty(),
             _ => false,
         }
     }

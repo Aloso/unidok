@@ -1,3 +1,4 @@
+use crate::input::Input;
 use crate::parse::Parse;
 use crate::utils::{Indents, ParseWs, QuotedString, Until};
 use crate::StrSlice;
@@ -29,14 +30,10 @@ pub(crate) struct ParseAttribute<'a> {
     ind: Indents<'a>,
 }
 
-pub(crate) struct ParseAttributes<'a> {
-    ind: Indents<'a>,
-}
-
 impl Parse for ParseAttribute<'_> {
     type Output = HtmlAttr;
 
-    fn parse(&self, input: &mut crate::input::Input) -> Option<Self::Output> {
+    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
         let key = input.parse(ParseAttrName)?;
@@ -59,10 +56,14 @@ impl Parse for ParseAttribute<'_> {
     }
 }
 
+pub(crate) struct ParseAttributes<'a> {
+    ind: Indents<'a>,
+}
+
 impl Parse for ParseAttributes<'_> {
     type Output = Vec<HtmlAttr>;
 
-    fn parse(&self, input: &mut crate::input::Input) -> Option<Self::Output> {
+    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         let mut attrs = vec![];
 
         while !matches!(input.peek_char(), Some('>' | '/')) {
@@ -78,7 +79,7 @@ struct ParseAttrName;
 impl Parse for ParseAttrName {
     type Output = StrSlice;
 
-    fn parse(&self, input: &mut crate::input::Input) -> Option<Self::Output> {
+    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         let s = input.parse_i(Until(|c| {
             matches!(c, ' ' | '\t' | '\r' | '\n' | '"' | '\'' | '>' | '<' | '=')
         }));

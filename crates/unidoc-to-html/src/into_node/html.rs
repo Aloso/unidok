@@ -7,7 +7,6 @@ impl<'a> IntoNode<'a> for HtmlNodeIr<'a> {
     fn into_node(self) -> Node<'a> {
         match self {
             HtmlNodeIr::Element(e) => e.into_node(),
-            HtmlNodeIr::ClosingTag(_) => Node::Text(""),
             HtmlNodeIr::CData(c) => Node::Cdata(c),
             HtmlNodeIr::Comment(c) => Node::Comment(c),
             HtmlNodeIr::Doctype(d) => Node::Doctype(d),
@@ -19,7 +18,7 @@ impl<'a> IntoNode<'a> for HtmlElemIr<'a> {
     fn into_node(self) -> Node<'a> {
         let content = self.content.map(elem_content_ir_into_nodes);
         let contains_blocks =
-            content.as_ref().map(|c| c.iter().any(Node::is_block_element)).unwrap_or(false);
+            content.as_ref().map(|c| c.iter().any(Node::is_block_level)).unwrap_or(false);
 
         Node::Element(Element {
             name: self.name,

@@ -4,7 +4,7 @@ use super::format::{is_in_word, is_not_flanking, FlankType, Flanking, FormatDeli
 use super::*;
 use crate::blocks::macros::ParseClosingBrace;
 use crate::blocks::*;
-use crate::html::{ElemName, HtmlElem, HtmlNode};
+use crate::html::{HtmlElem, HtmlNode};
 use crate::input::Input;
 use crate::parsing_mode::ParsingMode;
 use crate::utils::{Indents, ParseLineBreak, While};
@@ -28,9 +28,9 @@ pub enum Segment {
 }
 
 impl Segment {
-    pub fn is_closing_tag_for(&self, name: ElemName) -> bool {
-        matches!(*self, Segment::InlineHtml(HtmlNode::ClosingTag(n)) if n == name)
-    }
+    // pub fn is_closing_tag_for(&self, name: ElemName) -> bool {
+    //     matches!(*self, Segment::InlineHtml(HtmlNode::ClosingTag(n)) if n ==
+    // name) }
 
     pub fn strip_space_start(&mut self, input: &Input) -> bool {
         match self {
@@ -87,6 +87,13 @@ impl Segments {
             _ => None,
         }
     }
+
+    pub fn into_segments_no_underline_zero(self) -> Option<Vec<Segment>> {
+        match self {
+            Segments::Some { segments, underline: None } => Some(segments),
+            _ => Some(vec![]),
+        }
+    }
 }
 
 pub(crate) struct ParseSegments<'a> {
@@ -109,7 +116,7 @@ impl Parse for ParseSegments<'_> {
         let stack = parse_paragraph_items(items);
         let mut segments = stack_to_segments(stack);
 
-        if let BlockBraces | Heading | Global | Html(_) = self.context {
+        if let BlockBraces | Heading | Global = self.context {
             while input.parse(ParseLineBreak(self.ind)).is_some() && !input.is_empty() {
                 segments.push(Segment::LineBreak(LineBreak));
             }
@@ -359,12 +366,14 @@ fn find_special_in_code(c: char) -> bool {
 }
 
 fn find_special_for(s: &str, context: Context) -> Option<usize> {
+    use Context::*;
+
     match context {
-        Context::Global | Context::Heading | Context::Html(_) => s.find(find_special),
-        Context::BlockBraces | Context::Braces => s.find(find_special_in_braces),
-        Context::Table => s.find(find_special_in_table),
-        Context::LinkOrImg => s.find(find_special_in_link_or_img),
-        Context::Code(_) => s.find(find_special_in_code),
+        Global | Heading | Html(_) => s.find(find_special),
+        BlockBraces | Braces => s.find(find_special_in_braces),
+        Table => s.find(find_special_in_table),
+        LinkOrImg => s.find(find_special_in_link_or_img),
+        Code(_) => s.find(find_special_in_code),
     }
 }
 
@@ -499,8 +508,7 @@ impl ParseSegments<'_> {
                     if let Some(html) = input.parse(HtmlNode::parser(ind)) {
                         items.push(Item::Html(html));
                     } else if let Context::Html(elem) = context {
-                        if input.parse(HtmlElem::closing_tag_parser(elem)).is_some() {
-                            items.push(Item::Html(HtmlNode::ClosingTag(elem)));
+                        if input.can_parse(HtmlElem::closing_tag_parser(elem)) {
                             return Some(true);
                         } else {
                             items.push(Item::Text(input.bump(1)));
@@ -520,6 +528,12 @@ impl ParseSegments<'_> {
                         items.push(Item::Text(input.bump(1)));
                         *open_brackets -= 1;
                     }
+                }
+                ']' => {
+                    if *open_brackets > 0 {
+                        *open_brackets -= 1;
+                    }
+                    items.push(Item::Text(input.bump(1)));
                 }
                 '}' if context == Context::Braces => {
                     return Some(true);
@@ -572,6 +586,5 @@ impl ParseSegments<'_> {
             || input.can_parse(List::parser(ind))
             || input.can_parse(ThematicBreak::parser(ind))
             || input.can_parse(Quote::parser(ind))
-            || input.can_parse(BlockMacro::parser(self.context, ind))
     }
 }

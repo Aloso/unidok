@@ -1,9 +1,8 @@
-use crate::blocks::Paragraph;
+use super::links::{ParseHref, ParseQuotedText};
+use super::segments::{Segment, Segments};
+use crate::parsing_mode::ParsingMode;
 use crate::utils::Indents;
 use crate::{Context, Input, Parse};
-
-use super::links::{ParseHref, ParseQuotedText};
-use super::Segment;
 
 /// An image that should be shown in the document.
 ///
@@ -44,7 +43,9 @@ impl Parse for ParseImage<'_> {
         let mut input = input.start();
 
         input.parse("![")?;
-        let alt = input.parse(Paragraph::parser(self.ind, Context::LinkOrImg))?.segments;
+        let alt = input
+            .parse(Segments::parser(self.ind, Context::LinkOrImg, ParsingMode::new_all()))?
+            .into_segments_no_underline_zero()?;
         input.parse("](")?;
         let href = input.parse(ParseHref)?;
         let title = input.parse(ParseQuotedText);

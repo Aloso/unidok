@@ -1,10 +1,9 @@
 use std::mem::replace;
 
-use crate::blocks::Paragraph;
+use super::segments::{Segment, Segments};
+use crate::parsing_mode::ParsingMode;
 use crate::utils::Indents;
 use crate::{Context, Input, Parse};
-
-use super::Segment;
 
 /// A hyperlink.
 ///
@@ -47,7 +46,9 @@ impl Parse for ParseLink<'_> {
         let mut input = input.start();
 
         input.parse('[')?;
-        let text = input.parse(Paragraph::parser(self.ind, Context::LinkOrImg))?.segments;
+        let text = input
+            .parse(Segments::parser(self.ind, Context::LinkOrImg, ParsingMode::new_all()))?
+            .into_segments_no_underline_zero()?;
         input.parse("](")?;
         let href = input.parse(ParseHref)?;
         let title = input.parse(ParseQuotedText);

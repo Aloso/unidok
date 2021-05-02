@@ -1,12 +1,11 @@
 use crate::utils::Indents;
 use crate::Parse;
 
-use super::{CDataSection, Doctype, ElemName, HtmlComment, HtmlElem};
+use super::{CDataSection, Doctype, HtmlComment, HtmlElem};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum HtmlNode {
     Element(HtmlElem),
-    ClosingTag(ElemName),
     CData(CDataSection),
     Comment(HtmlComment),
     Doctype(Doctype),

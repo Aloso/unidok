@@ -374,7 +374,7 @@ impl ElemName {
     pub fn is_block_level(&self) -> bool {
         use ElemName::*;
 
-        !matches!(self, A | Abbr | B | Bdi | Bdo | Cite | Code | Data | Dfn | Em
+        !matches!(self, Br | A | Abbr | B | Bdi | Bdo | Cite | Code | Data | Dfn | Em
             | I | Kbd | Mark | Q | Rb | Rp | Rt | Rtc | Ruby | S | Samp | Small
             | Span | Strong | Sub | Sup | Time | U | Var)
     }
@@ -394,7 +394,7 @@ impl ElemName {
         use ElemName::*;
 
         matches!(self, Html | Head | Body | Address | Article | Aside | Header | Footer | Main | Nav
-            | Section | Pre | Td | Th | Div | Blockquote | Li | Form | Details | Canvas | Noscript | Custom(_))
+            | Section | Pre | Td | Th | Div | Blockquote | Ul | Li | Form | Details | Canvas | Noscript | Custom(_))
     }
 
     #[rustfmt::skip]
