@@ -1,8 +1,6 @@
-# Unidoc
+# ![Logo](doc/ud.svg)&nbsp; Unidoc
 
 A powerful, readable, easy-to-learn markup language
-
-![Logo](doc/unidoc.svg)
 
 This language is inspired by AsciiDoc, but has a syntax that resembles Markdown. It tries to be as simple as possible while offering powerful features such as macros.
 
@@ -347,7 +345,12 @@ https://spec.commonmark.org/0.29/#images
 
 > TODO
 
+![Logo](doc/unidoc.svg)
+
 ## Roadmap
+
+* Headings
+  * Allow empty heading without space
 
 * Code blocks
   * Syntax highlighting
@@ -383,6 +386,11 @@ https://spec.commonmark.org/0.29/#images
 
 * Tables
   * Table column styling with `@COLS(^ | |# |{B,I,U})`
+  * Simplify table style modifiers:
+    * `#||` is not required
+    * `|{css}` and `|{B;I;U;S}` are not required, these effects can be achieved with inline formatting or `@(css){}`
+    * The braces aren't required, just write `|<<2x7`
+    * How to style colgroups? Maybe with `|> class="css-class" style="color:red" | | class="css-class" | |>`
 
 * Links
   * Link reference definitions

@@ -1,3 +1,4 @@
+use crate::html::{HtmlElem, HtmlNode};
 use crate::inlines::Braces;
 use crate::macros::MacroArgs;
 use crate::parsing_mode::ParsingMode;
@@ -52,6 +53,8 @@ impl Parse for ParseInlineMacro<'_> {
             Segment::Link(link)
         } else if let Some(math) = input.parse(Math::parser(self.ind)) {
             Segment::Math(math)
+        } else if let Some(elem) = input.parse(HtmlElem::parser(self.ind)) {
+            Segment::InlineHtml(HtmlNode::Element(elem))
         } else {
             return None;
         };

@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,350;0,700;1,350;1,600&family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+    rel="stylesheet">
+  <meta charset="utf-8">
+  <title>Unidoc playground</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <header>
+    Unidoc playground
+    <div style="float: right">
+      <a href="https://github.com/Aloso/unidoc">GitHub</a>
+    </div>
+  </header>
+
+  <div id="app">
+    <div id="text">
+      <textarea id="input"># Unidoc tutorial
+
+Welcome to the unidoc playground! Unidoc is a simple markup language; It uses special characters to format text. You should see a unidoc document on the left (which you can edit) and the formatted result on the right.
+
+## Headings
+
+Headings are prefixed with 1 to 6 number signs, followed by a space:
+
+  # Heading 1
+  ## Heading 2
+  ### Heading 3
+  #### Heading 4
+  ##### Heading 5
+  ###### Heading 6
+
+Alternatively, headings can be underlined with equals signs or dashes:
+
+  Heading 1
+  =========
+
+  Heading 2
+  ---------
+
+Pretty easy, right?
+
+## Paragraphs
+
+This is a paragraph of text. Multiple paragraphs are separated with a blank line.
+Simple line breaks are ignored.
+
+## Blockquotes
+
+> This is a blockquote. It can contain multiple paragraphs.
+>
+> The `>` marker between paragraphs is optional.
+
+> Blockquotes can also contain other blocks, such as headings, lists, or blockquotes:
+> > A nested blockquote
+
+## Lists
+
+Lists are either ordered or unordered:
+
+1. An ordered list
+2. With two items
+
+5) Another ordered list
+6) Using closing parentheses
+
+- An unordered list
+- Containing a nested list:
+  * This is a nested list
+  * It doesn't matter what kind of bullet
+    (`-`, `*`, `+`) you use, just don't mix
+    different bullets in the same list
+
+Note that a list marker must always be followed by a space, and subsequent lines must be properly indented.
+
+## Inline formatting
+
+Paragraphs can contain *italic* and **bold** text (with underscores: _italic_, __bold__). They can also contain ~strikethrough~, ^superscript^ and #subscript#.
+
+Inline code is enclosed in backticks: `example` (or `` example ``). Inline code ignores formatting, i.e. `This is **not** bold`.
+
+## Links and images
+
+[This is a link](https://www.google.com).
+
+![An image](https://raw.githubusercontent.com/Aloso/unidoc/main/doc/unidoc.svg)
+
+Links have a link text in square brackets followed by a URL in parentheses. They can also contain a title in double quotes:
+
+[This is a link](https://www.google.com "This text appears if you hover over me!").
+
+Images have an alternative text (which appears when the image fails to load) and a URL. Like links, images can have a title in double quotes.
+
+## Comments
+
+// Comments start with two slashes. They are NOT displayed,
+// so they're perfect for editorial notes.
+
+## Thematic breaks
+
+Thematic breaks are rendered as a horizontal line:
+
+------------------
+
+Thematic breaks can consist of dashes or stars, and must be at least 3 characters long.
+
+## Code blocks
+
+Code blocks start and end with a _code fence_. A code fence is a line containing at least 3 backticks or tildes:
+
+```
+This is a code block
+```
+
+The closing fence must contain at least as many backticks or tildes as the opening fence:
+
+``````
+```
+```
+``````
+
+As in inline code, no formatting is performed in code blocks, so they're ideal for program code:
+
+```rust
+/// Does something interesting
+fn foo(arr: &[i32]) -> Vec<i32> {
+    arr.iter()
+        .filter(|n| *n < 2*3)
+        .copied()
+        .collect()
+}
+```
+
+You can write the programming language after the opening code fence to get syntax highlighting (not implemented yet).
+
+## Tables
+
+#|| This is               | a header row
+|| Each row starts        | with two vertical bars.
+|| Cells are separated    | with a single vertical bar.
+||# A header cell         |^ A center-aligned cell
+||> A right-aligned cell  |<^{2;2} vertically centered 2-column cell
+||{B;U} A bold, underlined cell
+||^{1;2;color:red} An centered, red 2-row cell
+
+Each cell can start with a _formatting modifier_, which consists of the following, optional parts:
+
+* `#` for header cells
+* `<`, `^` or `>` for horizontal alignment
+* an additional `<`, `^` or `>` for vertical alignment
+* `{}` containing:
+  - the number of columns this cell spans
+  - the number of rows this cell spans
+  - `B`, `I`, `U` and/or `S` to make the cell bold, italic, underlined and strikethrough, respectively
+  - arbitrary CSS rules
+
+## HTML
+
+HTML can be used anywhere: <kbd>Ctrl+K</kbd> <span class="hello">world</span>.
+
+<style>
+  .hello {
+    color: orange;
+  }
+</style>
+
+## Macros
+
+There are macros for a variety of uses. Macros always start with a `@`, optionally followed by an all-uppercase word, optionally followed by arguments in parentheses:
+
+```unidoc
+@THIS(is a macro)
+@(this is also){a macro}
+@{as is this}
+```
+
+A macro always attaches to a block or an inline element
+
+```unidoc
+@BLOCK_MACRO
+# Heading
+
+@INLINE_MACRO`Code`
+```
+
+You can find a list of available macros further down.
+
+## Escapes
+
+Special characters can be escaped with the backslash `\`:
+
+  \### This is not a heading
+
+  \> This is not a quote
+  and \**this is not bold**.
+
+  \|| This is not a table
+
+  \@{This is not a macro}
+
+When you want to type backticks within inline code, you can use multiple backticks for the inline code:
+
+  ```Look, `` two backticks!```
+
+To create inline code that contains nothing but backticks, add spaces around the backticks:
+
+  ` ``` `
+
+To escape an image, if you add a backslash before the `!`, it will be treated as a link:
+
+  \![Alternative text](url)
+
+Instead add the backslash before the brackets:
+
+  !\[Alternative text](url)
+
+Numbers can't be escaped. Therefore, to escape an ordered list, put the backslashs before the dots or parentheses:
+
+  1\. Not a list
+  2\. Not a list
+
+## Limiter
+
+The limiter, `$` isn't rendered, ever. It's just and indication that parsing should be interrupted.
+
+For example,~ this ~ isn't formatted as strikethrough because the word is surrounded by whitespace. This can be fixed by adding limiters:~$ text $~.
+
+> The limiter can also be used
+$
+> to split a blockquote up.
+
+1. And it can be used
+2. To split a list
+$
+1. Into several lists
+
+A limiter can also be added in a blank line
+$
+to connect multiple paragraphs.
+
+<div style="font-size: 85%">$
+    HTML elements are considered _inline_ only if there's
+    text after the opening tag in the same line.
+
+    Add a limiter after the tag to make the element inline.
+</div>
+
+## Substitutions
+
+Some characters are automatically substituted. For example, 'single' and "double quotes", apostrophes, the ellipsis ..., (R), (C) and (TM). More substitutions can be added via plugins.
+
+This is not yet implemented.
+
+## List of available macros
+
+### `@PASS`
+
+With `@PASS`, formatted text is parsed even in inline code and in code blocks:
+
+``````unidoc
+@PASS
+```
+This is **bold**
+```
+``````
+
+@PASS`This is **bold**`.
+
+You can specify which kinds of syntax is parsed in the block. For example, `@PASS(macros,inline)` or `@PASS(@,i)` only parses macros and inline formatting. The full list is
+
+* `inline`, `i` for inline formatting (bold, italic, strikethrough, etc.)
+* `codeblock`, `c` for code blocks
+* `heading`, `h` for headings
+* `tbreak`, `b` for thematic breaks
+* `subst`, `s` for text substitutions such as `->` to →
+* `list`, `l` for lists
+* `limiter`, `$` for the limiter
+* `macro`, `@` for macros
+* `math`, `%` for math blocks
+* `table`, `|` for tables
+* `quote`, `>` for blockquotes
+* `html`, `<` for HTML elements
+
+### `@NOPASS`
+
+`@NOPASS` disables all formatting in the block, so it behaves like inline code and code blocks.
+
+### `@()`
+
+The macro with no name is used to add HTML attributes to elements. For example, the following adds a CSS class and an id to a code block:
+
+  @(.cls #id)`Some code`
+
+This adds a title attribute:
+
+  @(title="hello world")`Some code`
+
+It can also be applied to HTML:
+
+  @(title="hello world")<span>Hover me</span>
+
+The above is equivalent to using braces:
+
+  @(title="hello world"){Hover me}
+
+
+
+
+
+
+</textarea>
+    </div>
+    <div id="preview"></div>
+  </div>
+
+  <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
+  <script src="./bootstrap.js"></script>
+</body>
+
+</html>

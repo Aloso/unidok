@@ -203,6 +203,12 @@ fn parse_paragraph_items(items: Vec<Item>) -> Vec<StackItem> {
                             stack.drain(i + 1..).map(StackItem::eliminate_delims).collect();
                         stack.pop();
                         stack.push(StackItem::Formatted { delim, content });
+                    } else if flanking == Flanking::Both {
+                        stack.push(StackItem::FormatDelim {
+                            delim,
+                            flanking: Flanking::Left,
+                            count,
+                        });
                     } else {
                         stack.push(StackItem::Text2(delim.to_str()));
                     }
@@ -310,6 +316,7 @@ fn find_matching_opening_delim(
             } else {
                 same_delim_run = false;
             }
+        } else if let StackItem::Limiter = *el {
         } else {
             same_delim_run = false;
         }

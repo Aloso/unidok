@@ -80,7 +80,7 @@ impl Parse for ParseCode<'_> {
 }
 
 fn find_special(c: char) -> bool {
-    matches!(c, '`' | '\\' | '\n' | '\r')
+    matches!(c, '`' | '\n' | '\r')
 }
 
 struct ParseCodeEndDelimiter {

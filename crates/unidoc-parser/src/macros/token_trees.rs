@@ -98,6 +98,7 @@ impl Parse for ParseTokenTreeAtom<'_> {
             }
             Some('"' | '\'') => {
                 let content = input.parse(QuotedStringWithEscapes(self.ind))?;
+                input.apply();
                 Some(TokenTreeAtom::QuotedWord(content))
             }
             Some(_) => {

@@ -1,0 +1,191 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: 'PT Sans', 'Noto Sans', 'Open Sans', 'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+    font-size: 17px;
+}
+
+header {
+    box-sizing: border-box;
+    background-color: #3a3a3a;
+    padding: 0 16px;
+    height: 50px;
+    line-height: 49px;
+    color: white;
+    font-size: 19px;
+    border-bottom: 1px solid #555;
+}
+
+#app {
+    position: absolute;
+    left: 0;
+    top: 50px;
+    right: 0;
+    bottom: 0;
+    background-color: #222;
+    color: white;
+}
+
+#text {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 50%;
+    bottom: 0;
+}
+
+#input {
+    display: block;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    resize: none;
+    background-color: #2a2a2a;
+    color: white;
+    font: 17px 'JetBrains Mono', monospace;
+    font-weight: 350;
+    padding: 5px 10px;
+    border: none;
+    margin: 0;
+    box-shadow: inset -1px 0 0 0 #555;
+    text-shadow: 0 0 5px #0003;
+    letter-spacing: 0.008em;
+    scrollbar-color: #555 transparent;
+}
+
+#input:hover, #input:focus {
+    outline: none;
+}
+
+#preview {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 50%;
+    bottom: 0;
+    overflow: auto;
+    box-sizing: border-box;
+    padding: 0 20px;
+    font-size: 19px;
+    scrollbar-color: #555 transparent;
+}
+
+#preview:hover, #preview:focus,
+#input:hover, #input:focus {
+    scrollbar-color: #498dcc transparent;
+}
+
+a:link, a:visited {
+    color: rgb(93, 158, 255);
+}
+
+blockquote {
+    padding: 0 25px;
+    margin-left: 0;
+    margin-right: 0;
+    position: relative;
+}
+
+blockquote::before {
+    content: '';
+    display: block;
+    position: absolute;
+    width: 5px;
+    background-color: #fff5;
+    left: 3px;
+    height: 100%;
+    border-radius: 2px;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+table td, table th {
+    border: 1px solid #fff3;
+    padding: 5px 12px;
+}
+
+table tr:nth-child(2n) {
+    background-color: #ffffff07;
+}
+
+table th {
+    background-color: #ffffff1c;
+    text-align: center;
+    font-size: 105%;
+}
+
+kbd {
+    border: 1px solid #fff3;
+    border-radius: 5px;
+    box-shadow: 0 2px 2px #fff2;
+    font-size: 88%;
+    padding: 2px 6px;
+}
+
+code {
+    border: 1px solid #fff2;
+    border-radius: 3px;
+    font-size: 88%;
+    padding: 1px 4px;
+    background-color: #ffffff0a;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 350;
+}
+
+pre {
+    background-color: #0004;
+    padding: 10px 15px;
+    border-radius: 5px;
+}
+
+pre code {
+    background: transparent;
+    border: none;
+    padding: 0;
+}
+
+#preview p,
+#preview li {
+    line-height: 1.35em;
+}
+
+h1 {
+    font-size: 2.3em;
+    border-bottom: 1px solid #fff4;
+    padding: 0 0 5px 0;
+}
+h2 {
+    font-size: 1.9em;
+}
+h3 {
+    font-size: 1.6em;
+}
+h4 {
+    font-size: 1.3em;
+}
+h5 {
+    font-size: 1em;
+}
+h6 {
+    font-size: 0.8em;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    margin: 0.7em 0;
+}
+
+hr {
+    border: 1px solid #fff5;
+    margin: 1.5em 0;
+}
+
+p {
+    font-size: 19px;
+}
+
+h1 *, h2 *, h3 *, h4 *, h5 *, h6 * {
+    font-weight: bold;
+}
