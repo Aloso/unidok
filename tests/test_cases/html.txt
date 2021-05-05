@@ -19,7 +19,7 @@ $<i hello world='!'>@(.cls #id attr .c){span}</i>
 <p><span><code>code</code></span> <code>code</code> <span class="x"><code>code</code></span> <code class="x">code</code>
 @<em>italic</em> @(.x)<em>italic</em>
 @<sub>subscript</sub> @(.x)<sub>subscript</sub>
-@<br/> @(.x)<br/></p>
+<br/> <br class="x"/></p>
 <img src=""/>
 <ul>
 <li>Test</li>

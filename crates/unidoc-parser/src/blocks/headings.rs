@@ -79,7 +79,9 @@ impl Parse for ParseHashes {
                 return None;
             }
         }
-        input.parse(' ')?;
+        if !input.can_parse(ParseLineEnd) {
+            input.parse(' ').or_else(|| input.parse('\t'))?;
+        }
         Some(level)
     }
 }

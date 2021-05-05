@@ -571,7 +571,7 @@ impl ParseSegments<'_> {
                             }
                         }
 
-                        if input.can_parse(ParseLineBreak(ind)) || self.can_parse_block(input) {
+                        if is_blank_line(input.rest()) || self.can_parse_block(input) {
                             return Some(true);
                         }
                     } else {
@@ -594,4 +594,9 @@ impl ParseSegments<'_> {
             || input.can_parse(ThematicBreak::parser(ind))
             || input.can_parse(Quote::parser(ind))
     }
+}
+
+fn is_blank_line(s: &str) -> bool {
+    let s = s.trim_start_matches(|c| matches!(c, ' ' | '\t'));
+    matches!(s.bytes().next(), Some(b'\n' | b'\r') | None)
 }

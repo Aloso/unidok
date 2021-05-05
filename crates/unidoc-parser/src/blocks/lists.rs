@@ -68,11 +68,12 @@ impl Parse for ParseList<'_> {
     fn parse(&self, input: &mut crate::Input) -> Option<Self::Output> {
         let mut input = input.start();
 
-        let (indent_spaces, bullet) = input.parse(ParseBullet { first: true })?;
-        let ind = self.ind.push_indent(indent_spaces);
+        let (mut indent_spaces, bullet) = input.parse(ParseBullet { first: true })?;
 
         let mut items = Vec::new();
         loop {
+            let ind = self.ind.push_indent(indent_spaces);
+
             let content_parser = Block::multi_parser(Context::Global, ind);
             items.push(input.parse(content_parser)?);
 
@@ -82,7 +83,8 @@ impl Parse for ParseList<'_> {
 
             let mut input2 = input.start();
             if let Some((is, b)) = input2.parse(ParseBullet { first: false }) {
-                if is == indent_spaces && b.kind() == bullet.kind() {
+                if b.kind() == bullet.kind() {
+                    indent_spaces = is;
                     input2.apply();
                     continue;
                 }
