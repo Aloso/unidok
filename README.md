@@ -400,6 +400,7 @@ https://spec.commonmark.org/0.29/#images
 
 * Lists
   * Implement loose lists
+  * Lists with different width markers, e.g. `1.` and `15.`
 
 * Expanding macros
 

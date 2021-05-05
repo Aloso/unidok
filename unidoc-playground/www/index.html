@@ -8,261 +8,702 @@
     rel="stylesheet">
   <meta charset="utf-8">
   <title>Unidoc playground</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
   <header>
-    Unidoc playground
-    <div style="float: right">
-      <a href="https://github.com/Aloso/unidoc">GitHub</a>
-    </div>
+    <h1>Unidoc</h1>
+    <div id="subtitle">Re-thinking Markdown and AsciiDoctor</div>
+    <a class="button" href="https://github.com/Aloso/unidoc">GitHub</a>
+    <button class="button" id="open-playground">Playground</button>
   </header>
 
-  <div id="app">
-    <div id="text">
-      <textarea id="input"># Unidoc tutorial
+  <section id="intro">
+    <h2>What is Unidoc?</h2>
+    <p>
+      Unidoc is a new Markup language, inspired by AsciiDoctor, but syntactically more similar to Markdown. This is
+      useful because Markdown is easy to read and to learn. However, Unidoc tries to make Markdown's syntax even
+      simpler, while also introducing new, powerful features such as tables and macros.
+    </p>
+  </section>
 
-Welcome to the unidoc playground! Unidoc is a simple markup language; It uses special characters to format text. You should see a unidoc document on the left (which you can edit) and the formatted result on the right.
+  <section id="basics">
+    <h2>Basics</h2>
+    <div class="wrap-table">
+      <table>
+        <tr>
+          <th>Type</th>
+          <th>or</th>
+          <th>...to get</th>
+        </tr>
+        <tr>
+          <td>
+            <pre>*Italic*</pre>
+          </td>
+          <td>
+            <pre>_Italic_</pre>
+          </td>
+          <td><em>Italic</em></td>
+        </tr>
+        <tr>
+          <td>
+            <pre>**Bold**</pre>
+          </td>
+          <td>
+            <pre>__Bold__</pre>
+          </td>
+          <td><strong>Bold</strong></td>
+        </tr>
+        <tr>
+          <td colspan="2">
+            <pre>~Strikethrough~</pre>
+          </td>
+          <td><s>Strikethrough</s></td>
+        </tr>
+        <tr>
+          <td colspan="2">
+            <pre>x ^Superscript^</pre>
+          </td>
+          <td>x <sup>Superscript</sup></td>
+        </tr>
+        <tr>
+          <td colspan="2">
+            <pre>x #Subscript#</pre>
+          </td>
+          <td>x <sub>Subscript</sub></td>
+        </tr>
+        <tr>
+          <td colspan="2">
+            <pre>`Inline code`</pre>
+          </td>
+          <td><code>Inline code</code></td>
+        </tr>
+        <tr>
+          <td>
+            <pre># Heading 1</pre>
+          </td>
+          <td>
+            <pre>Heading 1<br>=========</pre>
+          </td>
+          <td>
+            <h1 style="margin: 0.2em 0">Heading 1</h1>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <pre>## Heading 2</pre>
+          </td>
+          <td>
+            <pre>Heading 2<br>---------</pre>
+          </td>
+          <td>
+            <h2 style="margin: 0.2em 0">Heading 2</h2>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="2">
+            <pre>[Link](https://a.com)</pre>
+          </td>
+          <td><a href="https://a.com">Link</a></td>
+        </tr>
+        <tr>
+          <td colspan="2">
+            <pre>![Image](https://a.com)</pre>
+          </td>
+          <td><img src="https://raw.githubusercontent.com/Aloso/unidoc/main/doc/unidoc.svg" alt="Logo" /></td>
+        </tr>
+        <tr>
+          <td colspan="2">
+            <pre>&gt; Blockquote</pre>
+          </td>
+          <td>
+            <blockquote style="margin: 0.2em 0">Blockquote</blockquote>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <pre>* List<br>* List<br>* List</pre>
+          </td>
+          <td>
+            <pre>- List<br>- List<br>- List</pre>
+          </td>
+          <td>
+            <ul style="margin: 0.2em 0">
+              <li>List</li>
+              <li>List</li>
+              <li>List</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <pre>1. List<br>2. List<br>3. List</pre>
+          </td>
+          <td>
+            <pre>1) List<br>2) List<br>3) List</pre>
+          </td>
+          <td>
+            <ol style="margin: 0.2em 0">
+              <li>List</li>
+              <li>List</li>
+              <li>List</li>
+            </ol>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="2">
+            <pre>Horizontal ruler:<br><br>---</pre>
+          </td>
+          <td>
+            <p style="margin-top: 0.2em">Horizontal ruler:</p>
+            <hr style="margin-bottom: 0.2em">
+          </td>
+        </tr>
+        <tr>
+          <td colspan="2">
+            <pre>```<br>&lt;code block&gt;<br>```</pre>
+          </td>
+          <td>
+            <pre class="toget"><code>&lt;code block&gt;</code></pre>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="2">
+            <pre>&gt; Blockquote</pre>
+          </td>
+          <td>
+            <blockquote style="margin: 0.2em 0">Blockquote</blockquote>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="2">
+            <pre>|| Table | with<br>|| many  | cells</pre>
+          </td>
+          <td>
+            <table>
+              <tr>
+                <td>Table</td>
+                <td>with</td>
+              </tr>
+              <tr>
+                <td>many</td>
+                <td>cells</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </section>
 
-## Headings
 
-Headings are prefixed with 1 to 6 number signs, followed by a space:
+  <section id="tutorial">
+    <h2>Tutorial</h2>
+    <p>
+      Read on to get a deeper understanding of Unidoc and of how it differs from Markdown.
+      This tutorial contains code snippets. If you have JavaScript enabled, you can modify them
+      and see the result <span class="media-big">on the right</span><span class="media-small">below</span>.
+    </p>
 
-  # Heading 1
-  ## Heading 2
-  ### Heading 3
-  #### Heading 4
-  ##### Heading 5
-  ###### Heading 6
 
-Alternatively, headings can be underlined with equals signs or dashes:
+    <h3>Headings</h3>
+    <p>
+      Headings are prefixed with 1 to 6 number signs (<code>#</code>), followed by a space:
+    </p>
+    <pre class="playground">
+# Heading 1
+## Heading 2
+### Heading 3
+#### Heading 4
+##### Heading 5
+###### Heading 6
+    </pre>
+    <p>
+      Alternatively, headings can be underlined with equals signs or dashes:
+    </p>
+    <pre class="playground">
+Heading 1
+=========
 
-  Heading 1
-  =========
+Heading 2
+---------
+    </pre>
+    <div class="differences">
+      <p class="mini-title">Differences to Markdown</p>
+      <p>
+        In Markdown, headings can have number signs on both ends
+        (i.e. <code>## Heading ##</code>). This is not allowed in Unidoc.
+      </p>
+      <p>
+        In Unidoc, underlined headings require at least 2 equals signs or dashes.
+      </p>
+    </div>
 
-  Heading 2
-  ---------
 
-Pretty easy, right?
+    <h3>Paragraphs</h3>
+    <pre class="playground">
+This is a paragraph of text.
+Single line breaks are ignored.
 
-## Paragraphs
+Paragraphs are separated with a blank line.
+    </pre>
 
-This is a paragraph of text. Multiple paragraphs are separated with a blank line.
-Simple line breaks are ignored.
 
-## Blockquotes
-
-> This is a blockquote. It can contain multiple paragraphs.
+    <h3>Blockquotes</h3>
+    <p>
+      Blockquotes are indented with a <code>&gt;</code> marker:
+    </p>
+    <pre class="playground">
+> This is a blockquote.
 >
-> The `>` marker between paragraphs is optional.
-
-> Blockquotes can also contain other blocks, such as headings, lists, or blockquotes:
+> It contains multiple paragraphs.
+    </pre>
+    <p>
+      Blockquotes can contain anything:
+    </p>
+    <pre class="playground">
+> ### A heading
+> - A list
 > > A nested blockquote
+    </pre>
+    <div class="differences">
+      <p class="mini-title">Differences to Markdown</p>
+      <p>
+        The <code>&gt;</code> marker can be omitted on blank lines:
+      </p>
+      <pre class="playground">
+> A paragraph
 
-## Lists
+> A paragraph in the same blockquote
+      </pre>
+      <p>
+        To separate blockquotes, you can add a <em>limiter</em> (<code>$</code>) between them:
+      </p>
+      <pre class="playground">
+> A paragraph
+$
+> A paragraph in another blockquote
+      </pre>
+      <p>
+        In Unidoc, quote markers (<code>&gt;</code>) must be correctly indented:
+      </p>
+      <pre class="playground">
+ > A blockquote
+  > Incorrectly indented line
+      </pre>
+    </div>
 
-Lists are either ordered or unordered:
 
+    <h3>Lists</h3>
+    <p>Lists can be ordered:</p>
+    <pre class="playground">
 1. An ordered list
 2. With two items
-
-5) Another ordered list
-6) Using closing parentheses
-
+    </pre>
+    <p>Or unordered:</p>
+    <pre class="playground">
 - An unordered list
-- Containing a nested list:
+- With two items
+    </pre>
+    <p>
+      Ordered lists can use a dot (<code>1.</code>) or a closing parenthesis (<code>1)</code>).
+      Unordered lists can use dashes (<code>-</code>), stars (<code>*</code>) or
+      plus characters (<code>+</code>).
+    </p>
+    <p>List items can contain anything:</p>
+    <pre class="playground">
++ An unordered list
++ With a nested list:
   * This is a nested list
-  * It doesn't matter what kind of bullet
-    (`-`, `*`, `+`) you use, just don't mix
-    different bullets in the same list
+  * > And here's a blockquote
+    >
+    > Make sure the indentation is correct!
+    </pre>
+    <p>
+      Note that a list marker must always be followed by a space, and subsequent lines must be properly indented.
+    </p>
+    <div class="differences">
+      <p class="mini-title">Differences to Markdown</p>
+      <p>
+        Unidoc doesn't support <em>laziness</em>;
+        as soon as a line isn't indented far enough to the right, the list item ends:
+      </p>
+      <pre class="playground">
+  - The list item
+    continues on this line
+  But this is not part of the list item!
+      </pre>
+      <p>
+        The width of a list marker does not depend on the number of spaces after the marker:
+      </p>
+      <pre class="playground">
+-   A list item
+  - A nested list item
+      </pre>
+      <p>
+        An ordered list can interrupt a paragraph, even when it doesn't start with 1:
+      </p>
+      <pre class="playground">
+A paragraph interrupted by
+4. A list item
+      </pre>
+    </div>
 
-Note that a list marker must always be followed by a space, and subsequent lines must be properly indented.
 
-## Inline formatting
+    <h3>Inline formatting</h3>
+    <p>
+      By default, the following inline formatting modes are supported:
+    </p>
+    <pre class="playground">
+*Italic*, _also italic_,
+**bold**, __also bold__,
+^superscript^, #subscript#,
+~strikethrough~ and `inline code`.
+    </pre>
+    <p>
+      Inline code is a special case, because its content isn't formatted by default:
+    </p>
+    <pre class="playground">
+`Absolutely **no** formatting!`
+    </pre>
+    <p>
+      When the inline code contains backticks, use a different number of backticks as formatting delimiters:
+    </p>
+    <pre class="playground">
+``This: ` is okay, as is this: ``` ``
+    </pre>
+    <p>
+      Formatting delimiters can appear in the middle of a word, except for underscores:
+    </p>
+    <pre class="playground">
+- n^x^
+- **B**old first letter
+- __T__his doesn't work
+    </pre>
 
-Paragraphs can contain *italic* and **bold** text (with underscores: _italic_, __bold__). They can also contain ~strikethrough~, ^superscript^ and #subscript#.
 
-Inline code is enclosed in backticks: `example` (or `` example ``). Inline code ignores formatting, i.e. `This is **not** bold`.
-
-## Links and images
-
+    <h3>Links and images</h3>
+    <p>
+      Links and images consist of a description in square brackets, followed by a URL in parentheses:
+    </p>
+    <pre class="playground">
 [This is a link](https://www.google.com).
 
 ![An image](https://raw.githubusercontent.com/Aloso/unidoc/main/doc/unidoc.svg)
+    </pre>
+    <p>
+      The parentheses can also contain a title in double quotes, which appears when the cursor hovers over the
+      link/image:
+    </p>
+    <pre class="playground">
+[This is a link](https://www.google.com "This is a title").
+    </pre>
+    <div class="differences">
+      <p class="mini-title">Differences to Markdown</p>
+      <p>
+        Link reference definitions are currently unsupported.
+      </p>
+    </div>
 
-Links have a link text in square brackets followed by a URL in parentheses. They can also contain a title in double quotes:
 
-[This is a link](https://www.google.com "This text appears if you hover over me!").
-
-Images have an alternative text (which appears when the image fails to load) and a URL. Like links, images can have a title in double quotes.
-
-## Comments
-
-// Comments start with two slashes. They are NOT displayed,
-// so they're perfect for editorial notes.
-
-## Thematic breaks
-
+    <h3>Thematic breaks</h3>
+    <pre class="playground">
 Thematic breaks are rendered as a horizontal line:
 
 ------------------
+    </pre>
+    <p>
+      Thematic breaks can consist of dashes (<code>-</code>) or stars (<code>*</code>), and must be at least 3
+      characters long.
+    </p>
+    <div class="differences">
+      <p class="mini-title">Differences to Markdown</p>
+      <p>
+        Thematic breaks can't have internal spaces:
+      </p>
+      <pre class="playground">
+This is a weird list, not a thematic break:
 
-Thematic breaks can consist of dashes or stars, and must be at least 3 characters long.
+- - -
+      </pre>
+    </div>
 
-## Code blocks
 
-Code blocks start and end with a _code fence_. A code fence is a line containing at least 3 backticks or tildes:
-
+    <h3>Code blocks</h3>
+    <p>
+      Code blocks start and end with a <em>code fence</em>. A code fence is a line with at least three backticks
+      (<code>`</code>) or tildes (<code>~</code>):
+    </p>
+    <pre class="playground">
 ```
-This is a code block
+Code block
 ```
-
-The closing fence must contain at least as many backticks or tildes as the opening fence:
-
+    </pre>
+    <p>
+      The closing code fence must have at least as many backticks or tildes as the opening code fence. Backticks and
+      tildes can't be mixed.
+    </p>
+    <p>
+      As in inline code, no formatting is performed in code blocks:
+    </p>
+    <pre class="playground">
 ``````
+**Not bold**
+[Not a link](#)
+
 ```
 ```
 ``````
-
-As in inline code, no formatting is performed in code blocks, so they're ideal for program code:
-
+    </pre>
+    <p>
+      Code blocks are ideal for programming code. The programming language can be written after the opening code
+      fence, to support syntax highlighting:
+    </p>
+    <pre class="playground">
 ```rust
-/// Does something interesting
-fn foo(arr: &[i32]) -> Vec<i32> {
-    arr.iter()
-        .filter(|n| *n < 2*3)
-        .copied()
-        .collect()
+fn foo() -> &'static str {
+    "Hello, world!"
 }
 ```
+    </pre>
 
-You can write the programming language after the opening code fence to get syntax highlighting (not implemented yet).
 
-## Tables
+    <h3>Comments</h3>
+    <pre class="playground">
+// Comments start with two slashes.
+// They are NOT displayed, so they're
+// perfect for editorial notes.
+    </pre>
+    <div class="differences">
+      <p class="mini-title">Differences to Markdown</p>
+      <p>
+        Unidoc deliberately does <em>not</em> support indented code blocks, only fenced code blocks.
+      </p>
+      <p>
+        The closing code fence must have the same indentation as the opening code fence.
+      </p>
+    </div>
 
-#|| This is               | a header row
-|| Each row starts        | with two vertical bars.
-|| Cells are separated    | with a single vertical bar.
-||# A header cell         |^ A center-aligned cell
-||> A right-aligned cell  |<^{2;2} vertically centered 2-column cell
-||{B;U} A bold, underlined cell
-||^{1;2;color:red} An centered, red 2-row cell
 
-Each cell can start with a _formatting modifier_, which consists of the following, optional parts:
+    <h3>Tables</h3>
+    <p>
+      Tables are not part of the CommonMark specification, but there's a well-supported syntax for tables in many
+      Markdown parsers. Unidoc uses a different, more powerful syntax.
+    </p>
+    <p>
+      Each table row starts with two vertical bars, table cells are separated with a single vertical bar:
+    </p>
+    <pre class="playground">
+|| This is   | a table
+|| with four | table cells
+    </pre>
+    <p>
+      A table cell can be prefixed with
+    </p>
+    <ul>
+      <li>A number sign (<code>#</code>) to make it a header cell</li>
+      <li>A <code>&lt;</code>, <code>^</code> or <code>&gt;</code>, to align it left, centered or right, respectively
+      </li>
+      <li>An additional <code>&lt;</code>, <code>^</code> or <code>&gt;</code>, to vertically align it at the top,
+        middle, or bottom, respectively:</li>
+    </ul>
+    <pre class="playground">
+||#&lt; These   |#  are header cells
+||^  Center  |>  Right       | &lt;br>&lt;br>
+||<> Bottom  |>&lt; Right-top   | &lt;br>&lt;br>
+    </pre>
+    <p>
+      A table cell can also be prefixed with <code>{r}</code> or <code>{r;c}</code>, where <code>r</code> is the number
+      of rows and <code>c</code> is the number of columns the cell should span:
+    </p>
+    <pre class="playground">
+|| Lorem      | ipsum | dolor | sit
+|| amet,      |^{2;3} consetetur
+|| sadipscing
+    </pre>
 
-* `#` for header cells
-* `<`, `^` or `>` for horizontal alignment
-* an additional `<`, `^` or `>` for vertical alignment
-* `{}` containing:
-  - the number of columns this cell spans
-  - the number of rows this cell spans
-  - `B`, `I`, `U` and/or `S` to make the cell bold, italic, underlined and strikethrough, respectively
-  - arbitrary CSS rules
 
-## HTML
+    <h3>HTML</h3>
+    <p>
+      HTML can be used anywhere:
+    </p>
+    <pre class="playground" style="min-height: 200px">
+&lt;kbd>Ctrl+K&lt;/kbd>
+&lt;span class="hello">world&lt;/span>
 
-HTML can be used anywhere: <kbd>Ctrl+K</kbd> <span class="hello">world</span>.
-
-<style>
+&lt;style>
   .hello {
     color: orange;
   }
-</style>
+&lt;/style>
+    </pre>
 
-## Macros
 
-There are macros for a variety of uses. Macros always start with a `@`, optionally followed by an all-uppercase word, optionally followed by arguments in parentheses:
-
-```unidoc
+    <h3>Macros</h3>
+    <div class="differences">
+      <p>
+        The implementation of macros is incomplete and doesn't work yet.
+      </p>
+    </div>
+    <p>
+      There are macros for a variety of uses. Macros always start with a <code>@</code>,
+      optionally followed by an all-uppercase word, optionally followed by arguments in parentheses:
+    </p>
+    <pre>
 @THIS(is a macro)
-@(this is also){a macro}
-@{as is this}
-```
-
-A macro always attaches to a block or an inline element
-
-```unidoc
-@BLOCK_MACRO
+@AS_IS_THIS
+@(and this)</pre>
+    <p>
+      A macro must always be attached to a block or element:
+    </p>
+    <pre class="playground">
+@(a)
 # Heading
 
-@INLINE_MACRO`Code`
-```
+@(b)
+Paragraph
 
-You can find a list of available macros further down.
+@(c)
+- List
+- List
+- List
 
-## Escapes
+@(d){Text enclosed in curly braces}
 
-Special characters can be escaped with the backslash `\`:
+@(e)`Inline code`
 
-  \### This is not a heading
+@(f)&lt;kbd>An HTML element&lt;/kbd>
 
-  \> This is not a quote
-  and \**this is not bold**.
+@(g)[A link](https://www.google.com)
+    </pre>
+    <p>
+      You can find a list of available macros further down.
+    </p>
 
-  \|| This is not a table
 
-  \@{This is not a macro}
+    <h3>Escapes</h3>
+    <p>
+      Special characters can be escaped with the backslash (<code>\</code>):
+    </p>
+    <pre class="playground">
+\### This is not a heading
 
-When you want to type backticks within inline code, you can use multiple backticks for the inline code:
+\> This is not a quote
+and \**this is not bold**.
 
-  ```Look, `` two backticks!```
+\|| This is not a table
 
-To create inline code that contains nothing but backticks, add spaces around the backticks:
+\@FOO{This is not a macro}
+    </pre>
+    <p>
+      To escape an image, if you add a backslash before the <code>!</code>, it will be treated as a link:
+    </p>
+    <pre class="playground">
+\![Alternative text](url)
+    </pre>
+    <p>Instead add the backslash before the brackets:</p>
+    <pre class="playground">
+!\[Alternative text](url)
+    </pre>
+    <p>
+      Numbers can't be escaped. Therefore, to escape an ordered list, put the backslashes before the dots or
+      parentheses:
+    </p>
+    <pre class="playground">
+1\. Not a list
+2\. Not a list
+    </pre>
 
-  ` ``` `
 
-To escape an image, if you add a backslash before the `!`, it will be treated as a link:
+    <h3>Limiter</h3>
+    <p>
+      The limiter, <code>$</code> isn't rendered, ever.
+      It's just and indication that parsing should be interrupted. Example:
+    </p>
+    <pre class="playground">
+~ This ~ isn't formatted as strikethrough because the word is surrounded by whitespace.
 
-  \![Alternative text](url)
-
-Instead add the backslash before the brackets:
-
-  !\[Alternative text](url)
-
-Numbers can't be escaped. Therefore, to escape an ordered list, put the backslashs before the dots or parentheses:
-
-  1\. Not a list
-  2\. Not a list
-
-## Limiter
-
-The limiter, `$` isn't rendered, ever. It's just and indication that parsing should be interrupted.
-
-For example,~ this ~ isn't formatted as strikethrough because the word is surrounded by whitespace. This can be fixed by adding limiters:~$ text $~.
-
-> The limiter can also be used
+But~$ this $~ is!
+    </pre>
+    <p>
+      The limiter can also be used to split a blockquote or list into several parts:
+    </p>
+    <pre class="playground">
+> A blockquote
 $
-> to split a blockquote up.
+> Another blockquote
 
-1. And it can be used
-2. To split a list
+1. A list
 $
-1. Into several lists
-
-A limiter can also be added in a blank line
+15. Another list
+    </pre>
+    <p>
+      The limiter can make a blank line non-blank to connect paragraphs:
+    </p>
+    <pre class="playground">
+This paragraph
 $
-to connect multiple paragraphs.
+continues here.
+    </pre>
+    <p>
+      Since HTML elements are considered <em>inline</em> only if there's
+      text in the same line after the opening tag, a <code>$</code> can help:
+    </p>
+    <pre class="playground">
+&lt;div style="font-size: 85%">$
+    This is considered inline!
+&lt;/div>
+    </pre>
 
-<div style="font-size: 85%">$
-    HTML elements are considered _inline_ only if there's
-    text after the opening tag in the same line.
 
-    Add a limiter after the tag to make the element inline.
-</div>
+    <h3>Substitutions</h3>
+    <p>
+      Some characters are automatically substituted. For example, quotes, apostrophes, 3 dots,
+      (R), (C) and (TM). More substitutions can be added via plugins.
+    </p>
+    <div class="differences">
+      <p>
+        This is not yet implemented.
+      </p>
+    </div>
+  </section>
 
-## Substitutions
 
-Some characters are automatically substituted. For example, 'single' and "double quotes", apostrophes, the ellipsis ..., (R), (C) and (TM). More substitutions can be added via plugins.
+  <section id="macros">
+    <h2>List of available macros</h2>
 
-This is not yet implemented.
+    <h3><code>@()</code></h3>
+    <p>
+      The macro with no name is used to add HTML attributes to elements.
+      For example, the following adds a CSS class, id, or <code>title</code> attribute to a code block:
+    </p>
+    <pre class="playground">
+@(.cls #id)`Some code`
 
-## List of available macros
+@(title="hello world")`Hover me`
+    </pre>
+    <p>It can also be applied to HTML:</p>
+    <pre class="playground">
+@(title="hello world")&lt;span>Hover me&lt;/span>
+    </pre>
+    <p>The above is equivalent to using braces:</p>
+    <pre class="playground">
+@(title="hello world"){Hover me}
+    </pre>
 
-### `@PASS`
 
-With `@PASS`, formatted text is parsed even in inline code and in code blocks:
-
+    <h3><code>@PASS</code></h3>
+    <div class="differences">
+      <p>
+        The implementation of this macro is incomplete.
+      </p>
+    </div>
+    <p>
+      With <code>@PASS</code>, formatted text is parsed even in inline code and in code blocks:
+    </p>
+    <pre class="playground">
 ``````unidoc
 @PASS
 ```
@@ -271,55 +712,40 @@ This is **bold**
 ``````
 
 @PASS`This is **bold**`.
-
-You can specify which kinds of syntax is parsed in the block. For example, `@PASS(macros,inline)` or `@PASS(@,i)` only parses macros and inline formatting. The full list is
-
-* `inline`, `i` for inline formatting (bold, italic, strikethrough, etc.)
-* `codeblock`, `c` for code blocks
-* `heading`, `h` for headings
-* `tbreak`, `b` for thematic breaks
-* `subst`, `s` for text substitutions such as `->` to →
-* `list`, `l` for lists
-* `limiter`, `$` for the limiter
-* `macro`, `@` for macros
-* `math`, `%` for math blocks
-* `table`, `|` for tables
-* `quote`, `>` for blockquotes
-* `html`, `<` for HTML elements
-
-### `@NOPASS`
-
-`@NOPASS` disables all formatting in the block, so it behaves like inline code and code blocks.
-
-### `@()`
-
-The macro with no name is used to add HTML attributes to elements. For example, the following adds a CSS class and an id to a code block:
-
-  @(.cls #id)`Some code`
-
-This adds a title attribute:
-
-  @(title="hello world")`Some code`
-
-It can also be applied to HTML:
-
-  @(title="hello world")<span>Hover me</span>
-
-The above is equivalent to using braces:
-
-  @(title="hello world"){Hover me}
+    </pre>
+    <p>
+      You can specify which kinds of syntax is parsed in the block.
+      For example, <code>@PASS(macros,inline)</code> or <code>@PASS(@,i)</code> only
+      parses macros and inline formatting. Here's the full list:
+    </p>
+    <ul>
+      <li><code>inline</code>, <code>i</code> for inline formatting (bold, italic, strikethrough, etc.)</li>
+      <li><code>codeblock</code>, <code>c</code> for code blocks</li>
+      <li><code>heading</code>, <code>h</code> for headings</li>
+      <li><code>tbreak</code>, <code>b</code> for thematic breaks</li>
+      <li><code>subst</code>, <code>s</code> for text substitutions such as `->` to →</li>
+      <li><code>list</code>, <code>l</code> for lists</li>
+      <li><code>limiter</code>, <code>$</code> for the limiter</li>
+      <li><code>macro</code>, <code>@</code> for macros</li>
+      <li><code>math</code>, <code>%</code> for math blocks</li>
+      <li><code>table</code>, <code>|</code> for tables</li>
+      <li><code>quote</code>, <code>></code> for blockquotes</li>
+      <li><code>html</code>, <code>&lt;</code> for HTML elements</li>
+    </ul>
 
 
-
-
-
-
-</textarea>
+    <h3><code>@NOPASS</code></h3>
+    <div class="differences">
+      <p>
+        The implementation of this macro is incomplete.
+      </p>
     </div>
-    <div id="preview"></div>
-  </div>
+    <p>
+      <code>@NOPASS</code> disables all formatting in the block,
+      so it behaves like inline code and code blocks.
+    </p>
+  </section>
 
-  <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
   <script src="./bootstrap.js"></script>
 </body>
 
