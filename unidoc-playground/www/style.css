@@ -44,6 +44,7 @@ pre {
     max-height: 95vh;
     font-family: 'JetBrains Mono', monospace;
     overflow: auto;
+    font-variant-ligatures: none;
 }
 
 header > h1 {
@@ -65,6 +66,7 @@ header > h1 {
     margin: 0;
     padding: 5px 0;
     background-color: transparent;
+    font-size: 18px;
 }
 
 .playground {
@@ -122,6 +124,7 @@ header > h1 {
     background-color: transparent;
     color: white;
     font: 17px 'JetBrains Mono', monospace;
+    font-variant-ligatures: none;
     font-weight: 350;
     padding: 12px 15px;
     border: none;
@@ -262,6 +265,7 @@ code {
     padding: 1px 4px;
     background-color: #ffffff0a;
     font-family: 'JetBrains Mono', monospace;
+    font-variant-ligatures: none;
     font-weight: 350;
 }
 
@@ -275,6 +279,7 @@ pre code {
     background: transparent;
     border: none;
     padding: 0;
+    font-size: inherit;
 }
 
 #preview p,

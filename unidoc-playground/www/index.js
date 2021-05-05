@@ -59,6 +59,7 @@ function initializePlayground(elem) {
             console.warn('Input:')
             console.log(value)
             console.error(e.message)
+            preview.innerHTML = '<p style="color:#ff4444"><strong>Fatal error</strong></p>'
         }
     }
     render()
