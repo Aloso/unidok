@@ -1,8 +1,8 @@
 use crate::inlines::segments::Segments;
 use crate::inlines::Segment;
 use crate::parsing_mode::ParsingMode;
-use crate::utils::{Indents, ParseLineBreak, ParseLineEnd, ParseSpacesU8};
-use crate::{Context, Parse, ParseInfallible, StrSlice};
+use crate::utils::{Indents, ParseLineBreak, ParseLineEnd, ParseSpacesU8, While};
+use crate::{Context, Parse, ParseInfallible};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Table {
@@ -28,8 +28,6 @@ pub struct CellMeta {
     pub vertical_alignment: CellAlignment,
     pub rowspan: u16,
     pub colspan: u16,
-    pub bius: Bius,
-    pub css: Vec<StrSlice>,
 }
 
 impl CellMeta {
@@ -46,8 +44,6 @@ impl Default for CellMeta {
             vertical_alignment: CellAlignment::Unset,
             rowspan: 1,
             colspan: 1,
-            bius: Bius::new(),
-            css: vec![],
         }
     }
 }
@@ -156,8 +152,7 @@ impl ParseInfallible for ParseCellMeta {
         let is_header_cell = input.parse('#').is_some();
         let alignment = input.parse_i(ParseCellAlignment);
         let vertical_alignment = input.parse_i(ParseCellAlignment);
-        let (rowspan, colspan, bius, css) =
-            input.parse(ParseCellMetaBraces).unwrap_or_else(|| (1, 1, Bius::new(), vec![]));
+        let (colspan, rowspan) = input.parse(ParseRowsAndColumns).unwrap_or((1, 1));
 
         match input.peek_char() {
             Some(' ' | '\t') | Some('\n') | None => {}
@@ -165,7 +160,7 @@ impl ParseInfallible for ParseCellMeta {
         }
 
         input.apply();
-        CellMeta { is_header_cell, alignment, vertical_alignment, rowspan, colspan, bius, css }
+        CellMeta { is_header_cell, alignment, vertical_alignment, rowspan, colspan }
     }
 }
 
@@ -186,69 +181,36 @@ impl ParseInfallible for ParseCellAlignment {
     }
 }
 
-struct ParseCellMetaBraces;
+struct ParseRowsAndColumns;
 
-impl Parse for ParseCellMetaBraces {
-    type Output = (u16, u16, Bius, Vec<StrSlice>);
+impl Parse for ParseRowsAndColumns {
+    type Output = (u16, u16);
 
     fn parse(&self, input: &mut crate::Input) -> Option<Self::Output> {
         let mut input = input.start();
-        input.parse('{')?;
 
-        let mut bius = Bius::new();
-        let mut alignment: Option<(u16, Option<u16>)> = None;
-        let mut css = vec![];
+        let mut col_span: Option<u16> = None;
+        let mut row_span: Option<u16> = None;
 
-        loop {
-            let idx = input.rest().find(|c| matches!(c, ';' | '}'))?;
-            if idx > 0 {
-                let word = input.bump(idx);
-                match word.to_str(input.text()) {
-                    "B" => bius = bius.bold(),
-                    "I" => bius = bius.italic(),
-                    "U" => bius = bius.underline(),
-                    "S" => bius = bius.strikethrough(),
-                    s => {
-                        let mut was_num = false;
-
-                        if let Ok(n) = s.parse::<u16>() {
-                            if bius.is_initial() && css.is_empty() {
-                                match &mut alignment {
-                                    Some((_, Some(_))) => {
-                                        return None;
-                                    }
-                                    Some((_, v @ None)) => {
-                                        *v = Some(n);
-                                        was_num = true;
-                                    }
-                                    h @ None => {
-                                        *h = Some((n, None));
-                                        was_num = true;
-                                    }
-                                }
-                            }
-                        }
-                        if !was_num {
-                            css.push(word);
-                        }
-                    }
-                }
-            }
-
-            let next = input.peek_char().unwrap();
-            input.bump(1);
-            match next {
-                ';' => continue,
-                '}' => break,
-                c => unreachable!("{:?} not expected", c),
+        let num = input.parse_i(While(|c: char| c.is_ascii_digit()));
+        if !num.is_empty() {
+            let num = num.to_str(input.text()).parse().ok()?;
+            col_span = Some(num);
+        }
+        if input.parse('x').is_some() {
+            let num = input.parse_i(While(|c: char| c.is_ascii_digit()));
+            if !num.is_empty() {
+                let num = num.to_str(input.text()).parse().ok()?;
+                row_span = Some(num);
             }
         }
 
-        let (hal, val) = alignment.unwrap_or((1, None));
-        let val = val.unwrap_or(1);
-
-        input.apply();
-        Some((hal, val, bius, css))
+        if input.rest().starts_with(|c: char| matches!(c, ' ' | '\t')) {
+            input.apply();
+            Some((col_span.unwrap_or(1), row_span.unwrap_or(1)))
+        } else {
+            None
+        }
     }
 }
 

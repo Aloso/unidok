@@ -338,28 +338,6 @@ fn create_table_cell(is_header_row: bool, cell: TableCellIr<'_>) -> Node<'_> {
         }
     }
 
-    let bius = cell.meta.bius;
-    if !bius.is_initial() || !cell.meta.css.is_empty() {
-        let mut styles = String::new();
-        if bius.is_bold() {
-            styles.push_str("font-weight:bold;");
-        }
-        if bius.is_italic() {
-            styles.push_str("font-style:italic;");
-        }
-        match (bius.is_underline(), bius.is_strikethrough()) {
-            (false, false) => {}
-            (true, false) => styles.push_str("text-decoration:underline;"),
-            (false, true) => styles.push_str("text-decoration:line-through;"),
-            (true, true) => styles.push_str("text-decoration:underline line-through;"),
-        }
-        for style in cell.meta.css {
-            styles.push_str(style);
-            styles.push(';');
-        }
-        attr!(attrs: "style" = styles);
-    }
-
     Node::Element(Element {
         name,
         attrs,

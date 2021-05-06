@@ -87,19 +87,17 @@ pub struct TableRowIr<'a> {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct TableCellIr<'a> {
-    pub meta: CellMetaIr<'a>,
+    pub meta: CellMetaIr,
     pub segments: Vec<SegmentIr<'a>>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct CellMetaIr<'a> {
+pub struct CellMetaIr {
     pub is_header_cell: bool,
     pub alignment: CellAlignment,
     pub vertical_alignment: CellAlignment,
     pub rowspan: u16,
     pub colspan: u16,
-    pub bius: Bius,
-    pub css: Vec<&'a str>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -131,7 +129,7 @@ pub enum BlockMacroContentIr<'a> {
 pub enum MacroArgsIr<'a> {
     Raw(&'a str),
     TokenTrees(Vec<TokenTreeIr<'a>>),
-    CellMeta(Vec<CellMetaIr<'a>>),
+    CellMeta(Vec<CellMetaIr>),
     ParsingMode(ParsingMode),
 }
 
@@ -378,17 +376,15 @@ impl<'a> IntoIR<'a> for TableCell {
 }
 
 impl<'a> IntoIR<'a> for CellMeta {
-    type IR = CellMetaIr<'a>;
+    type IR = CellMetaIr;
 
-    fn into_ir(self, text: &'a str) -> Self::IR {
+    fn into_ir(self, _: &'a str) -> Self::IR {
         CellMetaIr {
             is_header_cell: self.is_header_cell,
             alignment: self.alignment,
             vertical_alignment: self.vertical_alignment,
             rowspan: self.rowspan,
             colspan: self.colspan,
-            bius: self.bius,
-            css: self.css.into_ir(text),
         }
     }
 }

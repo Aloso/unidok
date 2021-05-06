@@ -7,7 +7,7 @@
 
 ||^ Centered |< Left aligned |> Right aligned
 ||^^ Centered vertically and horizontally |<> Aligned left bottom |# Header cell
-||{B} Bold cell |{I;U;S;color:red} Fancy cell |#^{} Blub
+||#^^2 Colspan |x3 Rowspan |2x3 Row- and colspan
 ||Table cells can contain **formatting**. Bars can be \| escaped or `|` wrapped in code.
 || | Table cells can be empty.|
 
@@ -56,9 +56,9 @@ $|| Definitely not a table
 <th>Header cell</th>
 </tr>
 <tr>
-<td style="font-weight:bold;">Bold cell</td>
-<td style="font-style:italic;text-decoration:underline line-through;color:red;">Fancy cell</td>
-<th align="center">Blub</th>
+<th colspan="2" align="center" valign="middle">Colspan</th>
+<td rowspan="3">Rowspan</td>
+<td colspan="2" rowspan="3">Row- and colspan</td>
 </tr>
 <tr>
 <td>Table cells can contain <strong>formatting</strong>. Bars can be | escaped or <code>|</code> wrapped in code.</td>

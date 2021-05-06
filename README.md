@@ -389,11 +389,6 @@ https://spec.commonmark.org/0.29/#images
 
 * Tables
   * Table column styling with `@COLS(^ | |# |{B,I,U})`
-  * Simplify table style modifiers:
-    * `#||` is not required
-    * `|{css}` and `|{B;I;U;S}` are not required, these effects can be achieved with inline formatting or `@(css){}`
-    * The braces aren't required, just write `|<<2x7`
-    * How to style colgroups? Maybe with `|> class="css-class" style="color:red" | | class="css-class" | |>`
 
 * Links
   * Link reference definitions

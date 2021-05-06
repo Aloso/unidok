@@ -515,12 +515,14 @@ fn foo() -> &'static str {
 ||<> Bottom  |>&lt; Right-top   | &lt;br>&lt;br>
     </pre>
     <p>
-      A table cell can also be prefixed with <code>{r}</code> or <code>{r;c}</code>, where <code>r</code> is the number
-      of rows and <code>c</code> is the number of columns the cell should span:
+      A table cell can also be prefixed with one or two numbers, e.g. <code>2x4</code>, where the
+      first number is the number of columns and the second is the number of rows the cell should span.
+      Either number can be omitted, i.e. <code>2</code> is the same as <code>2x1</code>,
+      and <code>x3</code> is the same as <code>1x3</code>.
     </p>
     <pre class="playground">
 || Lorem      | ipsum | dolor | sit
-|| amet,      |^{2;3} consetetur
+|| amet,      |^3x2 consetetur
 || sadipscing
     </pre>
 
