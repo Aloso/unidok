@@ -2,6 +2,7 @@ Text
 // Comment
 Text
         // Comment
+	// Comment
 > // Comment
 
 A paragraph can't end with a // comment

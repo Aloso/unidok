@@ -9,6 +9,7 @@ Section
 ###### Heading 6
 ####### Not a heading
 ##
+	#
 
 \### Escaped heading
 
@@ -23,4 +24,5 @@ Section
 <h6>Heading 6</h6>
 <p>####### Not a heading</p>
 <h2></h2>
+<h1></h1>
 <p>### Escaped heading</p>

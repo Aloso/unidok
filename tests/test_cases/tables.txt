@@ -1,5 +1,5 @@
-|| A table | with several
-|| table cells
+|| A table | with several   
+|| table cells	
 
   #|| This is a | header row
   || nice, right?

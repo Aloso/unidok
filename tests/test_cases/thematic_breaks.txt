@@ -1,7 +1,7 @@
 # Title followed by a thematic break
 ---------
 And another thematic break:
----------------------------    
+---------------------------    	
    ***
 And another one:
 __________________________________

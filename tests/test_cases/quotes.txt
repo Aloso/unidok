@@ -9,6 +9,8 @@
 $    
 > New quote
 
+	>  
+
 ............................................................
 <blockquote>
 <p>A quote
@@ -26,4 +28,6 @@ $
 </blockquote>
 <blockquote>
 <p>New quote</p>
+</blockquote>
+<blockquote>
 </blockquote>
