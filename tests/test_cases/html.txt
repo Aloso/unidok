@@ -13,6 +13,10 @@ $<i hello world='!'>@(.cls #id attr .c){span}</i>
     <li>Test</li>
 </ul>
 
+<i>
+    || X
+</i>
+
 ............................................................
 <p><b>Bold text</b> is <a we="some">!</a>
 <i hello world="!"><span id="id" attr class="cls c">span</span></i></p>
@@ -25,3 +29,4 @@ $<i hello world='!'>@(.cls #id attr .c){span}</i>
 <li>Test</li>
 <li>Test</li>
 </ul>
+<p><i>|| X</i></p>

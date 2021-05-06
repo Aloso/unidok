@@ -15,7 +15,11 @@ header, section {
     box-sizing: border-box;
 }
 
-#subtitle {
+header h1 {
+    font-size: 3.5em;
+}
+
+header #subtitle {
     margin: 1em 0;
     font-size: 1.2em;
     font-style: italic;
@@ -69,7 +73,12 @@ header > h1 {
     font-size: 18px;
 }
 
+#basics table td pre.toget {
+    font-size: 16px;
+}
+
 .playground {
+    position: relative;
     display: flex;
     align-items: stretch;
     min-height: 100px;
@@ -112,6 +121,11 @@ header > h1 {
     border-bottom: 1px solid #555;
     box-sizing: border-box;
     line-height: 29px;
+    transition: background-color .2s;
+}
+
+#close-big-playground:hover {
+    background-color: #222;
 }
 
 .input {
@@ -149,9 +163,40 @@ header > h1 {
     scrollbar-color: #555 transparent;
 }
 
+.preview.html {
+    white-space: pre-wrap;
+    font: 17px 'JetBrains Mono', monospace;
+    font-variant-ligatures: none;
+    padding: 20px;
+}
+
 .preview:hover, .preview:focus,
 .input:hover, .input:focus {
     scrollbar-color: #498dcc transparent;
+}
+
+.show-html {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    background-color: #222;
+    color: white;
+    border: 1px solid #444;
+    font-size: 14px;
+    font-family: inherit;
+    padding: 2px 5px;
+    border-radius: 3px;
+    opacity: 0;
+    transition: opacity .2s;
+}
+
+.preview:hover + .show-html {
+    opacity: 0.7;
+    transition: opacity .6s;
+}
+.show-html:hover {
+    opacity: 1;
+    transition: opacity .2s;
 }
 
 .media-small {

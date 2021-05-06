@@ -370,13 +370,19 @@ https://spec.commonmark.org/0.29/#images
     > world! --></p>
     </blockquote>
     ```
-  * Support multiple inline elements in a HTML tag, e.g.
+  * Support multiple inline elements in a HTML tag? e.g.
     ```markdown
     > <p>
     >   some text
     >
     >   more text
     > </p>
+    ```
+  * This weird case:
+    ```markdown
+    <i>
+      || X
+    </i>
     ```
   * Warn when an element is in an element where it is illegal as of HTML5
   * Warn when a block HTML element isn't followed by a line break
