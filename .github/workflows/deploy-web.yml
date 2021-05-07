@@ -22,11 +22,6 @@ jobs:
       working-directory: ./unidoc-playground
       run: |
         wasm-pack -v build
-
-  deploy_website:
-    needs: build_wasm
-    runs-on: ubuntu-latest
-    steps:
     - name: Build website
       working-directory: ./unidoc-playground/www
       run: |
