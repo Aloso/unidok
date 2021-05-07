@@ -4,11 +4,12 @@ use itertools::Itertools;
 use unidoc_parser::blocks::{Bullet, CellAlignment};
 use unidoc_parser::html::ElemName;
 use unidoc_parser::ir::{
-    BlockIr, CodeBlockIr, HeadingIr, ListIr, ParagraphIr, QuoteIr, TableCellIr, TableIr,
-    ThematicBreakIr,
+    BlockIr, BlockMacroContentIr, BlockMacroIr, CodeBlockIr, HeadingIr, ListIr, MacroArgsIr,
+    ParagraphIr, QuoteIr, TableCellIr, TableIr, ThematicBreakIr,
 };
 
 use super::helpers::into_nodes_trimmed;
+use crate::into_node::segment::add_attributes;
 use crate::{Attr, Element, IntoNode, IntoNodes, Node};
 
 impl<'a> IntoNode<'a> for BlockIr<'a> {
@@ -23,7 +24,7 @@ impl<'a> IntoNode<'a> for BlockIr<'a> {
             BlockIr::BlockHtml(h) => h.into_node(),
             BlockIr::List(l) => l.into_node(),
             BlockIr::Quote(q) => q.into_node(),
-            BlockIr::BlockMacro(_) => todo!(),
+            BlockIr::BlockMacro(m) => m.into_node(),
         }
     }
 }
@@ -54,7 +55,7 @@ fn into_nodes_tight(blocks: Vec<BlockIr<'_>>) -> Vec<Node<'_>> {
             BlockIr::BlockHtml(h) => result.push(h.into_node()),
             BlockIr::List(l) => result.push(l.into_node()),
             BlockIr::Quote(q) => result.push(q.into_node()),
-            BlockIr::BlockMacro(_) => todo!(),
+            BlockIr::BlockMacro(m) => result.push(m.into_node()),
         }
     }
     if let Some(Node::Element(Element { name: ElemName::Br, .. })) = result.last() {
@@ -347,4 +348,47 @@ fn create_table_cell(is_header_row: bool, cell: TableCellIr<'_>) -> Node<'_> {
         is_block_level: true,
         contains_blocks: false, // TODO: Depends
     })
+}
+
+impl<'a> IntoNode<'a> for BlockMacroIr<'a> {
+    fn into_node(self) -> Node<'a> {
+        match self.name {
+            "PASS" | "NOPASS" => self.content.into_node(),
+            "" => add_attributes_to_node(self.content.into_node(), self.args),
+            _ => todo!(),
+        }
+    }
+}
+
+fn add_attributes_to_node<'a>(node: Node<'a>, args: Option<MacroArgsIr<'a>>) -> Node<'a> {
+    if let Node::Element(mut elem) = node {
+        add_attributes(args, &mut elem);
+        Node::Element(elem)
+    } else if let Node::Fragment(mut nodes) = node {
+        if nodes.len() == 1 {
+            let node = nodes.pop().unwrap();
+            add_attributes_to_node(node, args)
+        } else {
+            let mut elem = Element {
+                name: ElemName::Div,
+                attrs: vec![],
+                content: Some(nodes),
+                is_block_level: true,
+                contains_blocks: true,
+            };
+            add_attributes(args, &mut elem);
+            Node::Element(elem)
+        }
+    } else {
+        panic!("Empty macro can't be applied to this kind of node");
+    }
+}
+
+impl<'a> IntoNode<'a> for BlockMacroContentIr<'a> {
+    fn into_node(self) -> Node<'a> {
+        match self {
+            BlockMacroContentIr::Prefixed(block) => block.into_node(),
+            BlockMacroContentIr::Braces(blocks) => Node::Fragment(blocks.into_nodes()),
+        }
+    }
 }

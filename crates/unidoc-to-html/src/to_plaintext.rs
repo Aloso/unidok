@@ -12,18 +12,40 @@ impl ToPlaintext for SegmentIr<'_> {
             &SegmentIr::Text(t) => buf.push_str(t),
             &SegmentIr::EscapedText(e) => buf.push_str(e),
             SegmentIr::Braces(b) => b.to_plaintext(buf),
-            SegmentIr::Math(_) => todo!(), // just do nothing and emit a warning?
+            SegmentIr::Math(m) => m.to_plaintext(buf),
             SegmentIr::Link(l) => l.to_plaintext(buf),
             SegmentIr::Image(i) => i.to_plaintext(buf),
             SegmentIr::InlineMacro(m) => m.to_plaintext(buf),
             SegmentIr::InlineHtml(h) => h.to_plaintext(buf),
-            SegmentIr::Format(_) => todo!(),
-            SegmentIr::Code(_) => todo!(),
+            SegmentIr::Format(f) => f.to_plaintext(buf),
+            SegmentIr::Code(c) => c.to_plaintext(buf),
         }
     }
 }
 
 impl ToPlaintext for BracesIr<'_> {
+    fn to_plaintext(&self, buf: &mut String) {
+        for s in &self.segments {
+            s.to_plaintext(buf);
+        }
+    }
+}
+
+impl ToPlaintext for MathIr {
+    fn to_plaintext(&self, buf: &mut String) {
+        buf.push_str(&self.text);
+    }
+}
+
+impl ToPlaintext for InlineFormatIr<'_> {
+    fn to_plaintext(&self, buf: &mut String) {
+        for s in &self.segments {
+            s.to_plaintext(buf);
+        }
+    }
+}
+
+impl ToPlaintext for CodeIr<'_> {
     fn to_plaintext(&self, buf: &mut String) {
         for s in &self.segments {
             s.to_plaintext(buf);
@@ -88,11 +110,11 @@ impl ToPlaintext for BlockIr<'_> {
             BlockIr::Comment(_) => {}
             BlockIr::Paragraph(p) => p.to_plaintext(buf),
             BlockIr::Heading(h) => h.to_plaintext(buf),
-            BlockIr::Table(_) => todo!(),
+            BlockIr::Table(_) => {} // TODO: Emit warning
             BlockIr::ThematicBreak(_) => buf.push_str("---------\n\n"),
-            BlockIr::List(_) => todo!(),
-            BlockIr::Quote(_) => todo!(),
-            BlockIr::BlockMacro(_) => todo!(),
+            BlockIr::List(_) => {} // TODO: Emit warning
+            BlockIr::Quote(q) => q.to_plaintext(buf),
+            BlockIr::BlockMacro(m) => m.content.to_plaintext(buf),
             BlockIr::BlockHtml(h) => h.to_plaintext(buf),
         }
     }
@@ -105,6 +127,29 @@ impl ToPlaintext for CodeBlockIr<'_> {
             buf.push('\n');
         }
         buf.push('\n');
+    }
+}
+
+impl ToPlaintext for QuoteIr<'_> {
+    fn to_plaintext(&self, buf: &mut String) {
+        for b in &self.content {
+            b.to_plaintext(buf);
+        }
+    }
+}
+
+impl ToPlaintext for BlockMacroContentIr<'_> {
+    fn to_plaintext(&self, buf: &mut String) {
+        match self {
+            BlockMacroContentIr::Prefixed(block) => {
+                block.to_plaintext(buf);
+            }
+            BlockMacroContentIr::Braces(blocks) => {
+                for block in blocks {
+                    block.to_plaintext(buf);
+                }
+            }
+        }
     }
 }
 

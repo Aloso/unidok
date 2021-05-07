@@ -36,6 +36,5 @@ impl Parse for ParseHtmlNode<'_> {
         } else {
             return None;
         })
-        // TODO
     }
 }

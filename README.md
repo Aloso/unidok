@@ -423,7 +423,11 @@ https://spec.commonmark.org/0.29/#images
 * Macros
   * Table of contents (`@TOC`)
   * Include file (`@INCLUDE`) -- only includes content, but doesn't bring plugins, config, link reference definitions or other things into scope
-  * Import macros, functions, config, link reference definitions, etc. defined in another file (`@IMPORT`)
+  * Import macros, config, link reference definitions, etc. defined in another file (`@IMPORT`)
+  * Rewrite URLs, e.g. sometimes `[x](foo/x)` should be rendered as `<a href="bar/x">x</a>` (`@REWRITE_URLS`)
+  * Footnotes, e.g.
+    * `@FN{^1} ... @FN(1){This is the footnote text}`
+    * `@FN{This is the footnote text} ... @FOOTNOTES{}`
   * Define custom macros in a plugin
 
 * Plugins

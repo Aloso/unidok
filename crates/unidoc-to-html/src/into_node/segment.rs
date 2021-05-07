@@ -116,41 +116,45 @@ impl<'a> IntoNode<'a> for InlineMacroIr<'a> {
                 let node = self.segment.into_node();
 
                 if let Node::Element(mut elem) = node {
-                    if let Some(MacroArgsIr::TokenTrees(tts)) = self.args {
-                        let mut classes = Vec::new();
-
-                        for tt in tts {
-                            match tt {
-                                TokenTreeIr::Atom(TokenTreeAtomIr::Word(arg)) => {
-                                    if let Some(arg) = arg.strip_prefix('.') {
-                                        classes.push(arg);
-                                    } else if let Some(arg) = arg.strip_prefix('#') {
-                                        elem.attrs.push(Attr { key: "id", value: Some(arg.into()) })
-                                    } else {
-                                        elem.attrs.push(Attr { key: arg, value: None })
-                                    }
-                                }
-                                TokenTreeIr::KV(key, TokenTreeAtomIr::Word(word)) => {
-                                    elem.attrs.push(Attr { key, value: Some(word.into()) });
-                                }
-                                TokenTreeIr::KV(key, TokenTreeAtomIr::QuotedWord(word)) => {
-                                    elem.attrs.push(Attr { key, value: Some(word) });
-                                }
-                                _ => {}
-                            }
-                        }
-
-                        if !classes.is_empty() {
-                            let value = Some(classes.into_iter().join(" "));
-                            elem.attrs.push(Attr { key: "class", value })
-                        }
-                    }
+                    add_attributes(self.args, &mut elem);
                     Node::Element(elem)
                 } else {
                     node
                 }
             }
             _ => todo!(),
+        }
+    }
+}
+
+pub(super) fn add_attributes<'a>(args: Option<MacroArgsIr<'a>>, elem: &mut Element<'a>) {
+    if let Some(MacroArgsIr::TokenTrees(tts)) = args {
+        let mut classes = Vec::new();
+
+        for tt in tts {
+            match tt {
+                TokenTreeIr::Atom(TokenTreeAtomIr::Word(arg)) => {
+                    if let Some(arg) = arg.strip_prefix('.') {
+                        classes.push(arg);
+                    } else if let Some(arg) = arg.strip_prefix('#') {
+                        elem.attrs.push(Attr { key: "id", value: Some(arg.into()) })
+                    } else {
+                        elem.attrs.push(Attr { key: arg, value: None })
+                    }
+                }
+                TokenTreeIr::KV(key, TokenTreeAtomIr::Word(word)) => {
+                    elem.attrs.push(Attr { key, value: Some(word.into()) });
+                }
+                TokenTreeIr::KV(key, TokenTreeAtomIr::QuotedWord(word)) => {
+                    elem.attrs.push(Attr { key, value: Some(word) });
+                }
+                _ => {}
+            }
+        }
+
+        if !classes.is_empty() {
+            let value = Some(classes.into_iter().join(" "));
+            elem.attrs.push(Attr { key: "class", value })
         }
     }
 }
