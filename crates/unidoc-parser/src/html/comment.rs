@@ -36,6 +36,9 @@ impl Parse for ParseHtmlComment<'_> {
                         text.push('-');
                     }
                 }
+                None => {
+                    break;
+                }
                 _ => {
                     if input.parse(ParseLineBreak(self.ind)).is_some() {
                         text.push('\n');

@@ -12,7 +12,7 @@ fn range() {
 
     assert!(s.get(0..0).is_empty());
     assert!(s.get(13..13).is_empty());
-    assert_eq!(s.get(12..13).is_empty(), false);
+    assert!(!s.get(12..13).is_empty());
 
     assert_eq!(s.get(5..5).to_str(&s), "");
     assert_eq!(s.get(12..13).to_str(&s), "!");
@@ -49,7 +49,7 @@ fn range_from() {
     assert_eq!(s.get(13..), StrSlice { start: 13, end: 13 });
 
     assert!(s.get(13..).is_empty());
-    assert_eq!(s.get(12..).is_empty(), false);
+    assert!(!s.get(12..).is_empty());
 
     assert_eq!(s.get(5..).to_str(&s), ", world!");
 }
@@ -89,7 +89,7 @@ fn range_inclusive() {
     assert_eq!(s.get(0..=4), StrSlice { start: 0, end: 5 });
     assert_eq!(s.get(0..=12), StrSlice { start: 0, end: 13 });
 
-    assert_eq!(s.get(0..=0).is_empty(), false);
+    assert!(!s.get(0..=0).is_empty());
 
     assert_eq!(s.get(0..=0).to_str(&s), "H");
     assert_eq!(s.get(5..=5).to_str(&s), ",");
@@ -128,7 +128,7 @@ fn range_to() {
     assert_eq!(s.get(..13), StrSlice { start: 0, end: 13 });
 
     assert!(s.get(..0).is_empty());
-    assert_eq!(s.get(..1).is_empty(), false);
+    assert!(!s.get(..1).is_empty());
 
     assert_eq!(s.get(..1).to_str(&s), "H");
     assert_eq!(s.get(..13).to_str(&s), "Hello, world!");
@@ -150,7 +150,7 @@ fn range_to_inclusive() {
     assert_eq!(s.get(..=4), StrSlice { start: 0, end: 5 });
     assert_eq!(s.get(..=12), StrSlice { start: 0, end: 13 });
 
-    assert_eq!(s.get(..=0).is_empty(), false);
+    assert!(!s.get(..=0).is_empty());
 
     assert_eq!(s.get(..=0).to_str(&s), "H");
 }
