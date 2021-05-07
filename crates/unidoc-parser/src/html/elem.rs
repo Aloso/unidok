@@ -94,6 +94,9 @@ impl Parse for ParseElement<'_> {
                                 content.push('<');
                             }
                         }
+                        None => {
+                            break;
+                        }
                         _ => {
                             content.push('\n');
                             if input2.parse(ParseLineBreak(self.ind)).is_none() {

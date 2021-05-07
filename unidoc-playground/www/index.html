@@ -573,25 +573,34 @@ fn foo() -> &'static str {
       A macro must always be attached to a block or element:
     </p>
     <pre class="playground">
-@(a)
+@(green)
 # Heading
 
-@(b)
+@(green)
 Paragraph
 
-@(c)
+@(green)
 - List
 - List
 - List
 
-@(d){Text enclosed in curly braces}
+@(green){Text enclosed in curly braces}
 
-@(e)`Inline code`
+@(green)`Inline code`
 
-@(f)&lt;kbd>An HTML element&lt;/kbd>
+@(green)&lt;kbd>An HTML element&lt;/kbd>
 
-@(g)[A link](https://www.google.com)
+@(green)[A link](https://www.google.com)
+
+&lt;style>
+  [green] {
+    border-left: 5px solid green;
+  }
+&lt;/style>
     </pre>
+    <p>
+      The above macros add an HTML attribute to elements, which are displayed with a green border.
+    </p>
     <p>
       You can find a list of available macros further down.
     </p>
