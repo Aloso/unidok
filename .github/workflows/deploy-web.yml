@@ -16,7 +16,7 @@ jobs:
     - name: Build wasm module
       working-directory: ./unidoc-playground
       run: |
-        wasm-pack build -v
+        wasm-pack -v build
     - name: Build website
       working-directory: ./unidoc-playground/www
       run: |
