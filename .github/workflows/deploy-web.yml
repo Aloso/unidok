@@ -5,9 +5,14 @@ on:
     branches: [ main ]
 
 jobs:
-  build_website:
+  build_wasm:
     runs-on: ubuntu-latest
     steps:
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: beta
+        override: true
     - uses: actions/checkout@v2
     - name: Install wasm-pack
       uses: jetli/wasm-pack-action@v0.3.0
@@ -17,6 +22,11 @@ jobs:
       working-directory: ./unidoc-playground
       run: |
         wasm-pack -v build
+
+  deploy_website:
+    needs: build_wasm
+    runs-on: ubuntu-latest
+    steps:
     - name: Build website
       working-directory: ./unidoc-playground/www
       run: |
