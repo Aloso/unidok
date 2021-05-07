@@ -8,6 +8,7 @@ jobs:
   build_website:
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v2
     - name: Install wasm-pack
       uses: jetli/wasm-pack-action@v0.3.0
       with:
