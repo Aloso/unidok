@@ -1,7 +1,7 @@
 use crate::{Element, Node};
 
 pub trait ToHtml {
-    fn to_html(&self, buf: &mut String);
+    fn to_html(&self, buf: &mut String, within_inline: bool);
 }
 
 fn push_esc(s: &str, buf: &mut String) {
@@ -28,9 +28,9 @@ fn push_noesc(s: &str, buf: &mut String) {
 }
 
 impl ToHtml for Node<'_> {
-    fn to_html(&self, buf: &mut String) {
+    fn to_html(&self, buf: &mut String, within_inline: bool) {
         match self {
-            Node::Element(e) => e.to_html(buf),
+            Node::Element(e) => e.to_html(buf, within_inline),
             &Node::Text(t) => push_esc(t, buf),
             Node::Text2(t) => push_esc(t, buf),
             Node::Verbatim(t) => push_noesc(t, buf),
@@ -39,15 +39,18 @@ impl ToHtml for Node<'_> {
                 push_noesc(c, buf);
                 buf.push_str("]]>");
             }
-            &Node::Comment(c) => {
+            Node::Comment(content) => {
                 buf.push_str("<!--");
-                push_noesc(c, buf);
+                push_noesc(content, buf);
                 buf.push_str("-->");
+                if !within_inline {
+                    buf.push('\n');
+                }
             }
             &Node::Doctype(d) => push_noesc(d, buf),
             Node::Fragment(f) => {
                 for n in f {
-                    n.to_html(buf);
+                    n.to_html(buf, within_inline);
                 }
             }
         }
@@ -55,7 +58,10 @@ impl ToHtml for Node<'_> {
 }
 
 impl ToHtml for Element<'_> {
-    fn to_html(&self, buf: &mut String) {
+    fn to_html(&self, buf: &mut String, within_inline: bool) {
+        if within_inline && self.is_block_level {
+            buf.push('\n');
+        }
         buf.push('<');
         buf.push_str(self.name.as_str());
 
@@ -76,7 +82,7 @@ impl ToHtml for Element<'_> {
             if self.contains_blocks {
                 buf.push('\n');
             }
-            content.to_html(buf);
+            content.to_html(buf, !self.contains_blocks);
 
             buf.push_str("</");
             buf.push_str(self.name.as_str());
@@ -91,9 +97,9 @@ impl ToHtml for Element<'_> {
 }
 
 impl ToHtml for [Node<'_>] {
-    fn to_html(&self, buf: &mut String) {
+    fn to_html(&self, buf: &mut String, within_inline: bool) {
         for n in self {
-            n.to_html(buf);
+            n.to_html(buf, within_inline);
         }
     }
 }

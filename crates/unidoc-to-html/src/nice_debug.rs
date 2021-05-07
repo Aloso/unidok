@@ -9,7 +9,7 @@ impl fmt::Debug for Node<'_> {
             Node::Text(t) => fmt::Debug::fmt(t, f),
             Node::Text2(ref t) | Node::Verbatim(ref t) => fmt::Debug::fmt(t, f),
             Node::Cdata(d) => write!(f, "<![CDATA[{}]]>", d),
-            Node::Comment(c) => write!(f, "<!--{}-->", c),
+            Node::Comment(ref c) => write!(f, "<!--{}-->", c),
             Node::Doctype(d) => fmt::Display::fmt(d, f),
             Node::Fragment(ref d) => fmt::Debug::fmt(d, f),
         }

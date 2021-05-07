@@ -358,37 +358,11 @@ https://spec.commonmark.org/0.29/#images
   * HTML entities
   * Allow uppercase HTML tags
   * Support for doctypes other than HTML5?
-  * Excluding indentation in HTML comments, e.g.
-    ```markdown
-    > <!-- Hello
-    > world! -->
-    ```
-    Produces
-    ```html
-    <blockquote>
-      <p> <!-- Hello
-    > world! --></p>
-    </blockquote>
-    ```
-  * Support multiple inline elements in a HTML tag? e.g.
-    ```markdown
-    > <p>
-    >   some text
-    >
-    >   more text
-    > </p>
-    ```
-  * This weird case:
-    ```markdown
-    <i>
-      || X
-    </i>
-    ```
   * Warn when an element is in an element where it is illegal as of HTML5
   * Warn when a block HTML element isn't followed by a line break
 
 * Tables
-  * Table column styling with `@COLS(^ | |# |{B,I,U})`
+  * Table column styling with `@COLS(^ | |# | style="font-weight: bold" )`
 
 * Links
   * Link reference definitions
@@ -476,8 +450,6 @@ https://spec.commonmark.org/0.29/#images
       "status": "close"
     }
     ```
-
-* Handle indenting properly
 
 * PHP, Liquid, Handlebars, other preprocessors?
 

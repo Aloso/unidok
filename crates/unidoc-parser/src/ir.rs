@@ -193,7 +193,7 @@ pub struct CodeIr<'a> {
 pub enum HtmlNodeIr<'a> {
     Element(HtmlElemIr<'a>),
     CData(&'a str),
-    Comment(&'a str),
+    Comment(String),
     Doctype(&'a str),
 }
 
@@ -535,21 +535,13 @@ impl<'a> IntoIR<'a> for HtmlNode {
         match self {
             HtmlNode::Element(e) => HtmlNodeIr::Element(e.into_ir(text)),
             HtmlNode::CData(c) => HtmlNodeIr::CData(c.into_ir(text)),
-            HtmlNode::Comment(c) => HtmlNodeIr::Comment(c.into_ir(text)),
+            HtmlNode::Comment(c) => HtmlNodeIr::Comment(c.text),
             HtmlNode::Doctype(d) => HtmlNodeIr::Doctype(d.into_ir(text)),
         }
     }
 }
 
 impl<'a> IntoIR<'a> for Doctype {
-    type IR = &'a str;
-
-    fn into_ir(self, text: &'a str) -> Self::IR {
-        self.text.into_ir(text)
-    }
-}
-
-impl<'a> IntoIR<'a> for HtmlComment {
     type IR = &'a str;
 
     fn into_ir(self, text: &'a str) -> Self::IR {

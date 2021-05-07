@@ -1,0 +1,26 @@
+<!-- Hello world! -->
+
+> <!-- Hello
+> world! -->
+
+> X <!-- Hello
+> world! -->
+
+> <!-- Hello
+> world! --> X
+
+> <!-- Hello
+world! -->
+
+............................................................
+<!-- Hello world! -->
+<blockquote>
+<!-- Hello
+ world! -->
+<p>X <!-- Hello
+ world! --></p>
+<p><!-- Hello
+ world! --> X</p>
+<!-- Hello
+world! -->
+</blockquote>

@@ -1,5 +1,5 @@
 use crate::utils::Indents;
-use crate::Parse;
+use crate::{Input, Parse};
 
 use super::{CDataSection, Doctype, HtmlComment, HtmlElem};
 
@@ -24,10 +24,10 @@ pub(crate) struct ParseHtmlNode<'a> {
 impl Parse for ParseHtmlNode<'_> {
     type Output = HtmlNode;
 
-    fn parse(&self, input: &mut crate::input::Input) -> Option<Self::Output> {
+    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         Some(if let Some(elem) = input.parse(HtmlElem::parser(self.ind)) {
             HtmlNode::Element(elem)
-        } else if let Some(comment) = input.parse(HtmlComment::parser()) {
+        } else if let Some(comment) = input.parse(HtmlComment::parser(self.ind)) {
             HtmlNode::Comment(comment)
         } else if let Some(doctype) = input.parse(Doctype::parser()) {
             HtmlNode::Doctype(doctype)

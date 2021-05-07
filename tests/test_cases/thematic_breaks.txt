@@ -29,10 +29,14 @@ Text in the same line is forbidden.
 <p>**</p>
 <p>Internal spaces don't work.</p>
 <ul>
-<li><ul>
-<li><ul>
-<li><ul>
-<li><ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
 <li></li>
 </ul>
 </li>

@@ -16,7 +16,7 @@ pub fn convert(ir: DocIr<'_>) -> Vec<Node<'_>> {
 
 pub fn to_html(nodes: &[Node<'_>]) -> String {
     let mut buf = String::new();
-    nodes.to_html(&mut buf);
+    nodes.to_html(&mut buf, false);
     buf
 }
 
@@ -26,7 +26,7 @@ pub enum Node<'a> {
     Text2(String),
     Verbatim(String),
     Cdata(&'a str),
-    Comment(&'a str),
+    Comment(String),
     Doctype(&'a str),
     Fragment(Vec<Node<'a>>),
 }

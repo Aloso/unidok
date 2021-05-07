@@ -1,28 +1,51 @@
-use crate::utils::Until;
-use crate::{Parse, StrSlice};
+use crate::utils::{Indents, ParseLineBreak, Until};
+use crate::{Input, Parse};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct HtmlComment {
-    pub text: StrSlice,
+    pub text: String,
 }
 
 impl HtmlComment {
-    pub(crate) fn parser() -> ParseHtmlComment {
-        ParseHtmlComment
+    pub(crate) fn parser(ind: Indents<'_>) -> ParseHtmlComment<'_> {
+        ParseHtmlComment { ind }
     }
 }
 
-pub(crate) struct ParseHtmlComment;
+pub(crate) struct ParseHtmlComment<'a> {
+    ind: Indents<'a>,
+}
 
-impl Parse for ParseHtmlComment {
+impl Parse for ParseHtmlComment<'_> {
     type Output = HtmlComment;
 
-    fn parse(&self, input: &mut crate::input::Input) -> Option<Self::Output> {
+    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
         input.parse("<!--")?;
-        let text = input.parse_i(Until("-->"));
-        input.try_parse("-->");
+        let mut text = String::new();
+        loop {
+            let s = input.parse_i(Until(|c| matches!(c, '-' | '\n' | '\r')));
+            text.push_str(&input[s]);
+            match input.peek_char() {
+                Some('-') => {
+                    if input.parse("-->").is_some() {
+                        break;
+                    } else {
+                        input.bump(1);
+                        text.push('-');
+                    }
+                }
+                _ => {
+                    if input.parse(ParseLineBreak(self.ind)).is_some() {
+                        text.push('\n');
+                    } else {
+                        let s = input.bump(1);
+                        text.push_str(&input[s]);
+                    }
+                }
+            }
+        }
 
         input.apply();
         Some(HtmlComment { text })

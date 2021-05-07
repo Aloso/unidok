@@ -1,4 +1,4 @@
-use std::ops::{Deref, DerefMut};
+use std::ops::{Deref, DerefMut, Index};
 
 use crate::{Parse, ParseInfallible, Str, StrSlice};
 
@@ -128,6 +128,14 @@ impl<'a> AsMut<Input> for ModifyInput<'a> {
 impl Drop for ModifyInput<'_> {
     fn drop(&mut self) {
         self.input.idx = self.prev_idx;
+    }
+}
+
+impl Index<StrSlice> for Input {
+    type Output = str;
+
+    fn index(&self, index: StrSlice) -> &Self::Output {
+        &self.text[index.range()]
     }
 }
 
