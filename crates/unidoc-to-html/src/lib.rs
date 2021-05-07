@@ -24,6 +24,7 @@ pub enum Node<'a> {
     Element(Element<'a>),
     Text(&'a str),
     Text2(String),
+    Verbatim(String),
     Cdata(&'a str),
     Comment(&'a str),
     Doctype(&'a str),

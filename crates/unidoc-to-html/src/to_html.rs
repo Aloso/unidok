@@ -33,6 +33,7 @@ impl ToHtml for Node<'_> {
             Node::Element(e) => e.to_html(buf),
             &Node::Text(t) => push_esc(t, buf),
             Node::Text2(t) => push_esc(t, buf),
+            Node::Verbatim(t) => push_noesc(t, buf),
             &Node::Cdata(c) => {
                 buf.push_str("<![CDATA[");
                 push_noesc(c, buf);

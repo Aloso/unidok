@@ -7,7 +7,7 @@ impl fmt::Debug for Node<'_> {
         match *self {
             Node::Element(ref e) => fmt::Debug::fmt(e, f),
             Node::Text(t) => fmt::Debug::fmt(t, f),
-            Node::Text2(ref t) => fmt::Debug::fmt(t, f),
+            Node::Text2(ref t) | Node::Verbatim(ref t) => fmt::Debug::fmt(t, f),
             Node::Cdata(d) => write!(f, "<![CDATA[{}]]>", d),
             Node::Comment(c) => write!(f, "<!--{}-->", c),
             Node::Doctype(d) => fmt::Display::fmt(d, f),

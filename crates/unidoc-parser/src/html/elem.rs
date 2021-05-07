@@ -1,10 +1,8 @@
 use crate::blocks::{Block, Context};
-use crate::inlines::segments::Segments;
-use crate::inlines::Segment;
-use crate::input::Input;
+use crate::inlines::segments::{Segment, Segments};
 use crate::parsing_mode::ParsingMode;
 use crate::utils::{Indents, ParseLineBreak, ParseSpaces, Until};
-use crate::{Parse, StrSlice};
+use crate::{Input, Parse};
 
 use super::{ElemName, HtmlAttr};
 
@@ -20,7 +18,7 @@ pub struct HtmlElem {
 pub enum ElemContent {
     Blocks(Vec<Block>),
     Inline(Vec<Segment>),
-    Verbatim(StrSlice),
+    Verbatim(String),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -81,18 +79,30 @@ impl Parse for ParseElement<'_> {
             let context = Context::Html(name);
 
             let content = if name.contains_plaintext() {
-                // TODO: Auto-close when ParseLineBreak fails
-
                 let mut input2 = input.start();
+                let mut content = String::new();
                 loop {
-                    input2.parse_i(Until('<'));
-                    if input2.can_parse(HtmlElem::closing_tag_parser(name)) {
-                        break;
-                    } else {
-                        input2.bump(1);
+                    let s = input2.parse_i(Until(|c| matches!(c, '<' | '\n' | '\r')));
+                    content.push_str(s.to_str(input2.text()));
+
+                    match input2.peek_char() {
+                        Some('<') => {
+                            if input2.can_parse(HtmlElem::closing_tag_parser(name)) {
+                                break;
+                            } else {
+                                input2.bump(1);
+                                content.push('<');
+                            }
+                        }
+                        _ => {
+                            content.push('\n');
+                            if input2.parse(ParseLineBreak(self.ind)).is_none() {
+                                break;
+                            }
+                        }
                     }
                 }
-                let content = input2.apply();
+                input2.apply();
                 input.try_parse(HtmlElem::closing_tag_parser(name));
                 ElemContent::Verbatim(content)
             } else if name.must_contain_blocks()

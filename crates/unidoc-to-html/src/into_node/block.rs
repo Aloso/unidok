@@ -161,7 +161,7 @@ impl<'a> IntoNode<'a> for ParagraphIr<'a> {
 fn should_make_block_single(node: &Node) -> bool {
     match node {
         &Node::Element(Element { is_block_level, .. }) => is_block_level,
-        Node::Text(_) | Node::Text2(_) => false,
+        Node::Text(_) | Node::Text2(_) | Node::Verbatim(_) => false,
         Node::Cdata(_) | Node::Comment(_) | Node::Doctype(_) => true,
         Node::Fragment(f) => f.len() == 1 && should_make_block_single(&f[0]),
     }
@@ -171,7 +171,9 @@ fn should_make_block_multi(node: &Node) -> bool {
     match node {
         &Node::Element(Element { is_block_level, .. }) => is_block_level,
         Node::Fragment(f) => f.len() == 1 && should_make_block_multi(&f[0]),
-        Node::Text(_) | Node::Text2(_) | Node::Cdata(_) | Node::Comment(_) => false,
+        Node::Text(_) | Node::Text2(_) | Node::Verbatim(_) | Node::Cdata(_) | Node::Comment(_) => {
+            false
+        }
         Node::Doctype(_) => true,
     }
 }

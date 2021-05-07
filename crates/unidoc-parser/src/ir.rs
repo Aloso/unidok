@@ -215,7 +215,7 @@ pub struct AttrIr<'a> {
 pub enum ElemContentIr<'a> {
     Blocks(Vec<BlockIr<'a>>),
     Inline(Vec<SegmentIr<'a>>),
-    Verbatim(&'a str),
+    Verbatim(String),
 }
 
 pub trait IntoIR<'a> {
@@ -593,7 +593,7 @@ impl<'a> IntoIR<'a> for ElemContent {
         match self {
             ElemContent::Blocks(b) => ElemContentIr::Blocks(b.into_ir(text)),
             ElemContent::Inline(i) => ElemContentIr::Inline(collapse_text(i).into_ir(text)),
-            ElemContent::Verbatim(v) => ElemContentIr::Verbatim(v.into_ir(text)),
+            ElemContent::Verbatim(v) => ElemContentIr::Verbatim(v),
         }
     }
 }

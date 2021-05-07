@@ -57,6 +57,6 @@ pub(super) fn elem_content_ir_into_nodes(content: ElemContentIr<'_>) -> Vec<Node
     match content {
         ElemContentIr::Blocks(b) => b.into_nodes(),
         ElemContentIr::Inline(i) => i.into_nodes(),
-        ElemContentIr::Verbatim(v) => vec![Node::Text(v)],
+        ElemContentIr::Verbatim(v) => vec![Node::Verbatim(v)],
     }
 }
