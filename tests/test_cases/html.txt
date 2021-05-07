@@ -1,10 +1,7 @@
 <b>Bold text</b> is <a we=some>!</a>
 $<i hello world='!'>@(.cls #id attr .c){span}</i>
 
-@{`code`} @`code` @(.x){`code`} @(.x)`code`
-@*italic* @(.x)*italic*
-@#subscript# @(.x)#subscript#
-@<br> @(.x)<br>
+@(.x){`code`} @(.x)`code` @(.x)*italic* @(.x)#subscript# @(.x)<br>
 
 <img src=""/>
 
@@ -20,10 +17,7 @@ $<i hello world='!'>@(.cls #id attr .c){span}</i>
 ............................................................
 <p><b>Bold text</b> is <a we="some">!</a>
 <i hello world="!"><span id="id" attr class="cls c">span</span></i></p>
-<p><span><code>code</code></span> <code>code</code> <span class="x"><code>code</code></span> <code class="x">code</code>
-@<em>italic</em> @(.x)<em>italic</em>
-@<sub>subscript</sub> @(.x)<sub>subscript</sub>
-<br/> <br class="x"/></p>
+<p><span class="x"><code>code</code></span> <code class="x">code</code> @(.x)<em>italic</em> @(.x)<sub>subscript</sub> <br class="x"/></p>
 <img src=""/>
 <ul>
 <li>Test</li>

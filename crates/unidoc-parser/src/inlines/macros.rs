@@ -36,6 +36,10 @@ impl Parse for ParseInlineMacro<'_> {
         let name_str = name.to_str(input.text()).to_string();
         let args = input.parse(MacroArgs::parser(&name_str, self.ind))?;
 
+        if name.is_empty() && args.is_none() {
+            return None;
+        }
+
         let parsing_mode = match args {
             Some(MacroArgs::ParsingMode(p)) => p,
             _ => self.mode,

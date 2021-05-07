@@ -48,6 +48,10 @@ impl Parse for ParseBlockMacro<'_> {
         let name_str = name.to_str(input.text()).to_string();
         let args = input.parse(MacroArgs::parser(&name_str, ind))?;
 
+        if name.is_empty() && args.is_none() {
+            return None;
+        }
+
         let mac = if input.parse(ParseLineBreak(ind)).is_some() {
             let block = Box::new(input.parse(Block::parser(self.context, ind))?);
 
