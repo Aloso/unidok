@@ -204,11 +204,7 @@ fn parse_paragraph_items(items: Vec<Item>) -> Vec<StackItem> {
                         stack.pop();
                         stack.push(StackItem::Formatted { delim, content });
                     } else if flanking == Flanking::Both {
-                        stack.push(StackItem::FormatDelim {
-                            delim,
-                            flanking: Flanking::Left,
-                            count,
-                        });
+                        stack.push(StackItem::FormatDelim { delim, flanking, count });
                     } else {
                         stack.push(StackItem::Text2(delim.to_str()));
                     }

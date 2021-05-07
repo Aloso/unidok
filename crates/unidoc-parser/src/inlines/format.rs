@@ -54,24 +54,20 @@ pub(crate) enum Flanking {
 
 impl Flanking {
     pub(crate) fn new(left: FlankType, right: FlankType) -> Flanking {
-        if left == FlankType::Limiter || right == FlankType::Limiter {
-            Flanking::Both
-        } else {
-            match left.cmp(&right) {
-                Ordering::Less => Flanking::Left,
-                Ordering::Equal => Flanking::Both,
-                Ordering::Greater => Flanking::Right,
-            }
+        match left.cmp(&right) {
+            Ordering::Less => Flanking::Left,
+            Ordering::Equal => Flanking::Both,
+            Ordering::Greater => Flanking::Right,
         }
     }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub(crate) enum FlankType {
-    Whitespace = 0,
-    Punctuation = 1,
-    Alphanumeric = 2,
-    Limiter = 3,
+    Limiter = 0,
+    Whitespace = 1,
+    Punctuation = 2,
+    Alphanumeric = 3,
 }
 
 impl FlankType {

@@ -678,9 +678,13 @@ and \**this is not bold**.
       It's just and indication that parsing should be interrupted. Example:
     </p>
     <pre class="playground">
-~ This ~ isn't formatted as strikethrough because the word is surrounded by whitespace.
+~ This ~isn't formatted as strikethrough because the word is surrounded by whitespace.
 
-But~$ this $~ is!
+But$~ this ~$is!
+
+Nested superscripts don't work reliably: n^x^2^^
+
+Unless they're surrounded by `$` where necessary to disambiguate nesting order: n^x$^2^^ or n$^x$^2^$^$
     </pre>
     <p>
       The limiter can also be used to split a blockquote or list into several parts:
@@ -723,8 +727,93 @@ continues here.
         This is not yet implemented.
       </p>
     </div>
-  </section>
 
+
+    <h3>Deep dive: Binding power</h3>
+    <p>
+      Since inline formatting can be nested, it presents a problem:
+      How do we know if a formatting delimiter (e.g. `*`) should close a formatting range or open a new one?
+      In Markdown, a formatting delimiter can be <em>left-flanking</em> and/or <em>right_flanking</em>.
+      This system has also been adopted (and slightly extended) in Unidoc.
+    </p>
+    <p>
+      For example, when parsing <code>**Hello**</code>, the first two stars are left-flanking and
+      the last two stars are right-flanking. A formatting range must start with a left-flanking delimiter
+      and end with a right-flanking delimiter.
+    </p>
+    <p>
+      To determine if a delimiter is left-flanking or right-flanking, delimiters must first be grouped into
+      <em>delimiter runs</em>. A delimiter run is a sequence of one or more consecutive delimiters with the same symbol,
+      e.g. <code>***</code> or <code>^^</code>. Whether a delimiter is left- or right-flanking is decided by the
+      character directly before and after the delimiter run. If both characters are whitespace, then the delimiter is
+      neither left- nor right-flanking (and is therefore displayed as-is). Otherwise, the characters are assigned a
+      value which I call "binding power":
+    </p>
+    <table>
+      <tr>
+        <th>Type</th>
+        <th>Value</th>
+      </tr>
+      <tr>
+        <td>Letters (a-z, α-ω, ㄱ-ㅉ, etc.)</td>
+        <td>3</td>
+      </tr>
+      <tr>
+        <td>Visible characters that aren't letters (.,:;!?#@°&" etc.)</td>
+        <td>2</td>
+      </tr>
+      <tr>
+        <td>Whitespace (space, tab, line break, etc.)</td>
+        <td>1</td>
+      </tr>
+      <tr>
+        <td>Limiter <code>$</code></td>
+        <td>0</td>
+      </tr>
+    </table>
+    <p>
+      If the left character has a higher binding power than the right character, the delimiter is
+      right-flanking. If the right character's binding power is higher, the delimiter is left-flanking.
+      If the binding powers are equal, the delimiter is both left- and right-flanking.
+    </p>
+    <p>This is best shown with a few examples:</p>
+    <h4>Left-flanking delimiters</h4>
+    <pre><code>**T
+-**T
+ **"T"
+$** T</code></pre>
+    <h4>Right-flanking delimiters</h4>
+    <pre><code>T**
+T**.
+"T"**
+T **$</code></pre>
+    <h4>Left- and right-flanking delimiters</h4>
+    <pre><code>T**T
+"**.
+$**$</code></pre>
+    <p>
+      When a delimiter is both left- and right-flanking, the parser still has to make a decision.
+      When a matching left-flanking delimiter exists, that delimiter is chosen (even if other,
+      non-matching delimiters are in between):
+    </p>
+    <pre class="playground">
+^Lorem **ipsum^dolor^ sit** amet^
+
+^Lorem **ipsum ^dolor^ sit** amet^
+    </pre>
+    <p>
+      There are a few more rules, though:
+    </p>
+    <ul>
+      <li>
+        A formatting range can't be empty (so <code>**</code> doesn't close itself immediately).
+      </li>
+      <li>
+        If one of the delimiters can both open and close a formatting range, the sum of the length
+        of their delimiter runs mustn't be divisible by 3, unless both delimiter run lengths are divisible by 3.
+      </li>
+    </ul>
+  </section>
 
   <section id="macros">
     <h2>List of available macros</h2>
