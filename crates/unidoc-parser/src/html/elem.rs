@@ -1,7 +1,7 @@
 use crate::blocks::{Block, Context};
 use crate::inlines::segments::{Segment, Segments};
 use crate::parsing_mode::ParsingMode;
-use crate::utils::{Indents, ParseLineBreak, ParseSpaces, Until};
+use crate::utils::{Indents, ParseLineBreak, ParseLineEnd, ParseSpaces, Until};
 use crate::{Input, Parse};
 
 use super::{ElemName, HtmlAttr};
@@ -115,10 +115,21 @@ impl Parse for ParseElement<'_> {
                 input.try_parse(ParseClosingTag { elem: name });
                 ElemContent::Blocks(blocks)
             } else {
-                let segments = input
+                let nl = if input.can_parse(ParseLineEnd) {
+                    input.parse(ParseLineBreak(self.ind))?;
+                    true
+                } else {
+                    false
+                };
+
+                let mut segments = input
                     .parse(Segments::parser(self.ind, context, ParsingMode::new_all()))?
                     .into_segments_no_underline_zero()?;
                 input.try_parse(ParseClosingTag { elem: name });
+
+                if nl && matches!(segments.last(), Some(Segment::LineBreak(_))) {
+                    segments.pop();
+                }
 
                 ElemContent::Inline(segments)
             };
