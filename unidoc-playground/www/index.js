@@ -63,6 +63,20 @@ function initializePlayground(elem) {
                 preview.innerText = wasm.compile(value)
             } else {
                 preview.innerHTML = wasm.compile(value)
+
+                const mathElems = preview.getElementsByTagName('math')
+                /** @type {HTMLElement[]} */
+                const mathElemsCopy = []
+                for (const elem of mathElems) {
+                    mathElemsCopy.push(elem)
+                }
+                for (const elem of mathElemsCopy) {
+                    const converted = MathJax.mathml2chtml(elem.outerHTML)
+                    elem.replaceWith(converted)
+
+                    MathJax.startup.document.clear()
+                    MathJax.startup.document.updateDocument()
+                }
             }
         } catch (e) {
             console.warn('Input:')

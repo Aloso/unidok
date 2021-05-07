@@ -8,3 +8,4 @@ edition = "2018"
 [dependencies]
 unidoc-parser = { path = "../unidoc-parser", version = "0.1" }
 itertools = "0.10.0"
+asciimath-rs = "0.5.7"

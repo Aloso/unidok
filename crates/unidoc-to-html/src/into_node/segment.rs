@@ -1,3 +1,4 @@
+use asciimath_rs::format::mathml::ToMathML;
 use itertools::Itertools;
 use unidoc_parser::html::ElemName;
 use unidoc_parser::inlines::Formatting;
@@ -19,7 +20,7 @@ impl<'a> IntoNode<'a> for SegmentIr<'a> {
             SegmentIr::Format(f) => f.into_node(),
             SegmentIr::Code(c) => c.into_node(),
             SegmentIr::InlineMacro(m) => m.into_node(),
-            SegmentIr::Math(_) => todo!(),
+            SegmentIr::Math(m) => m.into_node(),
         }
     }
 }
@@ -156,5 +157,19 @@ pub(super) fn add_attributes<'a>(args: Option<MacroArgsIr<'a>>, elem: &mut Eleme
             let value = Some(classes.into_iter().join(" "));
             elem.attrs.push(Attr { key: "class", value })
         }
+    }
+}
+
+impl<'a> IntoNode<'a> for MathIr {
+    fn into_node(self) -> Node<'a> {
+        let formatted = asciimath_rs::parse(self.text).to_mathml();
+
+        Node::Element(Element {
+            name: ElemName::Math,
+            attrs: vec![],
+            content: Some(vec![Node::Verbatim(formatted)]),
+            is_block_level: false,
+            contains_blocks: true,
+        })
     }
 }

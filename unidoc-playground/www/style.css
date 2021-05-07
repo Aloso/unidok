@@ -63,7 +63,7 @@ header > h1 {
 
 .wrap-table > table {
     width: 100%;
-    min-width: 500px;
+    min-width: 600px;
 }
 
 #basics table td pre:not(.toget) {
@@ -75,6 +75,24 @@ header > h1 {
 
 #basics table td pre.toget {
     font-size: 16px;
+}
+
+@media (max-width: 700px) {
+    #basics .wrap-table > table {
+        min-width: 500px;
+    }
+    #basics table,
+    #basics table p,
+    #basics table ul,
+    #basics table ol {
+        font-size: 18px;
+    }
+    #basics table td pre:not(.toget) {
+        font-size: 16px;
+    }
+    #basics table td pre.toget {
+        font-size: 15px;
+    }
 }
 
 .playground {
