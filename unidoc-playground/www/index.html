@@ -504,10 +504,13 @@ fn foo() -> &'static str {
     </p>
     <ul>
       <li>A number sign (<code>#</code>) to make it a header cell</li>
-      <li>A <code>&lt;</code>, <code>^</code> or <code>&gt;</code>, to align it left, centered or right, respectively
+      <li>
+        A <code>&lt;</code>, <code>^</code> or <code>&gt;</code>, to align it left, centered or right, respectively
       </li>
-      <li>An additional <code>&lt;</code>, <code>^</code> or <code>&gt;</code>, to vertically align it at the top,
-        middle, or bottom, respectively:</li>
+      <li>
+        An additional <code>&lt;</code>, <code>^</code> or <code>&gt;</code>, to vertically align it
+        at the top, middle, or bottom, respectively:
+      </li>
     </ul>
     <pre class="playground">
 ||#&lt; These   |#  are header cells
@@ -524,6 +527,15 @@ fn foo() -> &'static str {
 || Lorem      | ipsum | dolor | sit
 || amet,      |^3x2 consetetur
 || sadipscing
+    </pre>
+    <p>
+      Table cells can start on a new line, which is useful when the table is rather big:
+    </p>
+    <pre class="playground">
+||# First table cell
+ |# Second table cell
+||  Third table cell
+ |  Fourth table cell
     </pre>
 
 

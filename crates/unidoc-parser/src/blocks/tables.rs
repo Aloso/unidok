@@ -71,7 +71,9 @@ impl Parse for ParseTable<'_> {
 
     fn parse(&self, input: &mut crate::Input) -> Option<Self::Output> {
         let mut input = input.start();
-        let ind = self.ind.push_indent(input.parse(ParseSpacesU8)?);
+        let ind = self.ind;
+
+        input.try_parse(ParseSpacesU8);
 
         if !input.can_parse("||") && !input.can_parse("#||") {
             return None;
@@ -79,18 +81,24 @@ impl Parse for ParseTable<'_> {
 
         let mut rows = Vec::new();
         loop {
-            if let Some(row) = input.parse(ParseRow { ind }) {
+            if let Some(row) = input.parse(ParseTableRow { ind }) {
                 rows.push(row);
             } else {
                 return None;
             }
             input.parse(ParseLineEnd)?;
-            if input.parse(ParseLineBreak(ind)).is_some()
-                && !input.rest().starts_with("||")
-                && !input.rest().starts_with("#||")
-            {
+
+            if input.parse(ParseLineBreak(ind)).is_none() {
                 break;
             }
+
+            let mut input2 = input.start();
+            input2.try_parse(ParseSpacesU8);
+
+            if !input2.rest().starts_with("||") && !input2.rest().starts_with("#||") {
+                break;
+            }
+            input2.apply();
         }
 
         input.apply();
@@ -103,11 +111,11 @@ impl Parse for ParseTable<'_> {
     }
 }
 
-pub struct ParseRow<'a> {
+struct ParseTableRow<'a> {
     ind: Indents<'a>,
 }
 
-impl Parse for ParseRow<'_> {
+impl Parse for ParseTableRow<'_> {
     type Output = TableRow;
 
     fn parse(&self, input: &mut crate::Input) -> Option<Self::Output> {
@@ -119,21 +127,32 @@ impl Parse for ParseRow<'_> {
 
         loop {
             let meta = input.parse_i(CellMeta::parser());
-            let segments = input
-                .parse(Segments::parser(self.ind, Context::Table, ParsingMode::new_all()))?
-                .into_segments_no_underline()?;
+            let segments = if matches!(input.peek_char(), Some('\n' | '\r') | None) {
+                vec![]
+            } else {
+                input
+                    .parse(Segments::parser(self.ind, Context::Table, ParsingMode::new_all()))?
+                    .into_segments_no_underline()?
+            };
 
             contents.push(TableCell { meta, segments });
 
             if input.parse(ParseLineEnd).is_some() {
+                let mut input2 = input.start();
+
+                if input2.parse(ParseLineBreak(self.ind)).is_some()
+                    && input2.parse(ParseSpacesU8).is_some()
+                    && input2.parse('|').is_some()
+                    && !matches!(input2.peek_char(), Some('|'))
+                {
+                    input2.apply();
+                    continue;
+                }
+
                 break;
             }
 
             input.parse('|')?;
-
-            if input.parse(ParseLineEnd).is_some() {
-                break;
-            }
         }
 
         input.apply();
@@ -155,7 +174,7 @@ impl ParseInfallible for ParseCellMeta {
         let (colspan, rowspan) = input.parse(ParseRowsAndColumns).unwrap_or((1, 1));
 
         match input.peek_char() {
-            Some(' ' | '\t') | Some('\n') | None => {}
+            Some(' ' | '\t' | '\n' | '\r') | None => {}
             _ => return CellMeta::default(),
         }
 

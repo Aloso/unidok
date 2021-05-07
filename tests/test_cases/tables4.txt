@@ -1,0 +1,20 @@
+|| Hello
+ | world
+|| This table spans
+ | multiple lines.
+||# AWESOME!
+
+............................................................
+<table>
+<tr>
+<td>Hello</td>
+<td>world</td>
+</tr>
+<tr>
+<td>This table spans</td>
+<td>multiple lines.</td>
+</tr>
+<tr>
+<th>AWESOME!</th>
+</tr>
+</table>

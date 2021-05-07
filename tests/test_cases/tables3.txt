@@ -1,49 +1,10 @@
-|| A table | with several   
-|| table cells	
-
-  #|| This is a | header row
-  || nice, right?
-  #|| And another header | (or footer) row
-
 ||^ Centered |< Left aligned |> Right aligned
 ||^^ Centered vertically and horizontally |<> Aligned left bottom |# Header cell
 ||#^^2 Colspan |x3 Rowspan |2x3 Row- and colspan
 ||Table cells can contain **formatting**. Bars can be \| escaped or `|` wrapped in code.
 || | Table cells can be empty.|
 
-||| Not a table
-
-| Also not a table
-
-$|| Definitely not a table
-
-\|| Definitely not a table
-
-\#|| Definitely not a table
-
 ............................................................
-<table>
-<tr>
-<td>A table</td>
-<td>with several</td>
-</tr>
-<tr>
-<td>table cells</td>
-</tr>
-</table>
-<table>
-<tr>
-<th>This is a</th>
-<th>header row</th>
-</tr>
-<tr>
-<td>nice, right?</td>
-</tr>
-<tr>
-<th>And another header</th>
-<th>(or footer) row</th>
-</tr>
-</table>
 <table>
 <tr>
 <td align="center">Centered</td>
@@ -66,10 +27,6 @@ $|| Definitely not a table
 <tr>
 <td></td>
 <td>Table cells can be empty.</td>
+<td></td>
 </tr>
 </table>
-<p>||| Not a table</p>
-<p>| Also not a table</p>
-<p>|| Definitely not a table</p>
-<p>|| Definitely not a table</p>
-<p>#|| Definitely not a table</p>

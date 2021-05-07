@@ -1,0 +1,43 @@
+|| A table | with several   
+|| table cells	
+
+  #|| This is a | header row
+   || nice, right?
+  #|| And another header | (or footer) row
+
+> || A table
+>|| less indentation
+
+............................................................
+<table>
+<tr>
+<td>A table</td>
+<td>with several</td>
+</tr>
+<tr>
+<td>table cells</td>
+</tr>
+</table>
+<table>
+<tr>
+<th>This is a</th>
+<th>header row</th>
+</tr>
+<tr>
+<td>nice, right?</td>
+</tr>
+<tr>
+<th>And another header</th>
+<th>(or footer) row</th>
+</tr>
+</table>
+<blockquote>
+<table>
+<tr>
+<td>A table</td>
+</tr>
+<tr>
+<td>less indentation</td>
+</tr>
+</table>
+</blockquote>
