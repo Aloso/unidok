@@ -1,0 +1,27 @@
+name: Deploy Web
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build_website:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install wasm-pack
+      uses: jetli/wasm-pack-action@v0.3.0
+      with:
+        version: 'v0.9.1'
+    - name: Build wasm module
+      working-directory: ./unidoc-playground
+      run: |
+        wasm-pack build -v
+    - name: Build website
+      working-directory: ./unidoc-playground/www
+      run: |
+        npm run build
+    - name: Deploy website
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./unidoc-playground/www/dist
