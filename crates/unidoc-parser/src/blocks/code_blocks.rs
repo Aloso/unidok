@@ -1,7 +1,11 @@
 use std::convert::TryInto;
 
+use crate::blocks::Context;
+use crate::parsing_mode::ParsingMode;
 use crate::utils::{Indents, ParseLineBreak, ParseSpacesU8, ParseWsAndLineEnd, Until, While};
 use crate::{Input, Parse, StrSlice};
+
+use super::Block;
 
 #[rustfmt::skip]
 /// A code block
@@ -17,7 +21,7 @@ use crate::{Input, Parse, StrSlice};
 pub struct CodeBlock {
     pub info: StrSlice,
     pub fence: Fence,
-    pub lines: Vec<StrSlice>,
+    pub lines: Vec<Block>,
     pub indent: u8,
 }
 
@@ -39,11 +43,12 @@ impl Fence {
 
 pub(crate) struct ParseCodeBlock<'a> {
     ind: Indents<'a>,
+    mode: Option<ParsingMode>,
 }
 
 impl CodeBlock {
-    pub(crate) fn parser(ind: Indents<'_>) -> ParseCodeBlock<'_> {
-        ParseCodeBlock { ind }
+    pub(crate) fn parser(ind: Indents<'_>, mode: Option<ParsingMode>) -> ParseCodeBlock<'_> {
+        ParseCodeBlock { ind, mode }
     }
 }
 
@@ -58,6 +63,9 @@ impl Parse for ParseCodeBlock<'_> {
 
         let fence = input.parse(ParseFence)?;
         let info = input.parse(ParseInfo(fence))?;
+
+        let mode = self.mode.unwrap_or_else(ParsingMode::new_nothing);
+        let context = Context::CodeBlock;
 
         let mut lines = Vec::new();
         while !input.is_empty() {
@@ -74,7 +82,7 @@ impl Parse for ParseCodeBlock<'_> {
             }
             drop(input2);
 
-            let line = input.parse_i(Until(|c| matches!(c, '\n' | '\r')));
+            let line = input.parse(Block::parser(context, ind, Some(mode), false, None))?;
             lines.push(line);
         }
 

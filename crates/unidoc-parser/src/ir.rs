@@ -32,7 +32,7 @@ pub enum BlockIr<'a> {
 pub struct CodeBlockIr<'a> {
     pub info: &'a str,
     pub fence: Fence,
-    pub lines: Vec<&'a str>,
+    pub lines: Vec<BlockIr<'a>>,
     pub indent: u8,
 }
 

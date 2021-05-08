@@ -26,9 +26,11 @@ impl ParsingMode {
     pub const QUOTES: PmParam = PmParam(1 << 10);
     /// html, <
     pub const HTML: PmParam = PmParam(1 << 11);
+    /// comment, /
+    pub const COMMENTS: PmParam = PmParam(1 << 12);
 
     pub fn new_all() -> Self {
-        Self(!0)
+        Self(0b1_1111_1111_1111)
     }
 
     pub fn new_nothing() -> Self {
@@ -44,7 +46,70 @@ impl ParsingMode {
         self.0 &= n ^ !0;
         self
     }
+
+    pub fn is(&self, PmParam(n): PmParam) -> bool {
+        (self.0 & n) != 0
+    }
+
+    pub fn is_nothing(&self) -> bool {
+        self.0 == 0
+    }
+
+    pub fn is_all(&self) -> bool {
+        self.0 == 0b1_1111_1111_1111
+    }
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub struct PmParam(u16);
+
+#[test]
+fn test_parsing_modes() {
+    let pm = ParsingMode::new_all();
+
+    assert!(pm.is(ParsingMode::INLINE));
+    assert!(pm.is(ParsingMode::CODE_BLOCKS));
+    assert!(pm.is(ParsingMode::HEADINGS));
+    assert!(pm.is(ParsingMode::THEMATIC_BREAKS));
+    assert!(pm.is(ParsingMode::SUBSTITUTIONS));
+    assert!(pm.is(ParsingMode::LISTS));
+    assert!(pm.is(ParsingMode::LIMITER));
+    assert!(pm.is(ParsingMode::MACROS));
+    assert!(pm.is(ParsingMode::MATH));
+    assert!(pm.is(ParsingMode::TABLES));
+    assert!(pm.is(ParsingMode::QUOTES));
+    assert!(pm.is(ParsingMode::HTML));
+    assert!(pm.is(ParsingMode::COMMENTS));
+
+    let pm = ParsingMode::new_nothing();
+
+    assert!(!pm.is(ParsingMode::INLINE));
+    assert!(!pm.is(ParsingMode::CODE_BLOCKS));
+    assert!(!pm.is(ParsingMode::HEADINGS));
+    assert!(!pm.is(ParsingMode::THEMATIC_BREAKS));
+    assert!(!pm.is(ParsingMode::SUBSTITUTIONS));
+    assert!(!pm.is(ParsingMode::LISTS));
+    assert!(!pm.is(ParsingMode::LIMITER));
+    assert!(!pm.is(ParsingMode::MACROS));
+    assert!(!pm.is(ParsingMode::MATH));
+    assert!(!pm.is(ParsingMode::TABLES));
+    assert!(!pm.is(ParsingMode::QUOTES));
+    assert!(!pm.is(ParsingMode::HTML));
+    assert!(!pm.is(ParsingMode::COMMENTS));
+
+    let pm = ParsingMode::new_nothing().set(ParsingMode::MACROS).set(ParsingMode::COMMENTS);
+
+    assert!(!pm.is(ParsingMode::INLINE));
+    assert!(!pm.is(ParsingMode::CODE_BLOCKS));
+    assert!(!pm.is(ParsingMode::HEADINGS));
+    assert!(!pm.is(ParsingMode::THEMATIC_BREAKS));
+    assert!(!pm.is(ParsingMode::SUBSTITUTIONS));
+    assert!(!pm.is(ParsingMode::LISTS));
+    assert!(!pm.is(ParsingMode::LIMITER));
+    assert!(pm.is(ParsingMode::MACROS));
+    assert!(!pm.is(ParsingMode::MATH));
+    assert!(!pm.is(ParsingMode::TABLES));
+    assert!(!pm.is(ParsingMode::QUOTES));
+    assert!(!pm.is(ParsingMode::HTML));
+    assert!(pm.is(ParsingMode::COMMENTS));
+}

@@ -122,8 +122,8 @@ impl ToPlaintext for BlockIr<'_> {
 
 impl ToPlaintext for CodeBlockIr<'_> {
     fn to_plaintext(&self, buf: &mut String) {
-        for &line in &self.lines {
-            buf.push_str(line);
+        for line in &self.lines {
+            line.to_plaintext(buf);
             buf.push('\n');
         }
         buf.push('\n');

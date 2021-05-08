@@ -43,10 +43,11 @@ impl Block {
     pub(crate) fn parser(
         context: Context,
         ind: Indents<'_>,
+        mode: Option<ParsingMode>,
         is_loose: bool,
         list_style: Option<String>,
     ) -> ParseBlock<'_> {
-        ParseBlock { context, ind, is_loose, list_style }
+        ParseBlock { context, ind, mode, is_loose, list_style }
     }
 
     pub(crate) fn multi_parser(context: Context, ind: Indents<'_>) -> ParseBlocks<'_> {
@@ -65,6 +66,7 @@ pub enum Context {
     Table,
     LinkOrImg,
     Code(u8),
+    CodeBlock,
     Heading,
     Html(ElemName),
     Global,
@@ -87,6 +89,7 @@ impl Context {
 pub struct ParseBlock<'a> {
     context: Context,
     ind: Indents<'a>,
+    mode: Option<ParsingMode>,
     is_loose: bool,
     list_style: Option<String>,
 }
@@ -97,43 +100,81 @@ impl Parse for ParseBlock<'_> {
     fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let ind = self.ind;
 
-        if let Some(comment) = input.parse(Comment::parser(ind)) {
-            Some(Block::Comment(comment))
-        } else if let Some(tb) = input.parse(ThematicBreak::parser(ind)) {
-            Some(Block::ThematicBreak(tb))
-        } else if let Some(block) = input.parse(CodeBlock::parser(ind)) {
-            Some(Block::CodeBlock(block))
-        } else if let Some(table) = input.parse(Table::parser(ind)) {
-            Some(Block::Table(table))
-        } else if let Some(heading) = input.parse(Heading::parser(ind)) {
-            Some(Block::Heading(heading))
-        } else if let Some(list) =
-            input.parse(List::parser(ind, self.is_loose, &mut self.list_style))
-        {
-            Some(Block::List(list))
-        } else if let Some(quote) = input.parse(Quote::parser(ind)) {
-            Some(Block::Quote(quote))
-        } else if let Some(mac) = input.parse(BlockMacro::parser(
-            self.context,
-            ind,
-            self.is_loose,
-            self.list_style.take(),
-        )) {
-            Some(Block::BlockMacro(mac))
-        } else {
-            let segments =
-                input.parse(Segments::parser(ind, self.context, ParsingMode::new_all()))?;
-            match segments {
-                Segments::Empty => None,
-                Segments::Some { segments, underline: None } => {
-                    Some(Block::Paragraph(Paragraph { segments }))
-                }
-                Segments::Some { segments, underline: Some(u) } => Some(Block::Heading(Heading {
+        let mode = self.mode.unwrap_or_else(ParsingMode::new_all);
+
+        if mode.is(ParsingMode::COMMENTS) {
+            if let Some(comment) = input.parse(Comment::parser(ind)) {
+                return Some(Block::Comment(comment));
+            }
+        }
+
+        if mode.is(ParsingMode::THEMATIC_BREAKS) {
+            if let Some(tb) = input.parse(ThematicBreak::parser(ind)) {
+                return Some(Block::ThematicBreak(tb));
+            }
+        }
+
+        if mode.is(ParsingMode::CODE_BLOCKS) {
+            if let Some(block) = input.parse(CodeBlock::parser(ind, self.mode)) {
+                return Some(Block::CodeBlock(block));
+            }
+        }
+
+        if mode.is(ParsingMode::TABLES) {
+            if let Some(table) = input.parse(Table::parser(ind)) {
+                return Some(Block::Table(table));
+            }
+        }
+
+        if mode.is(ParsingMode::HEADINGS) {
+            if let Some(heading) = input.parse(Heading::parser(ind)) {
+                return Some(Block::Heading(heading));
+            }
+        }
+
+        if mode.is(ParsingMode::LISTS) {
+            if let Some(list) = input.parse(List::parser(ind, self.is_loose, &mut self.list_style))
+            {
+                return Some(Block::List(list));
+            }
+        }
+
+        if mode.is(ParsingMode::QUOTES) {
+            if let Some(quote) = input.parse(Quote::parser(ind)) {
+                return Some(Block::Quote(quote));
+            }
+        }
+
+        if mode.is(ParsingMode::MACROS) {
+            let parser = BlockMacro::parser(
+                self.context,
+                ind,
+                self.mode,
+                self.is_loose,
+                self.list_style.take(),
+            );
+            if let Some(mac) = input.parse(parser) {
+                return Some(Block::BlockMacro(mac));
+            }
+        }
+
+        let segments = input.parse(Segments::parser(ind, self.context, mode))?;
+        match segments {
+            Segments::Empty if self.context == Context::CodeBlock && !input.is_empty() => {
+                Some(Block::Paragraph(Paragraph { segments: vec![] }))
+            }
+            Segments::Empty => None,
+            Segments::Some { segments, underline: None } => {
+                Some(Block::Paragraph(Paragraph { segments }))
+            }
+            Segments::Some { segments, underline: Some(u) } if mode.is(ParsingMode::HEADINGS) => {
+                Some(Block::Heading(Heading {
                     level: u.level(),
                     kind: HeadingKind::Setext,
                     segments,
-                })),
+                }))
             }
+            _ => panic!("Parsed an underlined heading where no headings are allowed"),
         }
     }
 
@@ -161,7 +202,7 @@ impl Parse for ParseBlocks<'_> {
             }
         }
 
-        let parser = Block::parser(self.context, self.ind, false, None);
+        let parser = Block::parser(self.context, self.ind, None, false, None);
 
         let mut v = Vec::new();
         while let Some(node) = input.parse(parser.clone()) {

@@ -36,15 +36,15 @@ pub enum TokenTreeAtom {
 }
 
 impl TokenTreeAtom {
-    pub fn as_word(&self) -> Option<&StrSlice> {
-        if let Self::Word(v) = self {
+    pub fn as_word(&self) -> Option<StrSlice> {
+        if let Self::Word(v) = *self {
             Some(v)
         } else {
             None
         }
     }
 
-    pub fn as_quoted_word(&self) -> Option<&String> {
+    pub fn as_quoted_word(&self) -> Option<&str> {
         if let Self::QuotedWord(v) = self {
             Some(v)
         } else {

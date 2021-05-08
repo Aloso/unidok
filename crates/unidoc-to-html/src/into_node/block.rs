@@ -1,6 +1,5 @@
 use std::mem::take;
 
-use itertools::Itertools;
 use unidoc_parser::blocks::{Bullet, CellAlignment};
 use unidoc_parser::html::ElemName;
 use unidoc_parser::ir::{
@@ -75,17 +74,26 @@ impl<'a> IntoNode<'a> for CodeBlockIr<'a> {
             vec![]
         };
 
-        let text = if self.lines.is_empty() {
-            String::new()
+        let content = if self.lines.is_empty() {
+            vec![Node::Text("")]
         } else {
-            self.lines.into_iter().join("\n") + "\n"
+            self.lines
+                .into_iter()
+                .map(|block| match block {
+                    BlockIr::Paragraph(p) => {
+                        let mut nodes = p.segments.into_nodes();
+                        nodes.push(Node::Text("\n"));
+                        Node::Fragment(nodes)
+                    }
+                    block => block.into_node(),
+                })
+                .collect()
         };
 
-        let content = Node::Text2(text);
         let code = Node::Element(Element {
             name: ElemName::Code,
             attrs,
-            content: Some(vec![content]),
+            content: Some(content),
             is_block_level: false,
             contains_blocks: false,
         });

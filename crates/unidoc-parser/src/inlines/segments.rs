@@ -67,6 +67,7 @@ impl Default for Segment {
     }
 }
 
+#[derive(Debug)]
 pub enum Segments {
     Empty,
     Some { segments: Vec<Segment>, underline: Option<Underline> },
@@ -344,50 +345,18 @@ fn find_special(c: char) -> bool {
     matches!(
         c,
         ('*' | '_' | '~' | '^' | '#' | '`')
-            | ('%' | '[' | ']' | '!' | '@' | '\\' | '$' | '<' | '\n' | '\r')
+            | ('%' | '|' | '[' | ']' | '{' | '}' | '!' | '@' | '\\' | '$' | '<' | '\n' | '\r')
     )
-}
-
-#[inline]
-fn find_special_in_table(c: char) -> bool {
-    matches!(c, '|') || find_special(c)
-}
-
-#[inline]
-fn find_special_in_braces(c: char) -> bool {
-    matches!(c, '}') || find_special(c)
-}
-
-#[inline]
-fn find_special_in_link_or_img(c: char) -> bool {
-    matches!(c, ']') || find_special(c)
-}
-
-#[inline]
-fn find_special_in_code(c: char) -> bool {
-    matches!(c, ']') || find_special(c)
-}
-
-fn find_special_for(s: &str, context: Context) -> Option<usize> {
-    use Context::*;
-
-    match context {
-        Global | Heading | Html(_) => s.find(find_special),
-        BlockBraces | Braces => s.find(find_special_in_braces),
-        Table => s.find(find_special_in_table),
-        LinkOrImg => s.find(find_special_in_link_or_img),
-        Code(_) => s.find(find_special_in_code),
-    }
 }
 
 impl ParseSegments<'_> {
     fn lex_items(&self, input: &mut Input) -> Option<(Vec<Item>, Option<Underline>)> {
         let mut items = Vec::new();
         let mut open_brackets = 0;
+        let mut open_braces = 0;
 
         loop {
-            let skip_bytes =
-                find_special_for(input.rest(), self.context).unwrap_or_else(|| input.len());
+            let skip_bytes = input.rest().find(find_special).unwrap_or_else(|| input.len());
 
             if skip_bytes > 0 {
                 items.push(Item::Text(input.bump(skip_bytes)));
@@ -402,6 +371,7 @@ impl ParseSegments<'_> {
                 &mut items,
                 input.peek_char().unwrap(),
                 &mut open_brackets,
+                &mut open_braces,
             )? {
                 break;
             }
@@ -424,171 +394,201 @@ impl ParseSegments<'_> {
         items: &mut Vec<Item>,
         sym: char,
         open_brackets: &mut u32,
+        open_braces: &mut u32,
     ) -> Option<bool> {
         let ind = self.ind;
         let context = self.context;
 
-        if let Ok(delim) = FormatDelim::try_from(sym) {
-            let left = input.prev_char();
-            let cs = input.parse_i(While(sym));
-            let right = input.peek_char();
+        if self.mode.is(ParsingMode::INLINE) {
+            if let Ok(delim) = FormatDelim::try_from(sym) {
+                let left = input.prev_char();
+                let cs = input.parse_i(While(sym));
+                let right = input.peek_char();
 
-            if (sym == '_' && is_in_word(left, right)) || is_not_flanking(left, right) {
-                items.push(Item::Text(cs));
-            } else {
-                let count = (cs.len() % 3) as u8;
+                if (sym == '_' && is_in_word(left, right)) || is_not_flanking(left, right) {
+                    items.push(Item::Text(cs));
+                } else {
+                    let count = (cs.len() % 3) as u8;
 
-                let left_flank = left.map(FlankType::from_char).unwrap_or(FlankType::Whitespace);
-                let right_flank = right.map(FlankType::from_char).unwrap_or(FlankType::Whitespace);
-                let flanking = Flanking::new(left_flank, right_flank);
+                    let left_flank =
+                        left.map(FlankType::from_char).unwrap_or(FlankType::Whitespace);
+                    let right_flank =
+                        right.map(FlankType::from_char).unwrap_or(FlankType::Whitespace);
+                    let flanking = Flanking::new(left_flank, right_flank);
 
-                for _ in 0..cs.len() {
-                    items.push(Item::FormatDelim { delim, count, flanking });
-                }
-            }
-        } else {
-            match sym {
-                '`' => {
-                    if let Context::Code(len) = context {
-                        let backticks = input.parse_i(While('`')).len();
-                        if backticks == len as usize {
-                            return Some(true);
-                        } else {
-                            items.push(Item::Text(input.parse_i(While('`'))));
-                        }
-                    } else if let Some(code) =
-                        input.parse(Code::parser(ind, ParsingMode::new_nothing()))
-                    {
-                        items.push(Item::Code(code));
-                    } else {
-                        items.push(Item::Text(input.parse_i(While('`'))));
+                    for _ in 0..cs.len() {
+                        items.push(Item::FormatDelim { delim, count, flanking });
                     }
                 }
-                '%' => {
-                    if let Some(math) = input.parse(Math::parser(ind)) {
-                        items.push(Item::Math(math));
-                    } else {
-                        items.push(Item::Text(input.bump(1)));
-                    }
-                }
-                '[' => {
-                    if let Some(link) = input.parse(Link::parser(ind)) {
-                        items.push(Item::Link(link));
-                    } else {
-                        *open_brackets += 1;
-                        items.push(Item::Text(input.bump(1)));
-                    }
-                }
-                '!' => {
-                    if let Some(img) = input.parse(Image::parser(ind)) {
-                        items.push(Item::Image(img));
-                    } else {
-                        items.push(Item::Text(input.bump(1)));
-                    }
-                }
-                '@' => {
-                    if let Some(mac) = input.parse(InlineMacro::parser(ind, self.mode)) {
-                        items.push(Item::Macro(mac));
-                    } else {
-                        items.push(Item::Text(input.bump(1)));
-                    }
-                }
-                '\\' => {
-                    if let Some(esc) = input.parse(Escaped::parser()) {
-                        items.push(Item::Escaped(esc));
-                    } else {
-                        items.push(Item::Text(input.bump(1)));
-                    }
-                }
-                '$' => {
-                    if input.parse(Limiter::parser()).is_some() {
-                        items.push(Item::Limiter);
-                    } else {
-                        items.push(Item::Text(input.bump(1)));
-                    }
-                }
-                '<' => {
-                    if let Some(html) = input.parse(HtmlNode::parser(ind)) {
-                        items.push(Item::Html(html));
-                    } else if let Context::Html(elem) = context {
-                        if input.can_parse(HtmlElem::closing_tag_parser(elem)) {
-                            return Some(true);
-                        } else {
-                            items.push(Item::Text(input.bump(1)));
-                        }
-                    } else {
-                        items.push(Item::Text(input.bump(1)));
-                    }
-                }
-
-                '|' if context == Context::Table => {
-                    return Some(true);
-                }
-                ']' if context == Context::LinkOrImg => {
-                    if *open_brackets == 0 {
-                        return Some(true);
-                    } else {
-                        items.push(Item::Text(input.bump(1)));
-                        *open_brackets -= 1;
-                    }
-                }
-                ']' => {
-                    if *open_brackets > 0 {
-                        *open_brackets -= 1;
-                    }
-                    items.push(Item::Text(input.bump(1)));
-                }
-                '}' if context == Context::Braces => {
-                    return Some(true);
-                }
-                '}' if context == Context::BlockBraces => {
-                    if matches!(items.last(), Some(Item::LineBreak) | None)
-                        && input.can_parse(ParseClosingBrace(ind))
-                    {
-                        return Some(true);
-                    } else {
-                        items.push(Item::Text(input.bump(1)));
-                    }
-                }
-
-                '\n' | '\r' => {
-                    if let Context::Table | Context::LinkOrImg | Context::Heading = context {
-                        return Some(true);
-                    }
-
-                    if input.parse(ParseLineBreak(ind)).is_some() {
-                        items.push(Item::LineBreak);
-
-                        if let Context::Global | Context::BlockBraces = context {
-                            if let Some(u) = input.parse(Underline::parser(ind)) {
-                                items.pop();
-                                items.push(Item::Underline(u));
-                                return Some(true);
-                            }
-                        }
-
-                        if is_blank_line(input.rest()) || self.can_parse_block(input) {
-                            return Some(true);
-                        }
-                    } else {
-                        return Some(true);
-                    }
-                }
-                c => unreachable!("{:?} matches none of the expected characters", c),
+                return Some(false);
             }
         }
+
+        match sym {
+            '`' => {
+                if let Context::Code(len) = context {
+                    let backticks = input.parse_i(While('`')).len();
+                    if backticks == len as usize {
+                        return Some(true);
+                    }
+                }
+
+                if self.mode.is(ParsingMode::INLINE) {
+                    if let Some(code) = input.parse(Code::parser(ind, None)) {
+                        items.push(Item::Code(code));
+                        return Some(false);
+                    }
+                }
+
+                items.push(Item::Text(input.parse_i(While('`'))));
+                return Some(false);
+            }
+            '%' => {
+                if self.mode.is(ParsingMode::MATH) {
+                    if let Some(math) = input.parse(Math::parser(ind)) {
+                        items.push(Item::Math(math));
+                        return Some(false);
+                    }
+                }
+            }
+            '!' => {
+                if self.mode.is(ParsingMode::INLINE) {
+                    if let Some(img) = input.parse(Image::parser(ind)) {
+                        items.push(Item::Image(img));
+                        return Some(false);
+                    }
+                }
+            }
+            '@' => {
+                if self.mode.is(ParsingMode::MACROS) {
+                    if let Some(mac) = input.parse(InlineMacro::parser(ind, Some(self.mode))) {
+                        items.push(Item::Macro(mac));
+                        return Some(false);
+                    }
+                }
+            }
+            '\\' => {
+                if self.mode.is(ParsingMode::INLINE) {
+                    if let Some(esc) = input.parse(Escaped::parser()) {
+                        items.push(Item::Escaped(esc));
+                        return Some(false);
+                    }
+                }
+            }
+            '$' => {
+                if self.mode.is(ParsingMode::LIMITER) && input.parse(Limiter::parser()).is_some() {
+                    items.push(Item::Limiter);
+                    return Some(false);
+                }
+            }
+            '<' => {
+                if self.mode.is(ParsingMode::HTML) {
+                    if let Some(html) = input.parse(HtmlNode::parser(ind)) {
+                        items.push(Item::Html(html));
+                        return Some(false);
+                    }
+                }
+
+                if let Context::Html(elem) = context {
+                    if input.can_parse(HtmlElem::closing_tag_parser(elem)) {
+                        return Some(true);
+                    }
+                }
+            }
+
+            '|' => {
+                if context == Context::Table {
+                    return Some(true);
+                }
+            }
+
+            '[' => {
+                if self.mode.is(ParsingMode::INLINE) {
+                    if let Some(link) = input.parse(Link::parser(ind)) {
+                        items.push(Item::Link(link));
+                        return Some(false);
+                    }
+                }
+
+                *open_brackets += 1;
+            }
+            ']' => {
+                if context == Context::LinkOrImg && *open_brackets == 0 {
+                    return Some(true);
+                }
+
+                if *open_brackets > 0 {
+                    *open_brackets -= 1;
+                }
+            }
+
+            '{' => {
+                *open_braces += 1;
+            }
+            '}' => {
+                if context == Context::Braces && *open_braces == 0 {
+                    return Some(true);
+                }
+
+                if context == Context::BlockBraces
+                    && *open_braces == 0
+                    && matches!(items.last(), Some(Item::LineBreak) | None)
+                    && input.can_parse(ParseClosingBrace(ind))
+                {
+                    return Some(true);
+                }
+
+                if *open_braces > 0 {
+                    *open_braces -= 1;
+                }
+            }
+
+            '\n' | '\r' => {
+                if let Context::Table | Context::LinkOrImg | Context::Heading | Context::CodeBlock =
+                    context
+                {
+                    return Some(true);
+                }
+
+                if input.parse(ParseLineBreak(ind)).is_some() {
+                    items.push(Item::LineBreak);
+
+                    if let Context::Global | Context::BlockBraces = context {
+                        if let Some(u) = input.parse(Underline::parser(ind)) {
+                            items.pop();
+                            items.push(Item::Underline(u));
+                            return Some(true);
+                        }
+                    }
+
+                    if is_blank_line(input.rest()) || self.can_interrupt_paragraph(input) {
+                        return Some(true);
+                    }
+
+                    return Some(false);
+                } else {
+                    return Some(true);
+                }
+            }
+            _ => {}
+        }
+
+        items.push(Item::Text(input.bump(1)));
         Some(false)
     }
 
-    fn can_parse_block(&self, input: &mut Input) -> bool {
+    fn can_interrupt_paragraph(&self, input: &mut Input) -> bool {
+        use ParsingMode as P;
+
         let ind = self.ind;
-        input.can_parse(CodeBlock::parser(ind))
-            || input.can_parse(Comment::parser(ind))
-            || input.can_parse(Heading::parser(ind))
-            || input.can_parse(Table::parser(ind))
-            || input.can_parse(List::parser(ind, false, &mut None))
-            || input.can_parse(ThematicBreak::parser(ind))
-            || input.can_parse(Quote::parser(ind))
+
+        self.mode.is(P::CODE_BLOCKS) && input.can_parse(CodeBlock::parser(ind, None))
+            || self.mode.is(P::COMMENTS) && input.can_parse(Comment::parser(ind))
+            || self.mode.is(P::HEADINGS) && input.can_parse(Heading::parser(ind))
+            || self.mode.is(P::TABLES) && input.can_parse(Table::parser(ind))
+            || self.mode.is(P::LISTS) && input.can_parse(List::parser(ind, false, &mut None))
+            || self.mode.is(P::THEMATIC_BREAKS) && input.can_parse(ThematicBreak::parser(ind))
+            || self.mode.is(P::QUOTES) && input.can_parse(Quote::parser(ind))
     }
 }
 

@@ -13,14 +13,14 @@ pub struct Code {
 }
 
 impl Code {
-    pub(crate) fn parser(ind: Indents<'_>, mode: ParsingMode) -> ParseCode<'_> {
+    pub(crate) fn parser(ind: Indents<'_>, mode: Option<ParsingMode>) -> ParseCode<'_> {
         ParseCode { ind, mode }
     }
 }
 
 pub(crate) struct ParseCode<'a> {
     ind: Indents<'a>,
-    mode: ParsingMode,
+    mode: Option<ParsingMode>,
 }
 
 impl Parse for ParseCode<'_> {
@@ -32,7 +32,9 @@ impl Parse for ParseCode<'_> {
         input.parse('`')?;
         let len = (1 + input.parse_i(While('`')).len()).try_into().ok()?;
 
-        let mut segments = if self.mode == ParsingMode::new_nothing() {
+        let mode = self.mode.unwrap_or_else(ParsingMode::new_nothing);
+
+        let mut segments = if mode.is_nothing() {
             let mut segments = Vec::new();
 
             loop {
@@ -63,7 +65,7 @@ impl Parse for ParseCode<'_> {
 
             segments
         } else {
-            let parser = Segments::parser(self.ind, Context::Code(len), self.mode);
+            let parser = Segments::parser(self.ind, Context::Code(len), mode);
             input.parse(parser)?.into_segments_no_underline()?
         };
 

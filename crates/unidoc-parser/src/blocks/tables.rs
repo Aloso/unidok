@@ -1,5 +1,4 @@
-use crate::inlines::segments::Segments;
-use crate::inlines::Segment;
+use crate::inlines::segments::{Segment, Segments};
 use crate::parsing_mode::ParsingMode;
 use crate::utils::{Indents, ParseLineBreak, ParseLineEnd, ParseSpacesU8, While};
 use crate::{Context, Parse, ParseInfallible};

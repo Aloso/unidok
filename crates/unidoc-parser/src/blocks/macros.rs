@@ -2,6 +2,7 @@ use std::iter;
 
 use crate::inlines::macros::ParseMacroName;
 use crate::macros::MacroArgs;
+use crate::parsing_mode::ParsingMode;
 use crate::utils::{Indents, ParseLineBreak, ParseLineEnd, ParseSpaces, ParseSpacesU8};
 use crate::{Block, Context, Input, Parse, StrSlice};
 
@@ -30,16 +31,18 @@ impl BlockMacro {
     pub fn parser(
         context: Context,
         ind: Indents<'_>,
+        mode: Option<ParsingMode>,
         is_loose: bool,
         list_style: Option<String>,
     ) -> ParseBlockMacro<'_> {
-        ParseBlockMacro { context, ind, is_loose, list_style }
+        ParseBlockMacro { context, ind, mode, is_loose, list_style }
     }
 }
 
 pub struct ParseBlockMacro<'a> {
     context: Context,
     ind: Indents<'a>,
+    mode: Option<ParsingMode>,
     is_loose: bool,
     list_style: Option<String>,
 }
@@ -56,6 +59,8 @@ impl Parse for ParseBlockMacro<'_> {
         let name = input.parse(ParseMacroName)?;
         let name_str = name.to_str(input.text()).to_string();
         let args = input.parse(MacroArgs::parser(&name_str, ind))?;
+
+        let mode = get_parsing_mode(&name_str, &args, &input)?.or(self.mode);
 
         if name.is_empty() && args.is_none() {
             return None;
@@ -95,8 +100,8 @@ impl Parse for ParseBlockMacro<'_> {
                 }
             });
 
-            let block =
-                Box::new(input.parse(Block::parser(self.context, ind, is_loose, list_style))?);
+            let parser = Block::parser(self.context, ind, mode, is_loose, list_style);
+            let block = Box::new(input.parse(parser)?);
 
             BlockMacro { name, args, content: BlockMacroContent::Prefixed(block) }
         } else if input.parse(ParseOpeningBrace(self.ind)).is_some() {
@@ -148,4 +153,40 @@ impl Parse for ParseClosingBrace<'_> {
         input.apply();
         Some(())
     }
+}
+
+pub(crate) fn get_parsing_mode(
+    name: &str,
+    args: &Option<MacroArgs>,
+    input: &Input,
+) -> Option<Option<ParsingMode>> {
+    Some(match name {
+        "PASS" => match &args {
+            None => Some(ParsingMode::new_all()),
+            Some(MacroArgs::TokenTrees(tts)) => {
+                let mut pm = ParsingMode::new_nothing();
+                for tt in tts {
+                    match &input[tt.as_atom()?.as_word()?] {
+                        "inline" | "i" => pm = pm.set(ParsingMode::INLINE),
+                        "codeblock" | "c" => pm = pm.set(ParsingMode::CODE_BLOCKS),
+                        "heading" | "h" => pm = pm.set(ParsingMode::HEADINGS),
+                        "tbreak" | "b" => pm = pm.set(ParsingMode::THEMATIC_BREAKS),
+                        "subst" | "s" => pm = pm.set(ParsingMode::SUBSTITUTIONS),
+                        "list" | "l" => pm = pm.set(ParsingMode::LISTS),
+                        "limiter" | "$" => pm = pm.set(ParsingMode::LIMITER),
+                        "macro" | "@" => pm = pm.set(ParsingMode::MACROS),
+                        "math" | "%" => pm = pm.set(ParsingMode::MATH),
+                        "table" | "|" => pm = pm.set(ParsingMode::TABLES),
+                        "quote" | ">" => pm = pm.set(ParsingMode::QUOTES),
+                        "html" | "<" => pm = pm.set(ParsingMode::HTML),
+                        _ => return None,
+                    }
+                }
+                Some(pm)
+            }
+            _ => return None,
+        },
+        "NOPASS" => Some(ParsingMode::new_nothing()),
+        _ => None,
+    })
 }

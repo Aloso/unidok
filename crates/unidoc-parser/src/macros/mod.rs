@@ -55,18 +55,16 @@ impl Parse for ParseMacroArgs<'_> {
 
     fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
+
         if input.parse('(').is_none() {
-            return Some(match self.name {
-                "PASS" => Some(MacroArgs::ParsingMode(ParsingMode::new_all())),
-                "NOPASS" => Some(MacroArgs::ParsingMode(ParsingMode::new_nothing())),
-                _ => None,
-            });
+            return Some(None);
         }
         let content = match self.name {
             "LOAD" => MacroArgs::Raw(input.parse_i(ParseRaw)),
             _ => MacroArgs::TokenTrees(input.parse_i(TokenTree::multi_parser(self.ind))),
         };
         input.parse(')')?;
+
         input.apply();
         Some(Some(content))
     }
