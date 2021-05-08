@@ -35,6 +35,14 @@ impl MacroArgs {
             _ => None,
         }
     }
+
+    pub fn as_token_trees(&self) -> Option<&[TokenTree]> {
+        if let MacroArgs::TokenTrees(t) = self {
+            Some(t)
+        } else {
+            None
+        }
+    }
 }
 
 pub struct ParseMacroArgs<'a> {

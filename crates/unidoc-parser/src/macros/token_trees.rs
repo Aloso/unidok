@@ -17,6 +17,14 @@ impl TokenTree {
     pub(crate) fn multi_parser(ind: Indents<'_>) -> ParseTokenTrees<'_> {
         ParseTokenTrees { ind }
     }
+
+    pub fn as_atom(&self) -> Option<&TokenTreeAtom> {
+        if let Self::Atom(v) = self {
+            Some(v)
+        } else {
+            None
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -25,6 +33,24 @@ pub enum TokenTreeAtom {
     QuotedWord(String),
     Tuple(Vec<TokenTree>), // [foo=bar, baz="", quux]
     Braces(Braces),
+}
+
+impl TokenTreeAtom {
+    pub fn as_word(&self) -> Option<&StrSlice> {
+        if let Self::Word(v) = self {
+            Some(v)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_quoted_word(&self) -> Option<&String> {
+        if let Self::QuotedWord(v) = self {
+            Some(v)
+        } else {
+            None
+        }
+    }
 }
 
 #[derive(Clone, Copy)]

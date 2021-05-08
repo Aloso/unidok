@@ -128,12 +128,11 @@ impl Parse for QuotedStringWithEscapes<'_> {
                     input.bump(idx);
                     break;
                 }
-                [b'\\', b'"' | b'\'', ..] => {
+                [b'\\', b'"' | b'\'' | b'\\', ..] => {
                     content.push_str(&rest[..idx]);
                     input.bump(idx + 1);
                     let escaped = input.bump(1);
-                    content.push_str(escaped.to_str(input.text()));
-                    break;
+                    content.push_str(&input[escaped]);
                 }
                 [b'\n' | b'\r', ..] => {
                     content.push_str(&rest[..idx]);

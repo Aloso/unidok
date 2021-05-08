@@ -1,3 +1,5 @@
+use std::iter;
+
 use crate::inlines::macros::ParseMacroName;
 use crate::macros::MacroArgs;
 use crate::utils::{Indents, ParseLineBreak, ParseLineEnd, ParseSpaces, ParseSpacesU8};
@@ -65,7 +67,29 @@ impl Parse for ParseBlockMacro<'_> {
             let list_style = self.list_style.take();
             let list_style = list_style.or_else(|| {
                 if name_str == "BULLET" {
-                    args.as_ref().and_then(|args| args.get_one_string(&input))
+                    args.as_ref().and_then(|args| {
+                        let tts = args.as_token_trees()?;
+                        let mut list_style = String::new();
+
+                        for tt in tts {
+                            let atom = tt.as_atom()?;
+                            if let Some(word) = atom.as_word() {
+                                list_style.push_str(word.to_str(input.text()));
+                                list_style.push(' ');
+                            } else {
+                                let word = atom.as_quoted_word()?;
+                                list_style.push('"');
+                                list_style.extend(word.chars().flat_map(|c| {
+                                    iter::once('\\')
+                                        .filter(move |_| matches!(c, '"' | '\'' | '\\'))
+                                        .chain(iter::once(c))
+                                }));
+                                list_style.push('"');
+                            }
+                        }
+
+                        Some(list_style)
+                    })
                 } else {
                     None
                 }
