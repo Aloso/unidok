@@ -169,6 +169,21 @@ header > h1 {
     scrollbar-color: #555 transparent;
 }
 
+.input::-webkit-scrollbar,
+.preview::-webkit-scrollbar {
+    background-color: transparent;
+}
+.input::-webkit-scrollbar-thumb,
+.preview::-webkit-scrollbar-thumb {
+    background-color: #555;
+}
+.input:hover::-webkit-scrollbar-thumb,
+.preview:hover::-webkit-scrollbar-thumb,
+.input:focus::-webkit-scrollbar-thumb,
+.preview:focus::-webkit-scrollbar-thumb {
+    background-color: #498dcc;
+}
+
 .input:hover, .input:focus {
     outline: none;
 }

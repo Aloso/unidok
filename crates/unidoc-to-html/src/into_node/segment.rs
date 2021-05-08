@@ -143,20 +143,52 @@ pub(super) fn add_attributes<'a>(args: Option<MacroArgsIr<'a>>, elem: &mut Eleme
                     }
                 }
                 TokenTreeIr::KV(key, TokenTreeAtomIr::Word(word)) => {
-                    elem.attrs.push(Attr { key, value: Some(word.into()) });
+                    add_attribute_kv(&mut elem.attrs, key, word);
                 }
                 TokenTreeIr::KV(key, TokenTreeAtomIr::QuotedWord(word)) => {
-                    elem.attrs.push(Attr { key, value: Some(word) });
+                    add_attribute_kv(&mut elem.attrs, key, word);
                 }
                 _ => {}
             }
         }
 
         if !classes.is_empty() {
-            let value = Some(classes.into_iter().join(" "));
-            elem.attrs.push(Attr { key: "class", value })
+            if classes.len() == 1 {
+                add_attribute_kv(&mut elem.attrs, "class", classes.pop().unwrap());
+            } else {
+                add_attribute_kv(&mut elem.attrs, "class", classes.into_iter().join(" "));
+            }
         }
     }
+}
+
+fn add_attribute_kv<'a>(
+    attrs: &mut Vec<Attr<'a>>,
+    key: &'a str,
+    value: impl ToString + AsRef<str>,
+) {
+    match key {
+        "class" => {
+            if let Some(c) = attrs.iter_mut().find(|a| a.key == "class") {
+                let old_value = c.value.get_or_insert_with(String::new);
+                old_value.push(' ');
+                old_value.push_str(value.as_ref());
+                return;
+            }
+        }
+        "style" => {
+            if let Some(c) = attrs.iter_mut().find(|a| a.key == "style") {
+                let old_value = c.value.get_or_insert_with(String::new);
+                if !matches!(old_value.trim_end().chars().last(), Some(';') | None) {
+                    old_value.push(';');
+                }
+                old_value.push_str(value.as_ref());
+                return;
+            }
+        }
+        _ => {}
+    }
+    attrs.push(Attr { key, value: Some(value.to_string()) });
 }
 
 impl<'a> IntoNode<'a> for MathIr {
