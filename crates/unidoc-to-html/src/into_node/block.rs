@@ -246,19 +246,23 @@ impl<'a> IntoNode<'a> for TableIr<'a> {
 
 impl<'a> IntoNode<'a> for ListIr<'a> {
     fn into_node(self) -> Node<'a> {
-        // TODO: Determine whether the list is loose or tight
-
         let (name, start) = match self.bullet {
             Bullet::Dash | Bullet::Plus | Bullet::Star => (ElemName::Ul, 1),
             Bullet::Dot { start } | Bullet::Paren { start } => (ElemName::Ol, start),
         };
-        let attrs = if start == 1 {
-            vec![]
-        } else {
-            vec![Attr { key: "start", value: Some(start.to_string()) }]
-        };
 
         let loose = self.is_loose;
+        let list_style = &self.list_style;
+
+        let class = if loose { "loose" } else { "tight" };
+        let mut attrs = vec![Attr { key: "class", value: Some(class.into()) }];
+        if let Some(list_style) = list_style {
+            attrs.push(Attr { key: "style", value: Some(format!("list-style: {}", list_style)) });
+        }
+
+        if start != 1 {
+            attrs.push(Attr { key: "start", value: Some(start.to_string()) })
+        };
 
         let items = self
             .items
@@ -344,16 +348,15 @@ fn create_table_cell(is_header_row: bool, cell: TableCellIr<'_>) -> Node<'_> {
         attrs,
         content: Some(into_nodes_trimmed(cell.segments)),
         is_block_level: true,
-        contains_blocks: false, // TODO: Depends
+        contains_blocks: false,
     })
 }
 
 impl<'a> IntoNode<'a> for BlockMacroIr<'a> {
     fn into_node(self) -> Node<'a> {
         match self.name {
-            "PASS" | "NOPASS" => self.content.into_node(),
             "" => add_attributes_to_node(self.content.into_node(), self.args),
-            _ => todo!(),
+            _ => self.content.into_node(),
         }
     }
 }

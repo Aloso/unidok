@@ -7,8 +7,6 @@ $Heading
 <kbd>Heading</kbd>
 =================
 
-// TODO: Debug this
-
 ............................................................
 <ul>
 <li>Not a heading</li>

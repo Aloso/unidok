@@ -20,6 +20,21 @@ impl MacroArgs {
     pub(crate) fn parser<'a>(name: &'a str, ind: Indents<'a>) -> ParseMacroArgs<'a> {
         ParseMacroArgs { name, ind }
     }
+
+    pub fn get_one_string(&self, input: &Input) -> Option<String> {
+        match self {
+            MacroArgs::Raw(s) => Some(input[*s].to_string()),
+            MacroArgs::TokenTrees(t) if t.len() == 1 => match &t[0] {
+                TokenTree::Atom(t) => match t {
+                    TokenTreeAtom::Word(w) => Some(input[*w].to_string()),
+                    TokenTreeAtom::QuotedWord(w) => Some(w.clone()),
+                    _ => None,
+                },
+                TokenTree::KV(_, _) => None,
+            },
+            _ => None,
+        }
+    }
 }
 
 pub struct ParseMacroArgs<'a> {

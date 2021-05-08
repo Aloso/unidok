@@ -4,9 +4,9 @@ version = 3
 
 [[package]]
 name = "asciimath-rs"
-version = "0.5.7"
+version = "0.5.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "033d0b4b21852b09c3275d631934891f9b8edb42d7d91349bc50d30f19cc2fd3"
+checksum = "ed7f3813e3a1c4a76d4d591826bed4d37e13165728cbee5ea7004269b311ab3a"
 dependencies = [
  "charred",
  "htmlescape",

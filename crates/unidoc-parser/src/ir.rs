@@ -105,6 +105,7 @@ pub struct ListIr<'a> {
     pub bullet: Bullet,
     pub items: Vec<Vec<BlockIr<'a>>>,
     pub is_loose: bool,
+    pub list_style: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -393,7 +394,12 @@ impl<'a> IntoIR<'a> for List {
     type IR = ListIr<'a>;
 
     fn into_ir(self, text: &'a str) -> Self::IR {
-        ListIr { bullet: self.bullet, items: self.items.into_ir(text), is_loose: false }
+        ListIr {
+            bullet: self.bullet,
+            items: self.items.into_ir(text),
+            is_loose: self.is_loose,
+            list_style: self.list_style,
+        }
     }
 }
 

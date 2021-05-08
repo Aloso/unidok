@@ -112,7 +112,6 @@ impl<'a> IntoNode<'a> for CodeIr<'a> {
 impl<'a> IntoNode<'a> for InlineMacroIr<'a> {
     fn into_node(self) -> Node<'a> {
         match self.name {
-            "PASS" | "NOPASS" => self.segment.into_node(),
             "" => {
                 let node = self.segment.into_node();
 
@@ -123,7 +122,7 @@ impl<'a> IntoNode<'a> for InlineMacroIr<'a> {
                     node
                 }
             }
-            _ => todo!(),
+            _ => self.segment.into_node(),
         }
     }
 }

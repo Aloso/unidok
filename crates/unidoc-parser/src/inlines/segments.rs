@@ -586,7 +586,7 @@ impl ParseSegments<'_> {
             || input.can_parse(Comment::parser(ind))
             || input.can_parse(Heading::parser(ind))
             || input.can_parse(Table::parser(ind))
-            || input.can_parse(List::parser(ind))
+            || input.can_parse(List::parser(ind, false, None))
             || input.can_parse(ThematicBreak::parser(ind))
             || input.can_parse(Quote::parser(ind))
     }

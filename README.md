@@ -370,9 +370,6 @@ https://spec.commonmark.org/0.29/#images
   * Forbid nested links?
   * URLs in angle brackets?
 
-* Lists
-  * Implement loose lists
-
 * Expanding macros
 
 * Replacements

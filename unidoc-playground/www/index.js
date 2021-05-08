@@ -50,8 +50,8 @@ function initializePlayground(elem) {
         const value = input.value
         const now = performance.now()
         if (value === last_value) return
-        if (now - last_render < 100) {
-            setTimeout(() => render(), 120)
+        if (now - last_render < 150) {
+            setTimeout(() => render(), 170)
             return
         }
 
@@ -59,25 +59,28 @@ function initializePlayground(elem) {
         last_render = now
 
         try {
-            if (is_html) {
-                preview.innerText = wasm.compile(value)
-            } else {
-                preview.innerHTML = wasm.compile(value)
+            // don't block during keypress
+            setTimeout(() => {
+                if (is_html) {
+                    preview.innerText = wasm.compile(value)
+                } else {
+                    preview.innerHTML = wasm.compile(value)
 
-                const mathElems = preview.getElementsByTagName('math')
-                /** @type {HTMLElement[]} */
-                const mathElemsCopy = []
-                for (const elem of mathElems) {
-                    mathElemsCopy.push(elem)
-                }
-                for (const elem of mathElemsCopy) {
-                    const converted = MathJax.mathml2chtml(elem.outerHTML)
-                    elem.replaceWith(converted)
+                    const mathElems = preview.getElementsByTagName('math')
+                    /** @type {HTMLElement[]} */
+                    const mathElemsCopy = []
+                    for (const elem of mathElems) {
+                        mathElemsCopy.push(elem)
+                    }
+                    for (const elem of mathElemsCopy) {
+                        const converted = MathJax.mathml2chtml(elem.outerHTML)
+                        elem.replaceWith(converted)
 
-                    MathJax.startup.document.clear()
-                    MathJax.startup.document.updateDocument()
+                        MathJax.startup.document.clear()
+                        MathJax.startup.document.updateDocument()
+                    }
                 }
-            }
+            }, 20)
         } catch (e) {
             console.warn('Input:')
             console.log(value)

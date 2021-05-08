@@ -40,8 +40,13 @@ pub enum Block {
 }
 
 impl Block {
-    pub(crate) fn parser(context: Context, ind: Indents<'_>) -> ParseBlock<'_> {
-        ParseBlock { context, ind }
+    pub(crate) fn parser(
+        context: Context,
+        ind: Indents<'_>,
+        is_loose: bool,
+        list_style: Option<String>,
+    ) -> ParseBlock<'_> {
+        ParseBlock { context, ind, is_loose, list_style }
     }
 
     pub(crate) fn multi_parser(context: Context, ind: Indents<'_>) -> ParseBlocks<'_> {
@@ -78,10 +83,12 @@ impl Context {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct ParseBlock<'a> {
     context: Context,
     ind: Indents<'a>,
+    is_loose: bool,
+    list_style: Option<String>,
 }
 
 impl Parse for ParseBlock<'_> {
@@ -100,11 +107,18 @@ impl Parse for ParseBlock<'_> {
             Some(Block::Table(table))
         } else if let Some(heading) = input.parse(Heading::parser(ind)) {
             Some(Block::Heading(heading))
-        } else if let Some(list) = input.parse(List::parser(ind)) {
+        } else if let Some(list) =
+            input.parse(List::parser(ind, self.is_loose, self.list_style.clone()))
+        {
             Some(Block::List(list))
         } else if let Some(quote) = input.parse(Quote::parser(ind)) {
             Some(Block::Quote(quote))
-        } else if let Some(mac) = input.parse(BlockMacro::parser(self.context, ind)) {
+        } else if let Some(mac) = input.parse(BlockMacro::parser(
+            self.context,
+            ind,
+            self.is_loose,
+            self.list_style.clone(),
+        )) {
             Some(Block::BlockMacro(mac))
         } else {
             let segments =
@@ -147,10 +161,10 @@ impl Parse for ParseBlocks<'_> {
             }
         }
 
-        let parser = Block::parser(self.context, self.ind);
+        let parser = Block::parser(self.context, self.ind, false, None);
 
         let mut v = Vec::new();
-        while let Some(node) = input.parse(parser) {
+        while let Some(node) = input.parse(parser.clone()) {
             v.push(node);
         }
         Some(v)

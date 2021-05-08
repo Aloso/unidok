@@ -20,16 +20,24 @@ pub struct List {
     pub indent_spaces: u8,
     pub bullet: Bullet,
     pub items: Vec<Vec<Block>>,
+    pub is_loose: bool,
+    pub list_style: Option<String>,
 }
 
 impl List {
-    pub(crate) fn parser(ind: Indents<'_>) -> ParseList<'_> {
-        ParseList { ind }
+    pub(crate) fn parser(
+        ind: Indents<'_>,
+        is_loose: bool,
+        list_style: Option<String>,
+    ) -> ParseList<'_> {
+        ParseList { ind, is_loose, list_style }
     }
 }
 
 pub(crate) struct ParseList<'a> {
     ind: Indents<'a>,
+    is_loose: bool,
+    list_style: Option<String>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -93,7 +101,13 @@ impl Parse for ParseList<'_> {
         }
 
         input.apply();
-        Some(List { indent_spaces, bullet, items })
+        Some(List {
+            indent_spaces,
+            bullet,
+            items,
+            is_loose: self.is_loose,
+            list_style: self.list_style.clone(),
+        })
     }
 }
 

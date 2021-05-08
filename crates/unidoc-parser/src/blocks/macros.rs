@@ -25,14 +25,21 @@ pub enum BlockMacroContent {
 }
 
 impl BlockMacro {
-    pub fn parser(context: Context, ind: Indents<'_>) -> ParseBlockMacro<'_> {
-        ParseBlockMacro { context, ind }
+    pub fn parser(
+        context: Context,
+        ind: Indents<'_>,
+        is_loose: bool,
+        list_style: Option<String>,
+    ) -> ParseBlockMacro<'_> {
+        ParseBlockMacro { context, ind, is_loose, list_style }
     }
 }
 
 pub struct ParseBlockMacro<'a> {
     context: Context,
     ind: Indents<'a>,
+    is_loose: bool,
+    list_style: Option<String>,
 }
 
 impl Parse for ParseBlockMacro<'_> {
@@ -53,7 +60,19 @@ impl Parse for ParseBlockMacro<'_> {
         }
 
         let mac = if input.parse(ParseLineBreak(ind)).is_some() {
-            let block = Box::new(input.parse(Block::parser(self.context, ind))?);
+            let is_loose = self.is_loose || name_str == "LOOSE";
+
+            let list_style = self.list_style.clone();
+            let list_style = list_style.or_else(|| {
+                if name_str == "BULLET" {
+                    args.as_ref().and_then(|args| args.get_one_string(&input))
+                } else {
+                    None
+                }
+            });
+
+            let block =
+                Box::new(input.parse(Block::parser(self.context, ind, is_loose, list_style))?);
 
             BlockMacro { name, args, content: BlockMacroContent::Prefixed(block) }
         } else if input.parse(ParseOpeningBrace(self.ind)).is_some() {
