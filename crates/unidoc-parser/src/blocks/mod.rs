@@ -94,7 +94,7 @@ pub struct ParseBlock<'a> {
 impl Parse for ParseBlock<'_> {
     type Output = Block;
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let ind = self.ind;
 
         if let Some(comment) = input.parse(Comment::parser(ind)) {
@@ -108,7 +108,7 @@ impl Parse for ParseBlock<'_> {
         } else if let Some(heading) = input.parse(Heading::parser(ind)) {
             Some(Block::Heading(heading))
         } else if let Some(list) =
-            input.parse(List::parser(ind, self.is_loose, self.list_style.clone()))
+            input.parse(List::parser(ind, self.is_loose, &mut self.list_style))
         {
             Some(Block::List(list))
         } else if let Some(quote) = input.parse(Quote::parser(ind)) {
@@ -117,7 +117,7 @@ impl Parse for ParseBlock<'_> {
             self.context,
             ind,
             self.is_loose,
-            self.list_style.clone(),
+            self.list_style.take(),
         )) {
             Some(Block::BlockMacro(mac))
         } else {
@@ -137,7 +137,7 @@ impl Parse for ParseBlock<'_> {
         }
     }
 
-    fn can_parse(&self, _: &mut Input) -> bool {
+    fn can_parse(&mut self, _: &mut Input) -> bool {
         true
     }
 }
@@ -151,7 +151,7 @@ pub(crate) struct ParseBlocks<'a> {
 impl Parse for ParseBlocks<'_> {
     type Output = Vec<Block>;
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         loop {
             if input.parse(ParseLineBreak(self.ind)).is_none() {
                 break;

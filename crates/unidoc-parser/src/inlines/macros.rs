@@ -28,7 +28,7 @@ pub struct ParseInlineMacro<'a> {
 impl Parse for ParseInlineMacro<'_> {
     type Output = InlineMacro;
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
         input.parse('@')?;
@@ -74,7 +74,7 @@ pub(crate) struct ParseMacroName;
 impl Parse for ParseMacroName {
     type Output = StrSlice;
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         fn is_macro_char(c: char) -> bool {
             c.is_ascii_uppercase() || c.is_ascii_digit() || c == '_'
         }

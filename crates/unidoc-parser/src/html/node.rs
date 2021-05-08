@@ -24,7 +24,7 @@ pub(crate) struct ParseHtmlNode<'a> {
 impl Parse for ParseHtmlNode<'_> {
     type Output = HtmlNode;
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         Some(if let Some(elem) = input.parse(HtmlElem::parser(self.ind)) {
             HtmlNode::Element(elem)
         } else if let Some(comment) = input.parse(HtmlComment::parser(self.ind)) {

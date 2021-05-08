@@ -10,7 +10,7 @@ pub struct AsciiCI<T>(pub T);
 impl<'a> Parse for AsciiCI<&'a str> {
     type Output = StrSlice;
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let len = self.0.len();
         let slice = input.rest().get(0..len)?;
 
@@ -35,7 +35,7 @@ pub enum QuoteMarkType {
 impl Parse for QuoteMark {
     type Output = QuoteMarkType;
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         match input.peek_char() {
             Some('"') => {
                 input.bump(1);
@@ -53,7 +53,7 @@ impl Parse for QuoteMark {
 impl Parse for ClosingQuoteMark {
     type Output = ();
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         match self.0 {
             QuoteMarkType::Single => input.parse('\'')?,
             QuoteMarkType::Double => input.parse('"')?,
@@ -67,7 +67,7 @@ pub struct QuotedString<'a>(pub Indents<'a>);
 impl Parse for QuotedString<'_> {
     type Output = String;
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
         let quote = input.parse(QuoteMark)?;
         let mut content = String::new();
@@ -109,7 +109,7 @@ pub struct QuotedStringWithEscapes<'a>(pub Indents<'a>);
 impl Parse for QuotedStringWithEscapes<'_> {
     type Output = String;
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
         let quote = input.parse(QuoteMark)?;
         let mut content = String::new();

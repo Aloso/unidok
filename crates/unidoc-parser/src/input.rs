@@ -63,7 +63,7 @@ impl Input {
     /// [`None`] is returned. For correctness, the parser should NOT be bumped
     /// if `None` is returned.
     #[must_use]
-    pub fn parse<P: Parse>(&mut self, parser: P) -> Option<P::Output> {
+    pub fn parse<P: Parse>(&mut self, mut parser: P) -> Option<P::Output> {
         parser.parse(self)
     }
 
@@ -75,13 +75,13 @@ impl Input {
 
     /// This tries to parse the specified parser. If it doesn't succeed, nothing
     /// happens.
-    pub fn try_parse<P: Parse>(&mut self, parser: P) {
+    pub fn try_parse<P: Parse>(&mut self, mut parser: P) {
         parser.parse(self);
     }
 
     /// This returns whether the parser can be successfully parsed. For
     /// correctness, the parser should NOT be bumped.
-    pub fn can_parse<P: Parse>(&mut self, parser: P) -> bool {
+    pub fn can_parse<P: Parse>(&mut self, mut parser: P) -> bool {
         parser.can_parse(self)
     }
 }

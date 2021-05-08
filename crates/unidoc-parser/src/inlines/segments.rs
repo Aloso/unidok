@@ -105,7 +105,7 @@ pub(crate) struct ParseSegments<'a> {
 impl Parse for ParseSegments<'_> {
     type Output = Segments;
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         use Context::*;
 
         let (items, underline) = self.lex_items(input)?;
@@ -586,7 +586,7 @@ impl ParseSegments<'_> {
             || input.can_parse(Comment::parser(ind))
             || input.can_parse(Heading::parser(ind))
             || input.can_parse(Table::parser(ind))
-            || input.can_parse(List::parser(ind, false, None))
+            || input.can_parse(List::parser(ind, false, &mut None))
             || input.can_parse(ThematicBreak::parser(ind))
             || input.can_parse(Quote::parser(ind))
     }

@@ -57,7 +57,7 @@ pub(crate) struct ParseElement<'a> {
 impl Parse for ParseElement<'_> {
     type Output = HtmlElem;
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
         input.parse('<')?;
@@ -148,7 +148,7 @@ pub(crate) struct ParseClosingTag {
 impl Parse for ParseClosingTag {
     type Output = ();
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
         input.parse("</")?;

@@ -13,14 +13,14 @@ pub struct ParseWsAndLineEnd;
 impl Parse for ParseLineEnd {
     type Output = ();
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         match input.peek_char() {
             Some('\n' | '\r') | None => Some(()),
             _ => None,
         }
     }
 
-    fn can_parse(&self, input: &mut Input) -> bool {
+    fn can_parse(&mut self, input: &mut Input) -> bool {
         matches!(input.peek_char(), Some('\n' | '\r') | None)
     }
 }
@@ -28,7 +28,7 @@ impl Parse for ParseLineEnd {
 impl Parse for ParseWsAndLineEnd {
     type Output = ();
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
         input.parse_i(ParseSpaces);
         match input.peek_char() {
@@ -40,7 +40,7 @@ impl Parse for ParseWsAndLineEnd {
         }
     }
 
-    fn can_parse(&self, input: &mut Input) -> bool {
+    fn can_parse(&mut self, input: &mut Input) -> bool {
         matches!(
             input.rest().trim_start_matches(|c| matches!(c, ' ' | '\t')).chars().next(),
             Some('\n' | '\r') | None

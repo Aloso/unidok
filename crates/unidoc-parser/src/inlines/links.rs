@@ -42,7 +42,7 @@ pub(crate) struct ParseLink<'a> {
 impl Parse for ParseLink<'_> {
     type Output = Link;
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
         input.parse('[')?;
@@ -64,7 +64,7 @@ pub(super) struct ParseHref;
 impl Parse for ParseHref {
     type Output = String;
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
         let mut s = String::new();
@@ -132,7 +132,7 @@ pub(super) struct ParseQuotedText;
 impl Parse for ParseQuotedText {
     type Output = String;
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
         input.parse('"')?;
 

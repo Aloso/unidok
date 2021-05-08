@@ -25,11 +25,11 @@ pub struct List {
 }
 
 impl List {
-    pub(crate) fn parser(
-        ind: Indents<'_>,
+    pub(crate) fn parser<'a>(
+        ind: Indents<'a>,
         is_loose: bool,
-        list_style: Option<String>,
-    ) -> ParseList<'_> {
+        list_style: &'a mut Option<String>,
+    ) -> ParseList<'a> {
         ParseList { ind, is_loose, list_style }
     }
 }
@@ -37,7 +37,7 @@ impl List {
 pub(crate) struct ParseList<'a> {
     ind: Indents<'a>,
     is_loose: bool,
-    list_style: Option<String>,
+    list_style: &'a mut Option<String>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -73,7 +73,7 @@ pub enum ListKind {
 impl Parse for ParseList<'_> {
     type Output = List;
 
-    fn parse(&self, input: &mut crate::Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut crate::Input) -> Option<Self::Output> {
         let mut input = input.start();
 
         let (mut indent_spaces, bullet) = input.parse(ParseBullet { first: true })?;
@@ -106,7 +106,7 @@ impl Parse for ParseList<'_> {
             bullet,
             items,
             is_loose: self.is_loose,
-            list_style: self.list_style.clone(),
+            list_style: self.list_style.take(),
         })
     }
 }
@@ -119,7 +119,7 @@ struct ParseBullet {
 impl Parse for ParseBullet {
     type Output = (u8, Bullet);
 
-    fn parse(&self, input: &mut crate::Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut crate::Input) -> Option<Self::Output> {
         let mut input = input.start();
 
         let indent = input.parse(ParseSpacesU8)?;

@@ -36,7 +36,7 @@ pub(crate) struct ParseMath<'a> {
 impl Parse for ParseMath<'_> {
     type Output = Math;
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
         input.parse("%{")?;
@@ -56,7 +56,7 @@ struct ParseMathContent<'a> {
 impl Parse for ParseMathContent<'_> {
     type Output = String;
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
         let mut text = String::new();

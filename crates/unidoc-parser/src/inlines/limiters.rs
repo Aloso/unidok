@@ -36,7 +36,7 @@ pub(crate) struct ParseLimiter;
 impl Parse for ParseLimiter {
     type Output = Limiter;
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         input.parse('$')?;
         Some(Limiter)
     }

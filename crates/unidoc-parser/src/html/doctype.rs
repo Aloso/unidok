@@ -17,7 +17,7 @@ pub(crate) struct ParseDoctype;
 impl Parse for ParseDoctype {
     type Output = Doctype;
 
-    fn parse(&self, input: &mut crate::input::Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut crate::input::Input) -> Option<Self::Output> {
         let mut input = input.start();
 
         input.parse("<!")?;
@@ -38,7 +38,7 @@ struct ParseLegacyString;
 impl Parse for ParseLegacyString {
     type Output = ();
 
-    fn parse(&self, input: &mut crate::input::Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut crate::input::Input) -> Option<Self::Output> {
         let mut input = input.start();
 
         input.parse(ParseOneWS)?;

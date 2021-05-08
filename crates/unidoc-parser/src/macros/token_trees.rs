@@ -35,7 +35,7 @@ pub(crate) struct ParseTokenTree<'a> {
 impl Parse for ParseTokenTree<'_> {
     type Output = TokenTree;
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
         match input.peek_char() {
@@ -78,7 +78,7 @@ pub(crate) struct ParseTokenTreeAtom<'a> {
 impl Parse for ParseTokenTreeAtom<'_> {
     type Output = TokenTreeAtom;
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
         match input.peek_char() {

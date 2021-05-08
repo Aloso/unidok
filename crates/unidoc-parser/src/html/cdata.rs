@@ -17,7 +17,7 @@ pub(crate) struct ParseCDataSection;
 impl Parse for ParseCDataSection {
     type Output = CDataSection;
 
-    fn parse(&self, input: &mut crate::input::Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut crate::input::Input) -> Option<Self::Output> {
         let mut input = input.start();
 
         input.parse("<![CDATA[")?;

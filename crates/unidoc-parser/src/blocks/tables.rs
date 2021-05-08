@@ -69,7 +69,7 @@ pub(crate) struct ParseTable<'a> {
 impl Parse for ParseTable<'_> {
     type Output = Table;
 
-    fn parse(&self, input: &mut crate::Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut crate::Input) -> Option<Self::Output> {
         let mut input = input.start();
         let ind = self.ind;
 
@@ -105,7 +105,7 @@ impl Parse for ParseTable<'_> {
         Some(Table { rows })
     }
 
-    fn can_parse(&self, input: &mut crate::Input) -> bool {
+    fn can_parse(&mut self, input: &mut crate::Input) -> bool {
         let rest = input.rest().trim_start_matches(|c| matches!(c, ' ' | '\t'));
         rest.starts_with("||") || rest.starts_with("#||")
     }
@@ -118,7 +118,7 @@ struct ParseTableRow<'a> {
 impl Parse for ParseTableRow<'_> {
     type Output = TableRow;
 
-    fn parse(&self, input: &mut crate::Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut crate::Input) -> Option<Self::Output> {
         let mut input = input.start();
         let is_header_row = input.parse('#').is_some();
         input.parse("||")?;
@@ -205,7 +205,7 @@ struct ParseRowsAndColumns;
 impl Parse for ParseRowsAndColumns {
     type Output = (u16, u16);
 
-    fn parse(&self, input: &mut crate::Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut crate::Input) -> Option<Self::Output> {
         let mut input = input.start();
 
         let mut col_span: Option<u16> = None;

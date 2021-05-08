@@ -68,7 +68,7 @@ impl<F: Fn(char) -> bool> Parse for Until<F> {
     type Output = StrSlice;
 
     #[inline]
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         input.rest().find(&self.0).map(|i| input.bump(i))
     }
 }
@@ -77,7 +77,7 @@ impl Parse for Until<char> {
     type Output = StrSlice;
 
     #[inline]
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         input.rest().find(self.0).map(|i| input.bump(i))
     }
 }
@@ -86,7 +86,7 @@ impl<'a> Parse for Until<&'a str> {
     type Output = StrSlice;
 
     #[inline]
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         input.rest().find(self.0).map(|i| input.bump(i))
     }
 }

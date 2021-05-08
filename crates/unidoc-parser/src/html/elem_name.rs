@@ -642,7 +642,7 @@ pub(crate) struct ParseElemName;
 impl Parse for ParseElemName {
     type Output = ElemName;
 
-    fn parse(&self, input: &mut crate::input::Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut crate::input::Input) -> Option<Self::Output> {
         let mut input2 = input.start();
 
         let name =

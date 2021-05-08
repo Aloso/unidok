@@ -45,7 +45,7 @@ pub struct ParseMacroArgs<'a> {
 impl Parse for ParseMacroArgs<'_> {
     type Output = Option<MacroArgs>;
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
         if input.parse('(').is_none() {
             return Some(match self.name {

@@ -54,7 +54,7 @@ pub struct ParseQuote<'a> {
 impl Parse for ParseQuote<'_> {
     type Output = Quote;
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
         let ind = self.ind.push_indent(input.parse(ParseSpacesU8)?);
@@ -68,7 +68,7 @@ impl Parse for ParseQuote<'_> {
         Some(Quote { content })
     }
 
-    fn can_parse(&self, input: &mut Input) -> bool {
+    fn can_parse(&mut self, input: &mut Input) -> bool {
         input.can_parse(ParseQuoteMarker)
     }
 }

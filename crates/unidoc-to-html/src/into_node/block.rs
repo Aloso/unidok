@@ -254,8 +254,9 @@ impl<'a> IntoNode<'a> for ListIr<'a> {
         let loose = self.is_loose;
         let list_style = &self.list_style;
 
-        let class = if loose { "loose" } else { "tight" };
-        let mut attrs = vec![Attr { key: "class", value: Some(class.into()) }];
+        let mut attrs =
+            if loose { vec![Attr { key: "class", value: Some("loose".into()) }] } else { vec![] };
+
         if let Some(list_style) = list_style {
             attrs.push(Attr { key: "style", value: Some(format!("list-style: {}", list_style)) });
         }

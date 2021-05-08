@@ -26,7 +26,7 @@ pub(crate) struct ParseCode<'a> {
 impl Parse for ParseCode<'_> {
     type Output = Code;
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
         input.parse('`')?;
@@ -90,7 +90,7 @@ struct ParseCodeEndDelimiter {
 impl Parse for ParseCodeEndDelimiter {
     type Output = ();
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
         let backticks = input.parse_i(While('`')).len();

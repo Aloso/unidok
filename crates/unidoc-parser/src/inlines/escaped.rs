@@ -33,7 +33,7 @@ pub(crate) struct ParseEscape;
 impl Parse for ParseEscape {
     type Output = Escaped;
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
         input.parse('\\')?;
 

@@ -14,12 +14,12 @@ pub(crate) struct ParseQuoteMarker;
 impl Parse for ParseQuoteMarker {
     type Output = ();
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         input.parse('>')?;
         Some(())
     }
 
-    fn can_parse(&self, input: &mut Input) -> bool {
+    fn can_parse(&mut self, input: &mut Input) -> bool {
         input.rest().trim_start_matches(|c| matches!(c, ' ' | '\t')).starts_with('>')
     }
 }
@@ -74,7 +74,7 @@ pub(crate) struct ParseLineBreak<'a>(pub Indents<'a>);
 impl Parse for ParseLineBreak<'_> {
     type Output = ();
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         if !input.is_empty() {
             let mut input = input.start();
 

@@ -26,7 +26,7 @@ pub(crate) struct ParseComment<'a> {
 impl Parse for ParseComment<'_> {
     type Output = Comment;
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
         input.parse_i(ParseSpaces);
@@ -38,7 +38,7 @@ impl Parse for ParseComment<'_> {
         Some(Comment { content })
     }
 
-    fn can_parse(&self, input: &mut Input) -> bool {
+    fn can_parse(&mut self, input: &mut Input) -> bool {
         input.rest().trim_start_matches(|c| matches!(c, ' ' | '\t')).starts_with("//")
     }
 }

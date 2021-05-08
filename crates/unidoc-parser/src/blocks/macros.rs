@@ -45,7 +45,7 @@ pub struct ParseBlockMacro<'a> {
 impl Parse for ParseBlockMacro<'_> {
     type Output = BlockMacro;
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
         let ind = self.ind.push_indent(input.parse(ParseSpacesU8)?);
@@ -62,7 +62,7 @@ impl Parse for ParseBlockMacro<'_> {
         let mac = if input.parse(ParseLineBreak(ind)).is_some() {
             let is_loose = self.is_loose || name_str == "LOOSE";
 
-            let list_style = self.list_style.clone();
+            let list_style = self.list_style.take();
             let list_style = list_style.or_else(|| {
                 if name_str == "BULLET" {
                     args.as_ref().and_then(|args| args.get_one_string(&input))
@@ -94,7 +94,7 @@ pub(crate) struct ParseOpeningBrace<'a>(pub(crate) Indents<'a>);
 impl Parse for ParseOpeningBrace<'_> {
     type Output = ();
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
         input.parse('{')?;
@@ -112,7 +112,7 @@ pub(crate) struct ParseClosingBrace<'a>(pub(crate) Indents<'a>);
 impl Parse for ParseClosingBrace<'_> {
     type Output = ();
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
         input.parse_i(ParseSpaces);

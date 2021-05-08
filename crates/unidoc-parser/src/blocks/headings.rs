@@ -44,7 +44,7 @@ pub(crate) struct ParseHeading<'a> {
 impl Parse for ParseHeading<'_> {
     type Output = Heading;
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
         input.parse_i(ParseSpaces);
@@ -57,7 +57,7 @@ impl Parse for ParseHeading<'_> {
         Some(Heading { level, segments, kind: HeadingKind::Atx })
     }
 
-    fn can_parse(&self, input: &mut Input) -> bool {
+    fn can_parse(&mut self, input: &mut Input) -> bool {
         let mut input = input.start();
         input.parse_i(ParseSpaces);
         input.can_parse(ParseHashes)
@@ -69,7 +69,7 @@ struct ParseHashes;
 impl Parse for ParseHashes {
     type Output = u8;
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         input.parse('#')?;
         let mut level = 1;
 
@@ -112,7 +112,7 @@ pub(crate) struct ParseUnderline<'a> {
 impl Parse for ParseUnderline<'_> {
     type Output = Underline;
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
         input.parse_i(ParseSpaces);

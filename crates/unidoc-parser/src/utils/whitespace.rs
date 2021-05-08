@@ -27,7 +27,7 @@ pub struct ParseAtMostNSpaces(pub u8);
 impl Parse for ParseOneWS {
     type Output = ();
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         if let Some(b' ' | b'\t') = input.rest().bytes().next() {
             input.bump(1);
             Some(())
@@ -41,7 +41,7 @@ impl Parse for ParseSpacesU8 {
     type Output = u8;
 
     #[inline]
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut res = 0usize;
         let mut len = 0;
         let rest = input.rest();
@@ -77,7 +77,7 @@ impl ParseInfallible for ParseSpaces {
 impl Parse for ParseNSpaces {
     type Output = ();
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut visual_spaces = 0u8;
         let mut bytes = 0;
 
@@ -105,7 +105,7 @@ impl Parse for ParseNSpaces {
 impl Parse for ParseAtMostNSpaces {
     type Output = u8;
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut visual_spaces = 0u8;
         let mut bytes = 0;
 

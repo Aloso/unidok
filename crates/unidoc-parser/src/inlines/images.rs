@@ -39,7 +39,7 @@ pub(crate) struct ParseImage<'a> {
 impl Parse for ParseImage<'_> {
     type Output = Image;
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
         input.parse("![")?;

@@ -32,7 +32,7 @@ pub(crate) struct ParseThematicBreak<'a> {
 impl Parse for ParseThematicBreak<'_> {
     type Output = ThematicBreak;
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
         input.parse_i(ParseSpaces);

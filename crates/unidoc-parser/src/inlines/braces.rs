@@ -43,7 +43,7 @@ pub(crate) struct ParseBraces<'a> {
 impl Parse for ParseBraces<'_> {
     type Output = Braces;
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
         input.parse('{')?;

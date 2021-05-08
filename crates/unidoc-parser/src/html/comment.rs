@@ -19,7 +19,7 @@ pub(crate) struct ParseHtmlComment<'a> {
 impl Parse for ParseHtmlComment<'_> {
     type Output = HtmlComment;
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
         input.parse("<!--")?;

@@ -50,7 +50,7 @@ impl CodeBlock {
 impl Parse for ParseCodeBlock<'_> {
     type Output = CodeBlock;
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
         let indent = input.parse(ParseSpacesU8)?;
@@ -88,7 +88,7 @@ struct ParseFence;
 impl Parse for ParseFence {
     type Output = Fence;
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         if input.can_parse("```") {
             let count = input.parse_i(While('`')).len();
             let count = count.try_into().ok()?;
@@ -108,7 +108,7 @@ struct ParseInfo(Fence);
 impl Parse for ParseInfo {
     type Output = StrSlice;
 
-    fn parse(&self, input: &mut Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let s = input.parse_i(Until(|c| matches!(c, '\n' | '\r')));
 
         let c = match self.0 {
