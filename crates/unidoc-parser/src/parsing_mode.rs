@@ -28,9 +28,11 @@ impl ParsingMode {
     pub const HTML: PmParam = PmParam(1 << 11);
     /// comment, /
     pub const COMMENTS: PmParam = PmParam(1 << 12);
+    /// link_img, li
+    pub const LINKS_IMAGES: PmParam = PmParam(1 << 13);
 
     pub fn new_all() -> Self {
-        Self(0b1_1111_1111_1111)
+        Self(0b11_1111_1111_1111)
     }
 
     pub fn new_nothing() -> Self {
@@ -56,7 +58,7 @@ impl ParsingMode {
     }
 
     pub fn is_all(&self) -> bool {
-        self.0 == 0b1_1111_1111_1111
+        self.0 == 0b11_1111_1111_1111
     }
 }
 
@@ -80,6 +82,7 @@ fn test_parsing_modes() {
     assert!(pm.is(ParsingMode::QUOTES));
     assert!(pm.is(ParsingMode::HTML));
     assert!(pm.is(ParsingMode::COMMENTS));
+    assert!(pm.is(ParsingMode::LINKS_IMAGES));
 
     let pm = ParsingMode::new_nothing();
 
@@ -96,6 +99,7 @@ fn test_parsing_modes() {
     assert!(!pm.is(ParsingMode::QUOTES));
     assert!(!pm.is(ParsingMode::HTML));
     assert!(!pm.is(ParsingMode::COMMENTS));
+    assert!(!pm.is(ParsingMode::LINKS_IMAGES));
 
     let pm = ParsingMode::new_nothing().set(ParsingMode::MACROS).set(ParsingMode::COMMENTS);
 
@@ -112,4 +116,5 @@ fn test_parsing_modes() {
     assert!(!pm.is(ParsingMode::QUOTES));
     assert!(!pm.is(ParsingMode::HTML));
     assert!(pm.is(ParsingMode::COMMENTS));
+    assert!(!pm.is(ParsingMode::LINKS_IMAGES));
 }

@@ -1,10 +1,7 @@
-use links::LinkTarget;
-
-use crate::blocks::macros::BlockMacroContent;
 use crate::blocks::*;
 use crate::html::*;
 use crate::inlines::*;
-use crate::macros::{MacroArgs, TokenTree, TokenTreeAtom};
+use crate::macros::*;
 use crate::parser_state::ParserState;
 use crate::parsing_mode::ParsingMode;
 use crate::{collapse_text, StrSlice};

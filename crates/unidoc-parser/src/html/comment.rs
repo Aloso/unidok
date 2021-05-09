@@ -1,5 +1,5 @@
-use crate::utils::{Indents, ParseLineBreak, Until};
-use crate::{Input, Parse};
+use crate::utils::{ParseLineBreak, Until};
+use crate::{Indents, Input, Parse};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct HtmlComment {

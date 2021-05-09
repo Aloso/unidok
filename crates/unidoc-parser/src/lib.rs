@@ -21,6 +21,7 @@ use crate::collapse_text::collapse_text;
 use crate::input::Input;
 use crate::ir::{DocIr, IntoIR};
 use crate::parse::{Parse, ParseInfallible};
+use crate::utils::Indents;
 
 pub use detached_str::{Str, StrSlice, StrSliceIndex};
 

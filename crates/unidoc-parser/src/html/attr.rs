@@ -1,7 +1,5 @@
-use crate::input::Input;
-use crate::parse::Parse;
-use crate::utils::{Indents, ParseWs, QuotedString, Until};
-use crate::StrSlice;
+use crate::utils::{ParseWs, QuotedString, Until};
+use crate::{Indents, Input, Parse, StrSlice};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct HtmlAttr {

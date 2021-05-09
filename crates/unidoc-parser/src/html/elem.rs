@@ -1,8 +1,8 @@
 use crate::blocks::{Block, Context};
-use crate::inlines::segments::{Segment, Segments};
+use crate::inlines::{Segment, Segments};
 use crate::parsing_mode::ParsingMode;
-use crate::utils::{Indents, ParseLineBreak, ParseLineEnd, ParseSpaces, Until};
-use crate::{Input, Parse};
+use crate::utils::{ParseLineBreak, ParseLineEnd, ParseSpaces, Until};
+use crate::{Indents, Input, Parse};
 
 use super::{ElemName, HtmlAttr};
 

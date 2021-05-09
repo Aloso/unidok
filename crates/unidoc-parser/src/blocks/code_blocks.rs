@@ -1,11 +1,10 @@
 use std::convert::TryInto;
 
-use crate::blocks::Context;
 use crate::parsing_mode::ParsingMode;
-use crate::utils::{Indents, ParseLineBreak, ParseSpacesU8, ParseWsAndLineEnd, Until, While};
-use crate::{Input, Parse, StrSlice};
+use crate::utils::{ParseLineBreak, ParseSpacesU8, ParseWsAndLineEnd, Until, While};
+use crate::{Indents, Input, Parse, StrSlice};
 
-use super::Block;
+use super::{Block, Context};
 
 #[rustfmt::skip]
 /// A code block

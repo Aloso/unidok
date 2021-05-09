@@ -1,11 +1,10 @@
 use std::convert::TryInto;
 
 use crate::parsing_mode::ParsingMode;
-use crate::utils::{Indents, ParseLineBreak, ParseLineEnd, While};
-use crate::{Context, Input, Parse};
+use crate::utils::{ParseLineBreak, ParseLineEnd, While};
+use crate::{Context, Indents, Input, Parse};
 
-use super::segments::Segments;
-use super::Segment;
+use super::{Segment, Segments};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Code {

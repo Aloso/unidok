@@ -40,6 +40,9 @@ Unidoc should look familiar if you're familiar with Markdown. It follows the Com
 
 ## Roadmap
 
+* Lists
+  * Checklists (`- [x] done`)
+
 * Code blocks
   * Syntax highlighting
 
@@ -81,6 +84,14 @@ Unidoc should look familiar if you're familiar with Markdown. It follows the Com
   * Footnotes, e.g.
     * `@FN{^1} ... @FN(1){This is the footnote text}`
     * `@FN{This is the footnote text} ... @FOOTNOTES{}`
+  * Don't wrap text in a paragraph (`@PURE`)
+  * Open link in new tabl (`@BLANK`)
+  * Load plugin (`@LOAD`)
+  * Exclude heading from table of contents (`@NO_TOC`)
+  * Details that can be opened with summary (`@DETAILS`)
+  * Image caption (`@CAPTION`)
+  * Metadata (`@META`)
+  * `@()` should have a shortcut for `style=...`
   * Define custom macros in a plugin
 
 * Plugins
@@ -136,7 +147,7 @@ Unidoc should look familiar if you're familiar with Markdown. It follows the Com
     </details>
 
 * Vague ideas:
-  * Stolen from Asciidoctor: Admonition blocks (e.g. `@TIP`), sidebar blocks (e.g. `@SIDEBAR`), example blocks (e.g. `@EXAMPLE(title)`), labeled lists (e.g. `Label:: content`), Q&A lists, glossary lists, bibliography lists
+  * Stolen from Asciidoctor: Admonition blocks (e.g. `@TIP`), sidebar blocks (e.g. `@SIDEBAR`), example blocks (e.g. `@EXAMPLE(title)`), labeled lists (e.g. `Label:: content`, or `||Label |content`), Q&A lists, glossary lists, bibliography lists
   * Emojis (e.g. `:makeup:`)
   * Custom inline formatting delimiters (e.g. `=Keyboard-shortcut=`)
     * The following symbols are potentially available: `+`, `?`, `´`, `=`, `:`, `;`

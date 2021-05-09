@@ -1,5 +1,5 @@
-use crate::utils::{Indents, ParseLineBreak, ParseSpaces, Until};
-use crate::{Input, Parse, StrSlice};
+use crate::utils::{ParseLineBreak, ParseSpaces, Until};
+use crate::{Indents, Input, Parse, StrSlice};
 
 /// A line comment
 ///

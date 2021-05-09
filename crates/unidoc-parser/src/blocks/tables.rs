@@ -1,7 +1,7 @@
-use crate::inlines::segments::{Segment, Segments};
+use crate::inlines::{Segment, Segments};
 use crate::parsing_mode::ParsingMode;
-use crate::utils::{Indents, ParseLineBreak, ParseLineEnd, ParseSpacesU8, While};
-use crate::{Context, Parse, ParseInfallible};
+use crate::utils::{ParseLineBreak, ParseLineEnd, ParseSpacesU8, While};
+use crate::{Context, Indents, Parse, ParseInfallible};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Table {

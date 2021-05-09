@@ -1,7 +1,6 @@
-use super::segments::{Segment, Segments};
+use super::{Segment, Segments};
 use crate::parsing_mode::ParsingMode;
-use crate::utils::Indents;
-use crate::{Context, Input, Parse};
+use crate::{Context, Indents, Input, Parse};
 
 /// A block surrounded by `{braces}`. This is used by inline macros.
 ///

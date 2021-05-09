@@ -1,7 +1,6 @@
 use crate::inlines::Braces;
-use crate::input::Input;
 use crate::utils::{Indents, ParseSpaces, ParseWs, QuotedStringWithEscapes};
-use crate::{Parse, ParseInfallible, StrSlice};
+use crate::{Input, Parse, ParseInfallible, StrSlice};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum TokenTree {

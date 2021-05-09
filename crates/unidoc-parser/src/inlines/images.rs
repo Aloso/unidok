@@ -1,8 +1,7 @@
 use super::links::{LinkTarget, ParseLinkTargetReference, ParseLinkTargetUrl};
-use super::segments::{Segment, Segments};
+use super::{Segment, Segments};
 use crate::parsing_mode::ParsingMode;
-use crate::utils::Indents;
-use crate::{Context, Input, Parse};
+use crate::{Context, Indents, Input, Parse};
 
 /// An image that should be shown in the document.
 ///

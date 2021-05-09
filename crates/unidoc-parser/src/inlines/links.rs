@@ -2,8 +2,8 @@ use std::mem::replace;
 
 use super::segments::{Segment, Segments};
 use crate::parsing_mode::ParsingMode;
-use crate::utils::{Indents, Until};
-use crate::{Context, Input, Parse, StrSlice};
+use crate::utils::Until;
+use crate::{Context, Indents, Input, Parse, StrSlice};
 
 /// A hyperlink.
 ///

@@ -1,7 +1,5 @@
-use crate::utils::Indents;
-use crate::{Input, Parse};
-
 use super::{CDataSection, Doctype, HtmlComment, HtmlElem};
+use crate::{Indents, Input, Parse};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum HtmlNode {

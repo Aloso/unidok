@@ -6,7 +6,6 @@ pub(crate) mod images;
 pub(crate) mod limiters;
 pub(crate) mod line_breaks;
 pub(crate) mod links;
-pub(crate) mod macros;
 pub(crate) mod math;
 pub(crate) mod segments;
 
@@ -17,7 +16,6 @@ pub use format::{Formatting, InlineFormat};
 pub use images::Image;
 pub use limiters::Limiter;
 pub use line_breaks::LineBreak;
-pub use links::Link;
-pub use macros::InlineMacro;
+pub use links::{Link, LinkTarget};
 pub use math::Math;
-pub use segments::Segment;
+pub use segments::{Segment, Segments};

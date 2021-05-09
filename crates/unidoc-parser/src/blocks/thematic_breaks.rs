@@ -1,5 +1,5 @@
-use crate::utils::{Indents, ParseLineBreak, ParseSpaces, While};
-use crate::{Input, Parse};
+use crate::utils::{ParseLineBreak, ParseSpaces, While};
+use crate::{Indents, Input, Parse};
 
 /// A thematic break, consisting of at least three stars (`***`) or underscores
 /// (`___`).

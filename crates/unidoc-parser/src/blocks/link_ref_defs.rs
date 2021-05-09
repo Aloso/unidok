@@ -1,7 +1,5 @@
-use crate::utils::{
-    Indents, ParseLineBreak, ParseLineEnd, ParseSpacesU8, QuotedStringWithEscapes, Until,
-};
-use crate::{Input, Parse, StrSlice};
+use crate::utils::{ParseLineBreak, ParseLineEnd, ParseSpacesU8, QuotedStringWithEscapes, Until};
+use crate::{Indents, Input, Parse, StrSlice};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct LinkRefDef {

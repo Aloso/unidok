@@ -2,13 +2,13 @@ use std::convert::TryFrom;
 
 use super::format::{is_in_word, is_not_flanking, FlankType, Flanking, FormatDelim};
 use super::*;
-use crate::blocks::macros::ParseClosingBrace;
 use crate::blocks::*;
 use crate::html::{HtmlElem, HtmlNode};
-use crate::input::Input;
+use crate::macros::utils::ParseClosingBrace;
+use crate::macros::InlineMacro;
 use crate::parsing_mode::ParsingMode;
-use crate::utils::{Indents, ParseLineBreak, While};
-use crate::{Parse, StrSlice};
+use crate::utils::{ParseLineBreak, While};
+use crate::{Indents, Input, Parse, StrSlice};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Segment {
@@ -449,7 +449,7 @@ impl ParseSegments<'_> {
                 }
             }
             '!' => {
-                if self.mode.is(ParsingMode::INLINE) {
+                if self.mode.is(ParsingMode::LINKS_IMAGES) {
                     if let Some(img) = input.parse(Image::parser(ind)) {
                         items.push(Item::Image(img));
                         return Some(false);
@@ -500,7 +500,7 @@ impl ParseSegments<'_> {
             }
 
             '[' => {
-                if self.mode.is(ParsingMode::INLINE) {
+                if self.mode.is(ParsingMode::LINKS_IMAGES) {
                     if let Some(link) = input.parse(Link::parser(ind)) {
                         items.push(Item::Link(link));
                         return Some(false);
@@ -586,7 +586,7 @@ impl ParseSegments<'_> {
             || self.mode.is(P::LISTS) && input.can_parse(List::parser(ind, false, &mut None))
             || self.mode.is(P::THEMATIC_BREAKS) && input.can_parse(ThematicBreak::parser(ind))
             || self.mode.is(P::QUOTES) && input.can_parse(Quote::parser(ind))
-            || self.mode.is(P::INLINE) && input.can_parse(LinkRefDef::parser(ind))
+            || self.mode.is(P::LINKS_IMAGES) && input.can_parse(LinkRefDef::parser(ind))
     }
 }
 

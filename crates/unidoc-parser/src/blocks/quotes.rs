@@ -1,5 +1,5 @@
-use crate::utils::{Indents, ParseQuoteMarker, ParseSpacesU8};
-use crate::{Block, Context, Input, Parse};
+use crate::utils::{ParseQuoteMarker, ParseSpacesU8};
+use crate::{Block, Context, Indents, Input, Parse};
 
 #[rustfmt::skip]
 /// A quote (in HTML, `<blockquote>`).

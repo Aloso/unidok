@@ -1,5 +1,5 @@
-use crate::utils::{Indents, ParseLineBreak};
-use crate::{Input, Parse};
+use crate::utils::ParseLineBreak;
+use crate::{Indents, Input, Parse};
 
 /// A math block.
 ///

@@ -1,7 +1,7 @@
-use crate::inlines::segments::{Segment, Segments};
+use crate::inlines::{Segment, Segments};
 use crate::parsing_mode::ParsingMode;
-use crate::utils::{Indents, ParseLineBreak, ParseLineEnd, ParseSpaces, While};
-use crate::{Context, Input, Parse};
+use crate::utils::{ParseLineBreak, ParseLineEnd, ParseSpaces, While};
+use crate::{Context, Indents, Input, Parse};
 
 /// A heading
 ///

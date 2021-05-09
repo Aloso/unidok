@@ -1,12 +1,10 @@
-use crate::blocks::macros::get_parsing_mode;
 use crate::html::{HtmlElem, HtmlNode};
-use crate::inlines::Braces;
-use crate::macros::MacroArgs;
+use crate::inlines::*;
 use crate::parsing_mode::ParsingMode;
-use crate::utils::Indents;
-use crate::{Input, Parse, StrSlice};
+use crate::{Indents, Input, Parse, StrSlice};
 
-use super::*;
+use super::utils::{get_parsing_mode, ParseMacroName};
+use super::MacroArgs;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct InlineMacro {
@@ -64,29 +62,5 @@ impl Parse for ParseInlineMacro<'_> {
 
         input.apply();
         Some(InlineMacro { name, args, segment })
-    }
-}
-
-pub(crate) struct ParseMacroName;
-
-impl Parse for ParseMacroName {
-    type Output = StrSlice;
-
-    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
-        fn is_macro_char(c: char) -> bool {
-            c.is_ascii_uppercase() || c.is_ascii_digit() || c == '_'
-        }
-
-        if let Some(mat) = input.rest().find(|c| !is_macro_char(c)) {
-            let rest = &input.rest()[mat..];
-            if rest.starts_with(char::is_alphanumeric) {
-                None
-            } else {
-                let len = input.len() - rest.len();
-                Some(input.bump(len))
-            }
-        } else {
-            Some(input.bump(input.len()))
-        }
     }
 }
