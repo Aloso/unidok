@@ -430,12 +430,26 @@ A paragraph interrupted by
       link/image:
     </p>
     <pre class="playground">
-[This is a link](https://www.google.com "This is a title").
+[This is a link](https://github.com/Aloso/unidoc "This is a title").
+    </pre>
+    <p>
+      It's possible to define a link reference somewhere and use it somewhere else:
+    </p>
+    <pre class="playground">
+This is a [link]. Here's a [link reference][link] with a custom text.
+
+[link]: https://github.com/Aloso "Link title"
     </pre>
     <div class="differences">
       <p class="mini-title">Differences to Markdown</p>
       <p>
-        Link reference definitions are currently unsupported.
+        Link reference definitions may not contain line breaks.
+      </p>
+      <p>
+        URLs can't be surrounded with angle brackets.
+      </p>
+      <p>
+        URLs can contain whitespace (in Markdown, this is only allowed when the URL is surrounded with angle brackets).
       </p>
     </div>
 
