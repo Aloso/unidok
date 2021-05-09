@@ -84,6 +84,16 @@ impl StrSlice {
     pub fn to_str(self, text: &str) -> &str {
         &text[self.range()]
     }
+
+    pub fn trim_end_matches<P>(self, pattern: P, text: &str) -> StrSlice
+    where
+        P: FnMut(char) -> bool,
+    {
+        let before = &text[self.range()];
+        let after = before.trim_end_matches(pattern);
+        let diff = before.len() - after.len();
+        StrSlice { start: self.start, end: self.end - diff }
+    }
 }
 
 impl fmt::Debug for StrSlice {

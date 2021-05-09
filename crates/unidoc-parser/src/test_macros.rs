@@ -7,7 +7,7 @@ macro_rules! parse {
         let parsed = input.parse($parser);
         if let None = parsed {
         } else {
-            let ir = parsed.into_ir(str);
+            let ir = parsed.into_ir(str, &input);
             eprintln!("INPUT: {:?}\n\nEXPECTED: None\n\nGOT: {:#?}\n", str, ir);
             panic!("assertion failed");
         }
@@ -19,7 +19,7 @@ macro_rules! parse {
         let str = $text;
         let mut input = crate::Input::new(str);
         let parsed = input.parse($parser);
-        let ir = parsed.into_ir(str);
+        let ir = parsed.into_ir(str, &input);
         if ir != Some($expected) {
             eprintln!("INPUT: {:?}\n\nEXPECTED: {:#?}\n\nGOT: {:#?}\n", str, $expected, ir);
             panic!("assertion failed");

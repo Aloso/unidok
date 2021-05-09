@@ -10,6 +10,7 @@ impl<'a> IntoNode<'a> for SegmentIr<'a> {
     fn into_node(self) -> Node<'a> {
         match self {
             SegmentIr::Text(t) => Node::Text(t),
+            SegmentIr::Text2(t) => Node::Text2(t),
             SegmentIr::EscapedText(t) => Node::Text(t),
             SegmentIr::LineBreak => Node::Text("\n"),
             SegmentIr::Limiter => Node::Fragment(vec![]),
@@ -38,22 +39,31 @@ impl<'a> IntoNode<'a> for BracesIr<'a> {
 }
 
 impl<'a> IntoNode<'a> for LinkIr<'a> {
-    fn into_node(self) -> Node<'a> {
-        let href = Attr { key: "href", value: Some(self.href) };
-        let attrs = if let Some(title) = self.title {
-            let title = Attr { key: "title", value: Some(title) };
-            vec![href, title]
-        } else {
-            vec![href]
-        };
+    fn into_node(mut self) -> Node<'a> {
+        match self.href {
+            Some(href) => {
+                let href = Attr { key: "href", value: Some(href) };
+                let attrs = if let Some(title) = self.title {
+                    let title = Attr { key: "title", value: Some(title) };
+                    vec![href, title]
+                } else {
+                    vec![href]
+                };
 
-        Node::Element(Element {
-            name: ElemName::A,
-            attrs,
-            content: Some(self.text.into_nodes()),
-            is_block_level: false,
-            contains_blocks: false,
-        })
+                Node::Element(Element {
+                    name: ElemName::A,
+                    attrs,
+                    content: Some(self.text.into_nodes()),
+                    is_block_level: false,
+                    contains_blocks: false,
+                })
+            }
+            None if self.text.len() == 1 => self.text.pop().unwrap().into_node(),
+            None => panic!(
+                "Wrong text segment length in unresolved link reference: Expected 1, got {}",
+                self.text.len()
+            ),
+        }
     }
 }
 

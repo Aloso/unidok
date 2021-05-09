@@ -5,7 +5,9 @@ A powerful, readable, easy-to-learn markup language
 This language is inspired by AsciiDoc, but has a syntax that resembles Markdown. It tries to be as simple as possible while offering powerful features such as macros.
 
 <div align="center">
-  <a href="https://aloso.github.io/unidoc/" target="_blank">Check out the website</a>
+  <hr>
+  <a href="https://aloso.github.io/unidoc/">Check out the website!</a>
+  <hr>
 </div>
 
 ## Installation
@@ -51,7 +53,7 @@ Unidoc should look familiar if you're familiar with Markdown. It follows the Com
   * Need a way to automatically include the MathJax script (perhaps with a macro)
 
 * Links
-  * Link reference definitions
+  * Link reference definitions for images
   * Auto-links?
   * Forbid nested links?
   * URLs in angle brackets?

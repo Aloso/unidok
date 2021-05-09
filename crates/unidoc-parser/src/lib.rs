@@ -12,6 +12,7 @@ pub mod visitor;
 mod collapse_text;
 mod input;
 mod parse;
+mod parser_state;
 mod parsing_mode;
 mod utils;
 
@@ -26,5 +27,5 @@ pub use detached_str::{Str, StrSlice, StrSliceIndex};
 pub fn parse(s: &str) -> DocIr {
     let mut input = Input::new(s);
     let parsed = input.parse(Block::global_parser()).unwrap();
-    DocIr { blocks: parsed.into_ir(s) }
+    DocIr { blocks: parsed.into_ir(s, &input) }
 }

@@ -34,6 +34,14 @@ fn trim_segments_start(segment: SegmentIr<'_>) -> Option<SegmentIr<'_>> {
             t = t.trim_start_matches(|c| matches!(c, ' ' | '\t'));
             Some(SegmentIr::Text(t)).filter(|_| !t.is_empty())
         }
+        SegmentIr::Text2(t) => {
+            let t = t.trim_start_matches(|c| matches!(c, ' ' | '\t'));
+            if t.is_empty() {
+                None
+            } else {
+                Some(SegmentIr::Text2(t.to_string()))
+            }
+        }
         SegmentIr::EscapedText(mut t) => {
             t = t.trim_start_matches(|c| matches!(c, ' ' | '\t'));
             Some(SegmentIr::EscapedText(t)).filter(|_| !t.is_empty())
@@ -47,6 +55,12 @@ fn trim_segments_end(seg: &mut SegmentIr) -> bool {
         SegmentIr::LineBreak | SegmentIr::Limiter => true,
         SegmentIr::Text(t) | SegmentIr::EscapedText(t) => {
             *t = t.trim_end_matches(|c| matches!(c, ' ' | '\t'));
+            t.is_empty()
+        }
+        SegmentIr::Text2(t) => {
+            while t.ends_with(|c| matches!(c, ' ' | '\t')) {
+                t.pop();
+            }
             t.is_empty()
         }
         _ => false,

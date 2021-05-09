@@ -15,7 +15,6 @@ impl<'a> IntoNode<'a> for BlockIr<'a> {
     fn into_node(self) -> Node<'a> {
         match self {
             BlockIr::CodeBlock(c) => c.into_node(),
-            BlockIr::Comment(_) => Node::Fragment(vec![]),
             BlockIr::Paragraph(p) => p.into_node(),
             BlockIr::Heading(h) => h.into_node(),
             BlockIr::ThematicBreak(t) => t.into_node(),
@@ -24,6 +23,7 @@ impl<'a> IntoNode<'a> for BlockIr<'a> {
             BlockIr::List(l) => l.into_node(),
             BlockIr::Quote(q) => q.into_node(),
             BlockIr::BlockMacro(m) => m.into_node(),
+            BlockIr::Empty => Node::Fragment(vec![]),
         }
     }
 }
@@ -34,7 +34,6 @@ fn into_nodes_tight(blocks: Vec<BlockIr<'_>>) -> Vec<Node<'_>> {
     for block in blocks {
         match block {
             BlockIr::CodeBlock(c) => result.push(c.into_node()),
-            BlockIr::Comment(_) => result.push(Node::Fragment(vec![])),
             BlockIr::Paragraph(p) => {
                 let segments = into_nodes_trimmed(p.segments);
                 if !segments.is_empty() {
@@ -55,6 +54,7 @@ fn into_nodes_tight(blocks: Vec<BlockIr<'_>>) -> Vec<Node<'_>> {
             BlockIr::List(l) => result.push(l.into_node()),
             BlockIr::Quote(q) => result.push(q.into_node()),
             BlockIr::BlockMacro(m) => result.push(m.into_node()),
+            BlockIr::Empty => {}
         }
     }
     if let Some(Node::Element(Element { name: ElemName::Br, .. })) = result.last() {

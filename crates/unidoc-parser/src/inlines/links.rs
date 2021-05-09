@@ -2,8 +2,8 @@ use std::mem::replace;
 
 use super::segments::{Segment, Segments};
 use crate::parsing_mode::ParsingMode;
-use crate::utils::Indents;
-use crate::{Context, Input, Parse};
+use crate::utils::{Indents, Until};
+use crate::{Context, Input, Parse, StrSlice};
 
 /// A hyperlink.
 ///
@@ -24,9 +24,14 @@ use crate::{Context, Input, Parse};
 /// Double quotes in the title can be escaped with a backslash.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Link {
-    pub href: String,
-    pub text: Vec<Segment>,
-    pub title: Option<String>,
+    pub text: Option<Vec<Segment>>,
+    pub target: LinkTarget,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum LinkTarget {
+    Url { href: String, title: Option<String> },
+    Reference(StrSlice),
 }
 
 impl Link {
@@ -43,19 +48,70 @@ impl Parse for ParseLink<'_> {
     type Output = Link;
 
     fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
+        if let Some(link) = input.parse(ParseFullLink { ind: self.ind }) {
+            Some(link)
+        } else {
+            input.parse(ParseLinkTargetReference).map(|target| Link { text: None, target })
+        }
+    }
+}
+
+struct ParseFullLink<'a> {
+    ind: Indents<'a>,
+}
+
+impl Parse for ParseFullLink<'_> {
+    type Output = Link;
+
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
         input.parse('[')?;
         let text = input
             .parse(Segments::parser(self.ind, Context::LinkOrImg, ParsingMode::new_all()))?
             .into_segments_no_underline_zero()?;
-        input.parse("](")?;
+        input.parse(']')?;
+
+        let target =
+            input.parse(ParseLinkTargetUrl).or_else(|| input.parse(ParseLinkTargetReference))?;
+
+        input.apply();
+        Some(Link { text: Some(text), target })
+    }
+}
+
+struct ParseLinkTargetUrl;
+
+impl Parse for ParseLinkTargetUrl {
+    type Output = LinkTarget;
+
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
+        let mut input = input.start();
+
+        input.parse('(')?;
         let href = input.parse(ParseHref)?;
         let title = input.parse(ParseQuotedText);
         input.parse(')')?;
 
         input.apply();
-        Some(Link { href, text, title })
+        Some(LinkTarget::Url { href, title })
+    }
+}
+
+struct ParseLinkTargetReference;
+
+impl Parse for ParseLinkTargetReference {
+    type Output = LinkTarget;
+
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
+        let mut input = input.start();
+
+        input.parse('[')?;
+        let reference = input.parse(Until(|c| matches!(c, ']' | '\r' | '\n')))?;
+        input.parse(']')?;
+
+        input.apply();
+        Some(LinkTarget::Reference(reference))
     }
 }
 

@@ -1,6 +1,7 @@
 pub(crate) mod code_blocks;
 pub(crate) mod comments;
 pub(crate) mod headings;
+pub(crate) mod link_ref_defs;
 pub(crate) mod lists;
 pub(crate) mod macros;
 pub(crate) mod paragraphs;
@@ -11,6 +12,7 @@ pub(crate) mod thematic_breaks;
 pub use code_blocks::{CodeBlock, Fence};
 pub use comments::Comment;
 pub use headings::{Heading, HeadingKind, Underline};
+pub use link_ref_defs::LinkRefDef;
 pub use lists::{Bullet, List};
 pub use macros::BlockMacro;
 pub use paragraphs::Paragraph;
@@ -28,7 +30,6 @@ use crate::{Input, Parse};
 #[derive(Debug, Clone, PartialEq)]
 pub enum Block {
     CodeBlock(CodeBlock),
-    Comment(Comment),
     Paragraph(Paragraph),
     Heading(Heading),
     Table(Table),
@@ -37,6 +38,9 @@ pub enum Block {
     Quote(Quote),
     BlockMacro(BlockMacro),
     BlockHtml(HtmlNode),
+
+    Comment(Comment),
+    LinkRefDef(LinkRefDef),
 }
 
 impl Block {
@@ -142,6 +146,12 @@ impl Parse for ParseBlock<'_> {
         if mode.is(ParsingMode::QUOTES) {
             if let Some(quote) = input.parse(Quote::parser(ind)) {
                 return Some(Block::Quote(quote));
+            }
+        }
+
+        if mode.is(ParsingMode::INLINE) {
+            if let Some(lrd) = input.parse(LinkRefDef::parser(ind)) {
+                return Some(Block::LinkRefDef(lrd));
             }
         }
 

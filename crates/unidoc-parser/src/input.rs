@@ -1,16 +1,18 @@
 use std::ops::{Deref, DerefMut, Index};
 
+use crate::parser_state::ParserState;
 use crate::{Parse, ParseInfallible, Str, StrSlice};
 
 #[derive(Debug, Clone)]
 pub struct Input {
     text: Str,
     idx: usize,
+    state: ParserState,
 }
 
 impl Input {
     pub fn new(text: impl ToString) -> Self {
-        Input { text: text.to_string().into(), idx: 0 }
+        Input { text: text.to_string().into(), idx: 0, state: Default::default() }
     }
 
     #[inline]
@@ -83,6 +85,14 @@ impl Input {
     /// correctness, the parser should NOT be bumped.
     pub fn can_parse<P: Parse>(&mut self, mut parser: P) -> bool {
         parser.can_parse(self)
+    }
+
+    pub fn state(&self) -> &ParserState {
+        &self.state
+    }
+
+    pub fn state_mut(&mut self) -> &mut ParserState {
+        &mut self.state
     }
 }
 

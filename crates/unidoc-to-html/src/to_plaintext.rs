@@ -10,6 +10,7 @@ impl ToPlaintext for SegmentIr<'_> {
             SegmentIr::LineBreak => buf.push('\n'),
             SegmentIr::Limiter => {}
             &SegmentIr::Text(t) => buf.push_str(t),
+            SegmentIr::Text2(t) => buf.push_str(t),
             &SegmentIr::EscapedText(e) => buf.push_str(e),
             SegmentIr::Braces(b) => b.to_plaintext(buf),
             SegmentIr::Math(m) => m.to_plaintext(buf),
@@ -107,7 +108,6 @@ impl ToPlaintext for BlockIr<'_> {
     fn to_plaintext(&self, buf: &mut String) {
         match self {
             BlockIr::CodeBlock(c) => c.to_plaintext(buf),
-            BlockIr::Comment(_) => {}
             BlockIr::Paragraph(p) => p.to_plaintext(buf),
             BlockIr::Heading(h) => h.to_plaintext(buf),
             BlockIr::Table(_) => {} // TODO: Emit warning
@@ -116,6 +116,7 @@ impl ToPlaintext for BlockIr<'_> {
             BlockIr::Quote(q) => q.to_plaintext(buf),
             BlockIr::BlockMacro(m) => m.content.to_plaintext(buf),
             BlockIr::BlockHtml(h) => h.to_plaintext(buf),
+            BlockIr::Empty => {}
         }
     }
 }

@@ -12,7 +12,6 @@ pub trait IrVisitor {
     fn visit_block(&mut self, block: &mut BlockIr) {
         match block {
             BlockIr::CodeBlock(b) => self.visit_code_block(b),
-            BlockIr::Comment(b) => self.visit_comment(b),
             BlockIr::Paragraph(b) => self.visit_paragraph(b),
             BlockIr::Heading(b) => self.visit_heading(b),
             BlockIr::Table(b) => self.visit_table(b),
@@ -21,12 +20,11 @@ pub trait IrVisitor {
             BlockIr::Quote(b) => self.visit_quote(b),
             BlockIr::BlockMacro(b) => self.visit_block_macro(b),
             BlockIr::BlockHtml(h) => self.visit_html_node(h, false),
+            BlockIr::Empty => {}
         }
     }
 
     fn visit_code_block(&mut self, _: &mut CodeBlockIr) {}
-
-    fn visit_comment(&mut self, _: &mut CommentIr) {}
 
     fn visit_paragraph(&mut self, paragraph: &mut ParagraphIr) {
         for segment in &mut paragraph.segments {
@@ -102,6 +100,7 @@ pub trait IrVisitor {
 
             | SegmentIr::LineBreak
             | SegmentIr::Text(_)
+            | SegmentIr::Text2(_)
             | SegmentIr::EscapedText(_)
             | SegmentIr::Limiter => {}
         }

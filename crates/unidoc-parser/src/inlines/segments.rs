@@ -15,6 +15,7 @@ pub enum Segment {
     LineBreak(LineBreak),
     Text(StrSlice),
     Text2(&'static str),
+    Text3(String),
     Escaped(Escaped),
     Limiter(Limiter),
     Braces(Braces),
@@ -28,10 +29,6 @@ pub enum Segment {
 }
 
 impl Segment {
-    // pub fn is_closing_tag_for(&self, name: ElemName) -> bool {
-    //     matches!(*self, Segment::InlineHtml(HtmlNode::ClosingTag(n)) if n ==
-    // name) }
-
     pub fn strip_space_start(&mut self, input: &Input) -> bool {
         match self {
             Segment::Text(s) if s.to_str(input.text()).starts_with(' ') => {
@@ -589,6 +586,7 @@ impl ParseSegments<'_> {
             || self.mode.is(P::LISTS) && input.can_parse(List::parser(ind, false, &mut None))
             || self.mode.is(P::THEMATIC_BREAKS) && input.can_parse(ThematicBreak::parser(ind))
             || self.mode.is(P::QUOTES) && input.can_parse(Quote::parser(ind))
+            || self.mode.is(P::INLINE) && input.can_parse(LinkRefDef::parser(ind))
     }
 }
 
