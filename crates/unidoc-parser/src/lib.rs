@@ -28,5 +28,7 @@ pub use detached_str::{Str, StrSlice, StrSliceIndex};
 pub fn parse(s: &str) -> DocIr {
     let mut input = Input::new(s);
     let parsed = input.parse(Block::global_parser()).unwrap();
+    debug_assert!(input.is_empty());
+
     DocIr { blocks: parsed.into_ir(s, input.state()) }
 }

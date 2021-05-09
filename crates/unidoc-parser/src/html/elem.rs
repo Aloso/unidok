@@ -127,7 +127,7 @@ impl Parse for ParseElement<'_> {
                     .into_segments_no_underline_zero()?;
                 input.try_parse(ParseClosingTag { elem: name });
 
-                if nl && matches!(segments.last(), Some(Segment::LineBreak(_))) {
+                if nl && matches!(segments.last(), Some(Segment::LineBreak)) {
                     segments.pop();
                 }
 

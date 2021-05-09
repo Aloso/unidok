@@ -40,6 +40,8 @@ Unidoc should look familiar if you're familiar with Markdown. It follows the Com
 
 ## Roadmap
 
+* Bug: Excess spaces/tabs in empty line can interrupt blockquote
+
 * Lists
   * Checklists (`- [x] done`)
 
@@ -56,7 +58,6 @@ Unidoc should look familiar if you're familiar with Markdown. It follows the Com
   * Need a way to automatically include the MathJax script (perhaps with a macro)
 
 * Links
-  * Link reference definitions for images
   * Auto-links?
   * Forbid nested links?
   * URLs in angle brackets?
@@ -72,6 +73,7 @@ Unidoc should look familiar if you're familiar with Markdown. It follows the Com
     `\alpha`, `\Alpha`, `\beta`, ..., `\pi`, ..., `\Omega`,
     `\in`, `\notin`, `\AA`, `\EE`, `\N`, `\Z`, `\Q`, `\R`, `\C`, `\H`, `\F`, `\oo`, `\aleph` ...
     * <https://en.wikipedia.org/wiki/Glossary_of_mathematical_symbols>
+    * <http://asciimath.org/>
   * Other, e.g.: `?!`, `!?`
 
 * Macros

@@ -305,12 +305,12 @@ impl<'a> IntoIR<'a> for Segment {
 
     fn into_ir(self, text: &'a str, state: &ParserState) -> Self::IR {
         match self {
-            Segment::LineBreak(_) => SegmentIr::LineBreak,
+            Segment::LineBreak => SegmentIr::LineBreak,
             Segment::Text(t) => SegmentIr::Text(t.into_ir(text, state)),
             Segment::Text2(t) => SegmentIr::Text(t),
             Segment::Text3(t) => SegmentIr::Text2(t),
             Segment::Escaped(esc) => SegmentIr::EscapedText(esc.text.into_ir(text, state)),
-            Segment::Limiter(_) => SegmentIr::Limiter,
+            Segment::Limiter => SegmentIr::Limiter,
             Segment::Braces(b) => SegmentIr::Braces(b.into_ir(text, state)),
             Segment::Math(b) => SegmentIr::Math(b.into_ir(text, state)),
             Segment::Link(b) => SegmentIr::Link(b.into_ir(text, state)),

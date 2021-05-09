@@ -12,12 +12,12 @@ use crate::{Indents, Input, Parse, StrSlice};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Segment {
-    LineBreak(LineBreak),
+    LineBreak,
     Text(StrSlice),
     Text2(&'static str),
     Text3(String),
     Escaped(Escaped),
-    Limiter(Limiter),
+    Limiter,
     Braces(Braces),
     Math(Math),
     Link(Link),
@@ -104,21 +104,13 @@ impl Parse for ParseSegments<'_> {
     type Output = Segments;
 
     fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
-        use Context::*;
-
         let (items, underline) = self.lex_items(input)?;
         if items.is_empty() {
             return Some(Segments::Empty);
         }
 
         let stack = parse_paragraph_items(items);
-        let mut segments = stack_to_segments(stack);
-
-        if let BlockBraces | Heading | Global = self.context {
-            while input.parse(ParseLineBreak(self.ind)).is_some() && !input.is_empty() {
-                segments.push(Segment::LineBreak(LineBreak));
-            }
-        }
+        let segments = stack_to_segments(stack);
 
         Some(Segments::Some { segments, underline })
     }
@@ -275,8 +267,8 @@ fn stack_to_segments(stack: Vec<StackItem>) -> Vec<Segment> {
             StackItem::Macro(m) => Segment::InlineMacro(m),
             StackItem::Html(h) => Segment::InlineHtml(h),
             StackItem::Escaped(e) => Segment::Escaped(e),
-            StackItem::LineBreak => Segment::LineBreak(LineBreak),
-            StackItem::Limiter => Segment::Limiter(Limiter),
+            StackItem::LineBreak => Segment::LineBreak,
+            StackItem::Limiter => Segment::Limiter,
             StackItem::FormatDelim { delim, .. } => Segment::Text2(delim.to_str()),
         })
     }
@@ -580,7 +572,7 @@ impl ParseSegments<'_> {
         let ind = self.ind;
 
         self.mode.is(P::CODE_BLOCKS) && input.can_parse(CodeBlock::parser(ind, None))
-            || self.mode.is(P::COMMENTS) && input.can_parse(Comment::parser(ind))
+            || self.mode.is(P::COMMENTS) && input.can_parse(Comment::parser())
             || self.mode.is(P::HEADINGS) && input.can_parse(Heading::parser(ind))
             || self.mode.is(P::TABLES) && input.can_parse(Table::parser(ind))
             || self.mode.is(P::LISTS) && input.can_parse(List::parser(ind, false, &mut None))
