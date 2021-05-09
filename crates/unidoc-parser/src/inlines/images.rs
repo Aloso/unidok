@@ -1,4 +1,4 @@
-use super::links::{ParseHref, ParseQuotedText};
+use super::links::{LinkTarget, ParseLinkTargetReference, ParseLinkTargetUrl};
 use super::segments::{Segment, Segments};
 use crate::parsing_mode::ParsingMode;
 use crate::utils::Indents;
@@ -8,22 +8,13 @@ use crate::{Context, Input, Parse};
 ///
 /// ### Syntax
 ///
-/// The syntax is similar to links, except that on the left is the alt text,
-/// not the content:
-///
 /// ```markdown
 /// ![Alt text](https://www.example.com/image.jpg "a title")
 /// ```
-///
-/// The alt text can be wrapped in `{braces}` to allow line breaks etc.
-///
-/// If no text is directly above and below the image, the `.block` CSS class is
-/// added to the image.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Image {
-    pub href: String,
-    pub alt: Vec<Segment>,
-    pub title: Option<String>,
+    pub alt: Option<Vec<Segment>>,
+    pub target: LinkTarget,
 }
 
 impl Image {
@@ -40,18 +31,38 @@ impl Parse for ParseImage<'_> {
     type Output = Image;
 
     fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
+        if let Some(img) = input.parse(ParseFullImage { ind: self.ind }) {
+            Some(img)
+        } else {
+            let mut input = input.start();
+            input.parse('!')?;
+            let target = input.parse(ParseLinkTargetReference)?;
+            input.apply();
+            Some(Image { alt: None, target })
+        }
+    }
+}
+
+pub(crate) struct ParseFullImage<'a> {
+    ind: Indents<'a>,
+}
+
+impl Parse for ParseFullImage<'_> {
+    type Output = Image;
+
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
         input.parse("![")?;
         let alt = input
             .parse(Segments::parser(self.ind, Context::LinkOrImg, ParsingMode::new_all()))?
             .into_segments_no_underline_zero()?;
-        input.parse("](")?;
-        let href = input.parse(ParseHref)?;
-        let title = input.parse(ParseQuotedText);
-        input.parse(')')?;
+        input.parse(']')?;
+
+        let target =
+            input.parse(ParseLinkTargetUrl).or_else(|| input.parse(ParseLinkTargetReference))?;
 
         input.apply();
-        Some(Image { href, alt, title })
+        Some(Image { alt: Some(alt), target })
     }
 }

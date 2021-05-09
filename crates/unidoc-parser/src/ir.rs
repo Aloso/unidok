@@ -5,8 +5,9 @@ use crate::blocks::*;
 use crate::html::*;
 use crate::inlines::*;
 use crate::macros::{MacroArgs, TokenTree, TokenTreeAtom};
+use crate::parser_state::ParserState;
 use crate::parsing_mode::ParsingMode;
-use crate::{collapse_text, Input, StrSlice};
+use crate::{collapse_text, StrSlice};
 
 /// A document, consisting of multiple [`BlockIr`]s.
 #[derive(Debug, Clone, PartialEq)]
@@ -165,7 +166,7 @@ pub struct LinkIr<'a> {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ImageIr<'a> {
-    pub href: String,
+    pub href: Option<String>,
     pub alt: Vec<SegmentIr<'a>>,
     pub title: Option<String>,
 }
@@ -220,13 +221,13 @@ pub enum ElemContentIr<'a> {
 pub trait IntoIR<'a> {
     type IR: 'a;
 
-    fn into_ir(self, text: &'a str, state: &Input) -> Self::IR;
+    fn into_ir(self, text: &'a str, state: &ParserState) -> Self::IR;
 }
 
 impl<'a> IntoIR<'a> for StrSlice {
     type IR = &'a str;
 
-    fn into_ir(self, text: &'a str, _: &Input) -> Self::IR {
+    fn into_ir(self, text: &'a str, _: &ParserState) -> Self::IR {
         self.to_str(text)
     }
 }
@@ -234,13 +235,13 @@ impl<'a> IntoIR<'a> for StrSlice {
 impl<'a> IntoIR<'a> for () {
     type IR = ();
 
-    fn into_ir(self, _: &'a str, _: &Input) -> Self::IR {}
+    fn into_ir(self, _: &'a str, _: &ParserState) -> Self::IR {}
 }
 
 impl<'a, T: IntoIR<'a>> IntoIR<'a> for Vec<T> {
     type IR = Vec<T::IR>;
 
-    fn into_ir(self, text: &'a str, state: &Input) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &ParserState) -> Self::IR {
         self.into_iter().map(|t| t.into_ir(text, state)).collect()
     }
 }
@@ -248,7 +249,7 @@ impl<'a, T: IntoIR<'a>> IntoIR<'a> for Vec<T> {
 impl<'a, T: IntoIR<'a>> IntoIR<'a> for Box<T> {
     type IR = Box<T::IR>;
 
-    fn into_ir(self, text: &'a str, state: &Input) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &ParserState) -> Self::IR {
         Box::new((*self).into_ir(text, state))
     }
 }
@@ -256,7 +257,7 @@ impl<'a, T: IntoIR<'a>> IntoIR<'a> for Box<T> {
 impl<'a, T: IntoIR<'a>> IntoIR<'a> for Option<T> {
     type IR = Option<T::IR>;
 
-    fn into_ir(self, text: &'a str, state: &Input) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &ParserState) -> Self::IR {
         self.map(|t| t.into_ir(text, state))
     }
 }
@@ -264,7 +265,7 @@ impl<'a, T: IntoIR<'a>> IntoIR<'a> for Option<T> {
 impl<'a> IntoIR<'a> for Block {
     type IR = BlockIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &Input) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &ParserState) -> Self::IR {
         match self {
             Block::CodeBlock(b) => BlockIr::CodeBlock(b.into_ir(text, state)),
             Block::Paragraph(b) => BlockIr::Paragraph(b.into_ir(text, state)),
@@ -284,7 +285,7 @@ impl<'a> IntoIR<'a> for Block {
 impl<'a> IntoIR<'a> for CodeBlock {
     type IR = CodeBlockIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &Input) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &ParserState) -> Self::IR {
         CodeBlockIr {
             info: self.info.into_ir(text, state),
             fence: self.fence,
@@ -297,7 +298,7 @@ impl<'a> IntoIR<'a> for CodeBlock {
 impl<'a> IntoIR<'a> for Paragraph {
     type IR = ParagraphIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &Input) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &ParserState) -> Self::IR {
         ParagraphIr { segments: collapse_text(self.segments).into_ir(text, state) }
     }
 }
@@ -305,7 +306,7 @@ impl<'a> IntoIR<'a> for Paragraph {
 impl<'a> IntoIR<'a> for Segment {
     type IR = SegmentIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &Input) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &ParserState) -> Self::IR {
         match self {
             Segment::LineBreak(_) => SegmentIr::LineBreak,
             Segment::Text(t) => SegmentIr::Text(t.into_ir(text, state)),
@@ -328,7 +329,7 @@ impl<'a> IntoIR<'a> for Segment {
 impl<'a> IntoIR<'a> for Heading {
     type IR = HeadingIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &Input) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &ParserState) -> Self::IR {
         HeadingIr { level: self.level, segments: collapse_text(self.segments).into_ir(text, state) }
     }
 }
@@ -336,7 +337,7 @@ impl<'a> IntoIR<'a> for Heading {
 impl<'a> IntoIR<'a> for ThematicBreak {
     type IR = ThematicBreakIr;
 
-    fn into_ir(self, _: &str, _: &Input) -> Self::IR {
+    fn into_ir(self, _: &str, _: &ParserState) -> Self::IR {
         ThematicBreakIr { len: self.len, kind: self.kind }
     }
 }
@@ -344,7 +345,7 @@ impl<'a> IntoIR<'a> for ThematicBreak {
 impl<'a> IntoIR<'a> for Table {
     type IR = TableIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &Input) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &ParserState) -> Self::IR {
         TableIr { rows: self.rows.into_ir(text, state) }
     }
 }
@@ -352,7 +353,7 @@ impl<'a> IntoIR<'a> for Table {
 impl<'a> IntoIR<'a> for TableRow {
     type IR = TableRowIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &Input) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &ParserState) -> Self::IR {
         TableRowIr { is_header_row: self.is_header_row, cells: self.cells.into_ir(text, state) }
     }
 }
@@ -360,7 +361,7 @@ impl<'a> IntoIR<'a> for TableRow {
 impl<'a> IntoIR<'a> for TableCell {
     type IR = TableCellIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &Input) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &ParserState) -> Self::IR {
         TableCellIr {
             meta: self.meta.into_ir(text, state),
             segments: collapse_text(self.segments).into_ir(text, state),
@@ -371,7 +372,7 @@ impl<'a> IntoIR<'a> for TableCell {
 impl<'a> IntoIR<'a> for CellMeta {
     type IR = CellMetaIr;
 
-    fn into_ir(self, _: &'a str, _: &Input) -> Self::IR {
+    fn into_ir(self, _: &'a str, _: &ParserState) -> Self::IR {
         CellMetaIr {
             is_header_cell: self.is_header_cell,
             alignment: self.alignment,
@@ -385,7 +386,7 @@ impl<'a> IntoIR<'a> for CellMeta {
 impl<'a> IntoIR<'a> for List {
     type IR = ListIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &Input) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &ParserState) -> Self::IR {
         ListIr {
             bullet: self.bullet,
             items: self.items.into_ir(text, state),
@@ -398,7 +399,7 @@ impl<'a> IntoIR<'a> for List {
 impl<'a> IntoIR<'a> for Quote {
     type IR = QuoteIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &Input) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &ParserState) -> Self::IR {
         QuoteIr { content: self.content.into_ir(text, state) }
     }
 }
@@ -406,7 +407,7 @@ impl<'a> IntoIR<'a> for Quote {
 impl<'a> IntoIR<'a> for BlockMacro {
     type IR = BlockMacroIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &Input) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &ParserState) -> Self::IR {
         BlockMacroIr {
             name: self.name.into_ir(text, state),
             args: self.args.into_ir(text, state),
@@ -418,7 +419,7 @@ impl<'a> IntoIR<'a> for BlockMacro {
 impl<'a> IntoIR<'a> for BlockMacroContent {
     type IR = BlockMacroContentIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &Input) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &ParserState) -> Self::IR {
         match self {
             BlockMacroContent::Prefixed(p) => BlockMacroContentIr::Prefixed(p.into_ir(text, state)),
             BlockMacroContent::Braces(b) => BlockMacroContentIr::Braces(b.into_ir(text, state)),
@@ -429,7 +430,7 @@ impl<'a> IntoIR<'a> for BlockMacroContent {
 impl<'a> IntoIR<'a> for MacroArgs {
     type IR = MacroArgsIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &Input) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &ParserState) -> Self::IR {
         match self {
             MacroArgs::Raw(r) => MacroArgsIr::Raw(r.into_ir(text, state)),
             MacroArgs::TokenTrees(t) => MacroArgsIr::TokenTrees(t.into_ir(text, state)),
@@ -442,7 +443,7 @@ impl<'a> IntoIR<'a> for MacroArgs {
 impl<'a> IntoIR<'a> for TokenTree {
     type IR = TokenTreeIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &Input) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &ParserState) -> Self::IR {
         match self {
             TokenTree::Atom(a) => TokenTreeIr::Atom(a.into_ir(text, state)),
             TokenTree::KV(k, v) => TokenTreeIr::KV(k.into_ir(text, state), v.into_ir(text, state)),
@@ -453,7 +454,7 @@ impl<'a> IntoIR<'a> for TokenTree {
 impl<'a> IntoIR<'a> for TokenTreeAtom {
     type IR = TokenTreeAtomIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &Input) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &ParserState) -> Self::IR {
         match self {
             TokenTreeAtom::Word(w) => TokenTreeAtomIr::Word(w.into_ir(text, state)),
             TokenTreeAtom::QuotedWord(q) => TokenTreeAtomIr::QuotedWord(q),
@@ -466,7 +467,7 @@ impl<'a> IntoIR<'a> for TokenTreeAtom {
 impl<'a> IntoIR<'a> for Braces {
     type IR = BracesIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &Input) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &ParserState) -> Self::IR {
         BracesIr { segments: collapse_text(self.segments).into_ir(text, state) }
     }
 }
@@ -474,7 +475,7 @@ impl<'a> IntoIR<'a> for Braces {
 impl<'a> IntoIR<'a> for Math {
     type IR = MathIr;
 
-    fn into_ir(self, _: &str, _: &Input) -> Self::IR {
+    fn into_ir(self, _: &str, _: &ParserState) -> Self::IR {
         MathIr { text: self.text }
     }
 }
@@ -482,7 +483,7 @@ impl<'a> IntoIR<'a> for Math {
 impl<'a> IntoIR<'a> for Link {
     type IR = LinkIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &Input) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &ParserState) -> Self::IR {
         match self.target {
             LinkTarget::Url { href, title } => {
                 let segments = self.text.unwrap_or_else(|| vec![Segment::Text3(href.clone())]);
@@ -494,7 +495,7 @@ impl<'a> IntoIR<'a> for Link {
             }
             LinkTarget::Reference(r) => {
                 let reference = r.to_str(text);
-                match state.state().link_ref_defs.get(reference) {
+                match state.link_ref_defs.get(reference) {
                     Some(lrd) => {
                         let href = lrd.url.to_str(text);
                         let segments = self.text.unwrap_or_else(|| vec![Segment::Text(r)]);
@@ -519,11 +520,36 @@ impl<'a> IntoIR<'a> for Link {
 impl<'a> IntoIR<'a> for Image {
     type IR = ImageIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &Input) -> Self::IR {
-        ImageIr {
-            href: self.href,
-            alt: collapse_text(self.alt).into_ir(text, state),
-            title: self.title,
+    fn into_ir(self, text: &'a str, state: &ParserState) -> Self::IR {
+        match self.target {
+            LinkTarget::Url { href, title } => {
+                let segments = self.alt.unwrap_or_else(|| vec![Segment::Text3(href.clone())]);
+                ImageIr {
+                    href: Some(href),
+                    alt: collapse_text(segments).into_ir(text, state),
+                    title,
+                }
+            }
+            LinkTarget::Reference(r) => {
+                let reference = r.to_str(text);
+                match state.link_ref_defs.get(reference) {
+                    Some(lrd) => {
+                        let href = lrd.url.to_str(text);
+                        let segments = self.alt.unwrap_or_else(|| vec![Segment::Text(r)]);
+
+                        ImageIr {
+                            href: Some(href.to_string()),
+                            alt: collapse_text(segments).into_ir(text, state),
+                            title: lrd.title.clone(),
+                        }
+                    }
+                    None => ImageIr {
+                        href: None,
+                        alt: vec![SegmentIr::Text2(format!("[{}]", reference))],
+                        title: None,
+                    },
+                }
+            }
         }
     }
 }
@@ -531,7 +557,7 @@ impl<'a> IntoIR<'a> for Image {
 impl<'a> IntoIR<'a> for InlineMacro {
     type IR = InlineMacroIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &Input) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &ParserState) -> Self::IR {
         InlineMacroIr {
             name: self.name.into_ir(text, state),
             args: self.args.into_ir(text, state),
@@ -543,7 +569,7 @@ impl<'a> IntoIR<'a> for InlineMacro {
 impl<'a> IntoIR<'a> for InlineFormat {
     type IR = InlineFormatIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &Input) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &ParserState) -> Self::IR {
         InlineFormatIr {
             formatting: self.formatting,
             segments: collapse_text(self.segments).into_ir(text, state),
@@ -554,7 +580,7 @@ impl<'a> IntoIR<'a> for InlineFormat {
 impl<'a> IntoIR<'a> for Code {
     type IR = CodeIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &Input) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &ParserState) -> Self::IR {
         CodeIr { segments: collapse_text(self.segments).into_ir(text, state) }
     }
 }
@@ -562,7 +588,7 @@ impl<'a> IntoIR<'a> for Code {
 impl<'a> IntoIR<'a> for HtmlNode {
     type IR = HtmlNodeIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &Input) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &ParserState) -> Self::IR {
         match self {
             HtmlNode::Element(e) => HtmlNodeIr::Element(e.into_ir(text, state)),
             HtmlNode::CData(c) => HtmlNodeIr::CData(c.into_ir(text, state)),
@@ -575,7 +601,7 @@ impl<'a> IntoIR<'a> for HtmlNode {
 impl<'a> IntoIR<'a> for Doctype {
     type IR = &'a str;
 
-    fn into_ir(self, text: &'a str, state: &Input) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &ParserState) -> Self::IR {
         self.text.into_ir(text, state)
     }
 }
@@ -583,7 +609,7 @@ impl<'a> IntoIR<'a> for Doctype {
 impl<'a> IntoIR<'a> for CDataSection {
     type IR = &'a str;
 
-    fn into_ir(self, text: &'a str, state: &Input) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &ParserState) -> Self::IR {
         self.text.into_ir(text, state)
     }
 }
@@ -591,7 +617,7 @@ impl<'a> IntoIR<'a> for CDataSection {
 impl<'a> IntoIR<'a> for HtmlElem {
     type IR = HtmlElemIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &Input) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &ParserState) -> Self::IR {
         HtmlElemIr {
             name: self.name,
             attrs: self.attrs.into_ir(text, state),
@@ -604,7 +630,7 @@ impl<'a> IntoIR<'a> for HtmlElem {
 impl<'a> IntoIR<'a> for HtmlAttr {
     type IR = AttrIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &Input) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &ParserState) -> Self::IR {
         AttrIr { key: self.key.into_ir(text, state), value: self.value }
     }
 }
@@ -612,7 +638,7 @@ impl<'a> IntoIR<'a> for HtmlAttr {
 impl<'a> IntoIR<'a> for ElemContent {
     type IR = ElemContentIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &Input) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &ParserState) -> Self::IR {
         match self {
             ElemContent::Blocks(b) => ElemContentIr::Blocks(b.into_ir(text, state)),
             ElemContent::Inline(i) => ElemContentIr::Inline(collapse_text(i).into_ir(text, state)),

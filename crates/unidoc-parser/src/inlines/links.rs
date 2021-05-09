@@ -56,8 +56,8 @@ impl Parse for ParseLink<'_> {
     }
 }
 
-struct ParseFullLink<'a> {
-    ind: Indents<'a>,
+pub(super) struct ParseFullLink<'a> {
+    pub(super) ind: Indents<'a>,
 }
 
 impl Parse for ParseFullLink<'_> {
@@ -80,7 +80,7 @@ impl Parse for ParseFullLink<'_> {
     }
 }
 
-struct ParseLinkTargetUrl;
+pub(super) struct ParseLinkTargetUrl;
 
 impl Parse for ParseLinkTargetUrl {
     type Output = LinkTarget;
@@ -98,7 +98,7 @@ impl Parse for ParseLinkTargetUrl {
     }
 }
 
-struct ParseLinkTargetReference;
+pub(super) struct ParseLinkTargetReference;
 
 impl Parse for ParseLinkTargetReference {
     type Output = LinkTarget;
@@ -115,7 +115,7 @@ impl Parse for ParseLinkTargetReference {
     }
 }
 
-pub(super) struct ParseHref;
+struct ParseHref;
 
 impl Parse for ParseHref {
     type Output = String;
@@ -183,7 +183,7 @@ impl Parse for ParseHref {
     }
 }
 
-pub(super) struct ParseQuotedText;
+struct ParseQuotedText;
 
 impl Parse for ParseQuotedText {
     type Output = String;

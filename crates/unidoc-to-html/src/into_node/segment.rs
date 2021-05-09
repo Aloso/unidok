@@ -68,22 +68,31 @@ impl<'a> IntoNode<'a> for LinkIr<'a> {
 }
 
 impl<'a> IntoNode<'a> for ImageIr<'a> {
-    fn into_node(self) -> Node<'a> {
-        let mut buf = String::new();
-        for a in &self.alt {
-            a.to_plaintext(&mut buf);
+    fn into_node(mut self) -> Node<'a> {
+        match self.href {
+            Some(href) => {
+                let mut buf = String::new();
+                for a in &self.alt {
+                    a.to_plaintext(&mut buf);
+                }
+
+                let src = Attr { key: "src", value: Some(href) };
+                let alt = Attr { key: "alt", value: Some(buf) };
+
+                Node::Element(Element {
+                    name: ElemName::Img,
+                    attrs: vec![src, alt],
+                    content: None,
+                    is_block_level: false,
+                    contains_blocks: false,
+                })
+            }
+            None if self.alt.len() == 1 => self.alt.pop().unwrap().into_node(),
+            None => panic!(
+                "Wrong text segment length in unresolved image link reference: Expected 1, got {}",
+                self.alt.len()
+            ),
         }
-
-        let src = Attr { key: "src", value: Some(self.href) };
-        let alt = Attr { key: "alt", value: Some(buf) };
-
-        Node::Element(Element {
-            name: ElemName::Img,
-            attrs: vec![src, alt],
-            content: None,
-            is_block_level: false,
-            contains_blocks: false,
-        })
     }
 }
 
