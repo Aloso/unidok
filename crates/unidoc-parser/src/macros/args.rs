@@ -1,7 +1,7 @@
 use crate::blocks::CellMeta;
 use crate::input::Input;
 use crate::parsing_mode::ParsingMode;
-use crate::utils::{Indents, Until};
+use crate::utils::{Indents, ParseLineBreak, ParseOneWS, Until};
 use crate::{Parse, ParseInfallible, StrSlice};
 
 use super::{TokenTree, TokenTreeAtom};
@@ -59,8 +59,13 @@ impl Parse for ParseMacroArgs<'_> {
         }
         let content = match self.name {
             "LOAD" => MacroArgs::Raw(input.parse_i(ParseRaw)),
-            _ => MacroArgs::TokenTrees(input.parse_i(TokenTree::multi_parser(self.ind))),
+            _ => MacroArgs::TokenTrees(
+                input.parse(TokenTree::multi_parser(self.ind.push_indent(2)))?,
+            ),
         };
+
+        input.try_parse(ParseLineBreak(self.ind));
+        input.try_parse(ParseOneWS);
         input.parse(')')?;
 
         input.apply();

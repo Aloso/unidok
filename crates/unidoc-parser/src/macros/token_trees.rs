@@ -1,6 +1,6 @@
 use crate::inlines::Braces;
-use crate::utils::{Indents, ParseSpaces, ParseWs, QuotedStringWithEscapes};
-use crate::{Input, Parse, ParseInfallible, StrSlice};
+use crate::utils::{Indents, ParseSpaces, ParseWsNoBlankLinkes, QuotedStringWithEscapes};
+use crate::{Input, Parse, StrSlice};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum TokenTree {
@@ -109,7 +109,7 @@ impl Parse for ParseTokenTreeAtom<'_> {
         match input.peek_char() {
             Some('[') => {
                 input.bump(1);
-                let tuple = input.parse_i(TokenTree::multi_parser(self.ind));
+                let tuple = input.parse(TokenTree::multi_parser(self.ind))?;
                 input.parse(']')?;
                 input.apply();
                 Some(TokenTreeAtom::Tuple(tuple))
@@ -142,20 +142,26 @@ pub(crate) struct ParseTokenTrees<'a> {
     ind: Indents<'a>,
 }
 
-impl ParseInfallible for ParseTokenTrees<'_> {
+impl Parse for ParseTokenTrees<'_> {
     type Output = Vec<TokenTree>;
 
-    fn parse_infallible(&self, input: &mut Input) -> Self::Output {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let parser = TokenTree::parser(self.ind);
         let mut token_trees = Vec::new();
 
-        input.parse_i(ParseWs(self.ind));
+        input.parse(ParseWsNoBlankLinkes(self.ind))?;
+        if matches!(input.peek_char(), Some('\r' | '\n') | None) {
+            return Some(token_trees);
+        }
 
         while let Some(tt) = input.parse(parser) {
             token_trees.push(tt);
-            input.parse_i(ParseWs(self.ind));
+            input.parse(ParseWsNoBlankLinkes(self.ind))?;
+            if matches!(input.peek_char(), Some('\r' | '\n') | None) {
+                return Some(token_trees);
+            }
         }
 
-        token_trees
+        Some(token_trees)
     }
 }

@@ -150,3 +150,22 @@ impl ParseInfallible for ParseWs<'_> {
         }
     }
 }
+
+pub struct ParseWsNoBlankLinkes<'a>(pub Indents<'a>);
+
+impl Parse for ParseWsNoBlankLinkes<'_> {
+    type Output = ();
+
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
+        input.parse_i(While(|c| matches!(c, ' ' | '\t')));
+
+        if input.parse(ParseLineBreak(self.0)).is_some() {
+            input.parse_i(While(|c| matches!(c, ' ' | '\t')));
+
+            if matches!(input.peek_char(), Some('\n' | '\r')) {
+                return None;
+            }
+        }
+        Some(())
+    }
+}
