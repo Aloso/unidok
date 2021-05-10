@@ -1,46 +1,91 @@
 import * as wasm from "unidoc-playground"
 
-document.getElementById('open-playground')
-    .addEventListener('click', addBigPlayground)
+/**
+ * @typedef {{
+ *   openButton: HTMLElement,
+ *   content: HTMLElement,
+ *   contentLoading: string,
+ *   rand: number,
+ * }} NavState
+ */
 
-const nav = document.getElementById('main-nav')
-const buttons = []
-let openButton = null
-for (const btn of nav.children) {
-    if (btn.tagName === 'BUTTON') {
-        buttons.push(btn)
-        btn.addEventListener('click', () => {
-            openTab(btn)
-        })
-        if ('#' + btn.getAttribute('data-cls') === window.location.hash) {
-            openTab(btn)
+function main() {
+    document.getElementById('open-playground')
+        .addEventListener('click', addBigPlayground)
+
+    const content = document.getElementById('content')
+    const contentLoading = content.innerHTML
+
+    const nav = document.getElementById('main-nav')
+    const buttons = []
+    const navState = {
+        openButton: null,
+        content,
+        contentLoading,
+        rand: Math.floor(new Date() / 10000)
+    }
+
+    for (const btn of nav.children) {
+        if (btn.tagName === 'BUTTON') {
+            buttons.push(btn)
+            btn.addEventListener('click', () => {
+                openTab(btn, navState)
+            })
+            if ('#' + btn.getAttribute('data-cls') === window.location.hash) {
+                openTab(btn, navState)
+            }
         }
     }
+    if (navState.openButton == null) openTab(buttons[0], navState)
 }
-if (openButton == null) openTab(buttons[0])
+main()
 
-function openTab(button) {
-    if (openButton != null) {
-        openButton.classList.remove('open')
+/**
+ * @param {HTMLElement} button
+ * @param {NavState} navState
+ */
+function openTab(button, navState) {
+    if (navState.openButton != null) {
+        navState.openButton.classList.remove('open')
     }
-    openButton = button
-    openButton.classList.add('open')
+    navState.openButton = button
+    navState.openButton.classList.add('open')
     window.location.hash = button.getAttribute('data-cls')
 
+    let finishedLoading = false
+    setTimeout(() => {
+        if (!finishedLoading) {
+            navState.content.innerHTML = navState.contentLoading
+        }
+    }, 1000)
+
     const fileName = button.getAttribute('data-file')
-    fetch(`./sections/${fileName}`)
-        .then(response => response.text())
+    fetch(`./sections/${fileName}?${navState.rand}`)
+        .then(response => {
+            if (response.status === 200) {
+                return response.text()
+            } else {
+                finishedLoading = true
+                throw new Error(`${response.status} ${response.statusText}`)
+            }
+        })
         .then(text => {
-            const content = document.getElementById('content')
-            content.className = button.getAttribute('data-cls')
-            convertToHtml(text, content)
+            navState.content.className = button.getAttribute('data-cls')
+            convertToHtml(text, navState.content)
+            finishedLoading = true
 
             const elems = document.getElementsByClassName('playground');
             for (const elem of elems) {
                 initializePlayground(elem)
             }
         })
-        .catch(e => console.error(e))
+        .catch(e => {
+            finishedLoading = true
+            navState.content.innerHTML = `<div style="text-align: center; color: #ff7777; margin: 1.5em 0">
+                Error loading the content: ${e.message}
+            </div>`
+            console.error(e)
+        })
 }
 
 /**
