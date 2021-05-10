@@ -68,7 +68,7 @@ impl<'a> Indents<'a> {
 
 /// Parses a line break, including indentation (whitespace and quote markers) on
 /// the next line, if present.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub(crate) struct ParseLineBreak<'a>(pub Indents<'a>);
 
 impl Parse for ParseLineBreak<'_> {

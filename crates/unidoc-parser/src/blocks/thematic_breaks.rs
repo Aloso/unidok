@@ -58,14 +58,17 @@ impl Parse for ParseThematicBreak<'_> {
 
 #[test]
 fn test_hr() {
+    use crate::utils::ParseLineBreak;
     use ThematicBreakKind::*;
 
     let mut input = Input::new("  *******   \n    ---\n**\n___");
     let parser = ParseThematicBreak::default();
 
     assert_eq!(input.parse(parser), Some(ThematicBreak { len: 7, kind: Stars }));
+    input.parse(ParseLineBreak::default()).unwrap();
     assert_eq!(input.parse(parser), Some(ThematicBreak { len: 3, kind: Dashes }));
     assert_eq!(input.parse(parser), None);
     input.bump(3);
+    input.parse(ParseLineBreak::default()).unwrap();
     assert_eq!(input.parse(parser), Some(ThematicBreak { len: 3, kind: Underscores }));
 }
