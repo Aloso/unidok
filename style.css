@@ -1,13 +1,14 @@
 html, body {
     margin: 0;
     padding: 0;
+    height: 100%;
     font-family: 'PT Sans', 'Noto Sans', 'Open Sans', 'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
     font-size: 17px;
     background-color: #222;
     color: white;
 }
 
-header, section, nav {
+header, section, nav, #footer-inner {
     width: 1100px;
     max-width: 100%;
     margin: 0 auto;
@@ -56,7 +57,7 @@ nav button {
     background-color: transparent;
     border: 1px solid #ffffff17;
     border-bottom: 1px solid #222;
-    border-radius: 4px 4px 0 0;
+    border-radius: 6px 6px 0 0;
     text-decoration: none;
     font-size: 120%;
     font-family: inherit;
@@ -71,6 +72,30 @@ nav button:not(.open):hover {
     background-color: #ffffff17;
     border-bottom: 1px solid transparent;
     color: white;
+}
+
+footer {
+    background-color: #1c1c1c;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    line-height: 30px;
+    font-size: 18px;
+    color: #bbb;
+    position: sticky;
+    top: 100vh;
+}
+
+footer a {
+    text-decoration: none;
+}
+
+footer a.btn {
+    margin-left: 0.6em;
+}
+
+footer a:hover,
+footer a:hover {
+    text-decoration: underline;
 }
 
 .button, .button:link, .button:visited {
