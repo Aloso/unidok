@@ -109,7 +109,7 @@ Heading 2
 ---------
 ```
 
-<div class="differences">
+@(.differences){
   @(.mini-title)
   Differences to Markdown
 
@@ -118,9 +118,11 @@ Heading 2
 
   In Unidoc, underlined headings require at least 2
   equals signs or dashes.
-</div>
+}
+
 
 ### Paragraphs
+
 @(.playground)
 ```
 This is a paragraph of text.
@@ -150,7 +152,7 @@ Blockquotes can contain anything:
 > > A nested blockquote
 ```
 
-<div class="differences">
+@(.differences){
   @(.mini-title)
   Differences to Markdown
 
@@ -179,7 +181,7 @@ Blockquotes can contain anything:
    > A blockquote
     > Incorrectly indented line
   ```
-</div>
+}
 
 
 ### Lists
@@ -204,6 +206,7 @@ Ordered lists can use a dot (`1.`) or a closing parenthesis (`1)`).
 Unordered lists can use dashes (`-`), stars (`*`) or plus characters (`+`).
 
 List items can contain anything:
+
 @(.playground)
 ```
 + An unordered list
@@ -216,7 +219,7 @@ List items can contain anything:
 
 Note that a list marker must always be followed by a space, and subsequent lines must be properly indented.
 
-<div class="differences">
+@(.differences){
   @(.mini-title)
   Differences to Markdown
 
@@ -225,9 +228,9 @@ Note that a list marker must always be followed by a space, and subsequent lines
 
   @(.playground)
   ```
-    - The list item
-      continues on this line
-    But this is not part of the list item!
+  - The list item
+    continues on this line
+  But this is not part of the list item!
   ```
   The width of a list marker does not depend on
   the number of spaces after the marker:
@@ -245,7 +248,7 @@ Note that a list marker must always be followed by a space, and subsequent lines
   A paragraph interrupted by
   4. A list item
   ```
-</div>
+}
 
 
 ### Inline formatting
@@ -311,7 +314,7 @@ This is a [link]. Here's a [link reference][link] with a custom text.
 [link]: https://github.com/Aloso "Link title"
 ```
 
-<div class="differences">
+@(.differences){
   @(.mini-title)
   Differences to Markdown
 
@@ -321,7 +324,7 @@ This is a [link]. Here's a [link reference][link] with a custom text.
 
   URLs can contain whitespace (in Markdown, this is only
   allowed when the URL is surrounded with angle brackets).
-</div>
+}
 
 
 ### Thematic breaks
@@ -334,7 +337,7 @@ Thematic breaks are rendered as a horizontal line:
 
 Thematic breaks can consist of dashes (`-`), stars (`*`) or underscores (`_`), and must be at least 3 characters long.
 
-<div class="differences">
+@(.differences){
   @(.mini-title)
   Differences to Markdown
 
@@ -346,7 +349,7 @@ Thematic breaks can consist of dashes (`-`), stars (`*`) or underscores (`_`), a
 
   - - -
   ```
-</div>
+}
 
 
 ### Code blocks
@@ -386,7 +389,7 @@ fn foo() -> &'static str {
 ```
 ````
 
-<div class="differences">
+@(.differences){
   @(.mini-title)
   Differences to Markdown
 
@@ -395,7 +398,7 @@ fn foo() -> &'static str {
 
   The closing code fence must have the same indentation
   as the opening code fence.
-</div>
+}
 
 
 ### Comments
@@ -469,17 +472,17 @@ HTML can be used anywhere:
 
 
 ### Macros
-<div class="differences">
+@(.differences){
   Macros are a work in progress, but a handful of macros already works.
-</div>
+}
 
 There are macros for a variety of uses. Macros always start with a `@`, optionally followed by an all-uppercase word, optionally followed by arguments in parentheses:
 
-@NOPASS
-<pre>
+```
 @THIS(is a macro)
 @AS_IS_THIS
-@(and this)</pre>
+@(and this)
+```
 
 A macro must always be attached to a block or element:
 
@@ -606,9 +609,9 @@ Since HTML elements are considered <em>inline</em> only if there's text in the s
 
 Some characters are automatically substituted. For example, quotes, apostrophes, 3 dots, (R), (C) and (TM).
 
-<div class="differences">
+@(.differences){
   This is not yet implemented.
-</div>
+}
 
 
 ### Deep dive: Binding power
@@ -759,20 +762,20 @@ This is **bold**
 
 You can specify which kinds of syntax is parsed in the block. For example, `@PASS(macros inline)` (or abbreviated: `@PASS(@ i)`) only parses macros and inline formatting. Here's the full list of syntax types that can be enabled with `@PASS`:
 
-||# Identifier |# Abbreviation |# Explanation
-|| `inline`    | `i`           | Inline formatting (bold, italic, etc.)
-|| `link_img`  | `li`          | Links and images
-|| `codeblock` | `c`           | Code blocks
-|| `heading`   | `h`           | Headings
-|| `tbreak`    | `b`           | Thematic breaks
-|| `subst`     | `s`           | Text substitutions such as `->` to →
-|| `list`      | `l`           | Lists
-|| `limiter`   | `$`           | Limiters
-|| `macro`     | `@`           | Macros
-|| `math`      | `%`           | Math blocks
-|| `table`     | `|`           | Tables
-|| `quote`     | `>`           | Blockquotes
-|| `html`      | `<`           | HTML elements
+||# Identifier |# Abbr. |# Explanation
+|| `inline`    | `i`    | Inline formatting (bold, italic, etc.)
+|| `link_img`  | `li`   | Links and images
+|| `codeblock` | `c`    | Code blocks
+|| `heading`   | `h`    | Headings
+|| `tbreak`    | `b`    | Thematic breaks
+|| `subst`     | `s`    | Text substitutions such as `->` to →
+|| `list`      | `l`    | Lists
+|| `limiter`   | `$`    | Limiters
+|| `macro`     | `@`    | Macros
+|| `math`      | `%`    | Math blocks
+|| `table`     | `|`    | Tables
+|| `quote`     | `>`    | Blockquotes
+|| `html`      | `<`    | HTML elements
 
 
 ### `@NOPASS`

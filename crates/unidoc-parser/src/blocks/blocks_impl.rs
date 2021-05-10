@@ -55,7 +55,9 @@ pub struct ParseBlock<'a> {
 
 impl ParseBlock<'_> {
     fn consume_empty_lines(&mut self, input: &mut Input) {
-        if let Context::BlockBraces | Context::Heading | Context::Global = self.context {
+        if let Context::BlockBraces | Context::Heading | Context::BlockHtml(_) | Context::Global =
+            self.context
+        {
             while input.parse(ParseLineBreak(self.ind)).is_some() && !input.is_empty() {}
         }
     }

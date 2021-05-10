@@ -24,25 +24,26 @@ use crate::html::ElemName;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Context {
+    InlineBraces,
     BlockBraces,
-    Braces,
     Table,
     LinkOrImg,
     Code(u8),
     CodeBlock,
     Heading,
-    Html(ElemName),
+    InlineHtml(ElemName),
+    BlockHtml(ElemName),
     Global,
 }
 
 impl Context {
     pub fn can_contain_block_macro(self) -> bool {
-        !matches!(self, Context::Braces | Context::LinkOrImg | Context::Code(_))
+        !matches!(self, Context::InlineBraces | Context::LinkOrImg | Context::Code(_))
     }
 
     pub fn get_parent(self) -> Option<ElemName> {
         match self {
-            Context::Html(e) => Some(e),
+            Context::InlineHtml(e) => Some(e),
             _ => None,
         }
     }

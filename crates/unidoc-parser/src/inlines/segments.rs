@@ -478,7 +478,7 @@ impl ParseSegments<'_> {
                     }
                 }
 
-                if let Context::Html(elem) = context {
+                if let Context::InlineHtml(elem) | Context::BlockHtml(elem) = context {
                     if input.can_parse(HtmlElem::closing_tag_parser(elem)) {
                         return Some(true);
                     }
@@ -515,7 +515,7 @@ impl ParseSegments<'_> {
                 *open_braces += 1;
             }
             '}' => {
-                if context == Context::Braces && *open_braces == 0 {
+                if context == Context::InlineBraces && *open_braces == 0 {
                     return Some(true);
                 }
 

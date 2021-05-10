@@ -76,8 +76,6 @@ impl Parse for ParseElement<'_> {
         } else {
             input.parse('>')?;
 
-            let context = Context::Html(name);
-
             let content = if name.contains_plaintext() {
                 let mut input2 = input.start();
                 let mut content = String::new();
@@ -111,7 +109,8 @@ impl Parse for ParseElement<'_> {
             } else if name.must_contain_blocks()
                 || (name.can_contain_blocks() && input.parse(ParseLineBreak(self.ind)).is_some())
             {
-                let blocks = input.parse(Block::multi_parser(context, self.ind))?;
+                let blocks =
+                    input.parse(Block::multi_parser(Context::BlockHtml(name), self.ind))?;
                 input.try_parse(ParseClosingTag { elem: name });
                 ElemContent::Blocks(blocks)
             } else {
@@ -123,7 +122,11 @@ impl Parse for ParseElement<'_> {
                 };
 
                 let mut segments = input
-                    .parse(Segments::parser(self.ind, context, ParsingMode::new_all()))?
+                    .parse(Segments::parser(
+                        self.ind,
+                        Context::InlineHtml(name),
+                        ParsingMode::new_all(),
+                    ))?
                     .into_segments_no_underline_zero()?;
                 input.try_parse(ParseClosingTag { elem: name });
 

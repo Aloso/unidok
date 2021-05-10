@@ -47,7 +47,7 @@ impl Parse for ParseBraces<'_> {
 
         input.parse('{')?;
         let segments = input
-            .parse(Segments::parser(self.ind, Context::Braces, ParsingMode::new_all()))?
+            .parse(Segments::parser(self.ind, Context::InlineBraces, ParsingMode::new_all()))?
             .into_segments_no_underline_zero()?;
         input.parse('}')?;
 
