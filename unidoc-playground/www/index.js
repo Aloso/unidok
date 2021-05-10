@@ -28,7 +28,7 @@ function openTab(button) {
     window.location.hash = button.getAttribute('data-cls')
 
     const fileName = button.getAttribute('data-file')
-    fetch(`/sections/${fileName}`)
+    fetch(`./sections/${fileName}`)
         .then(response => response.text())
         .then(text => {
             const content = document.getElementById('content')
