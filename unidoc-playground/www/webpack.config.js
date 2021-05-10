@@ -9,15 +9,6 @@ module.exports = {
   },
   mode: "development",
   plugins: [
-    new CopyWebpackPlugin({
-      patterns: [
-        { from: 'index.html', to: 'index.html' },
-        { from: 'style.css', to: 'style.css' },
-        { from: 'sections', to: 'sections' },
-      ]
-    })
+    new CopyWebpackPlugin(['index.html', 'style.css', 'sections/*'])
   ],
-  experiments: {
-    syncWebAssembly: true,
-  }
 };
