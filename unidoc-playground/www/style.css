@@ -7,7 +7,7 @@ html, body {
     color: white;
 }
 
-header, section {
+header, section, nav {
     width: 1100px;
     max-width: 100%;
     margin: 0 auto;
@@ -15,14 +15,62 @@ header, section {
     box-sizing: border-box;
 }
 
+header {
+    display: flex;
+    align-items: center;
+}
+
+@media (max-width: 700px) {
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+header .header-left {
+    flex-grow: 1;
+}
+
 header h1 {
     font-size: 3.5em;
+    border: none;
+    margin-bottom: 0;
 }
 
 header #subtitle {
     margin: 1em 0;
     font-size: 1.2em;
     font-style: italic;
+}
+
+nav {
+    padding-bottom: 0;
+    border-bottom: 1px solid #ffffff17;
+}
+
+nav button {
+    display: inline-block;
+    margin: 0 0.3em -1px 0;
+    padding: 0.6em 1em;
+    color: #ccc;
+    background-color: transparent;
+    border: 1px solid #ffffff17;
+    border-bottom: 1px solid #222;
+    border-radius: 4px 4px 0 0;
+    text-decoration: none;
+    font-size: 120%;
+    font-family: inherit;
+    transition: background-color .2s;
+}
+nav button.open {
+    background-color: #12448f;
+    border: 1px solid #2a68c5;
+    color: white;
+}
+nav button:not(.open):hover {
+    background-color: #ffffff17;
+    border-bottom: 1px solid transparent;
+    color: white;
 }
 
 .button, .button:link, .button:visited {
@@ -51,11 +99,6 @@ pre {
     font-variant-ligatures: none;
 }
 
-header > h1 {
-    border: none;
-    margin-bottom: 0;
-}
-
 .wrap-table {
     margin: 1em 0;
     overflow: auto;
@@ -66,31 +109,31 @@ header > h1 {
     min-width: 600px;
 }
 
-#basics table td pre:not(.toget) {
+.basics table td pre:not(.toget) {
     margin: 0;
     padding: 5px 0;
     background-color: transparent;
     font-size: 18px;
 }
 
-#basics table td pre.toget {
+.basics table td pre.toget {
     font-size: 16px;
 }
 
 @media (max-width: 700px) {
-    #basics .wrap-table > table {
+    .basics .wrap-table > table {
         min-width: 500px;
     }
-    #basics table,
-    #basics table p,
-    #basics table ul,
-    #basics table ol {
+    .basics table,
+    .basics table p,
+    .basics table ul,
+    .basics table ol {
         font-size: 18px;
     }
-    #basics table td pre:not(.toget) {
+    .basics table td pre:not(.toget) {
         font-size: 16px;
     }
-    #basics table td pre.toget {
+    .basics table td pre.toget {
         font-size: 15px;
     }
 }
@@ -379,6 +422,10 @@ pre code {
     border: none;
     padding: 0;
     font-size: inherit;
+}
+
+.green {
+    border-left: 5px solid green;
 }
 
 #preview p,

@@ -1,82 +1,3 @@
-<section id="intro">
-## What is Unidoc?
-
-Unidoc is a new Markup language, inspired by AsciiDoctor, but syntactically more similar to Markdown.
-This is useful because Markdown is easy to read and to learn.
-However, Unidoc tries to make Markdown's syntax even simpler, while also introducing new, powerful features such as tables and macros.
-</section>
-
-
-<section id="basics">
-## Basics
-
-<div class="wrap-table">
-||# Type
- |# or
- |# ...to get
-||  <pre>`*Italic*`</pre>
- |  <pre>`_Italic_`</pre>
- |  *Italic*
-||  <pre>`**Bold**`</pre>
- |  <pre>`__Bold__`</pre>
- |  **Bold**
-||2 <pre>`~Strikethrough~`</pre>
- |  ~Strikethrough~
-||2 <pre>`x ^Superscript^`</pre>
- |  x ^Superscript^
-||2 <pre>`x #Subscript#`</pre>
- |  x #Subscript#
-||2 <pre>`` `Inline code` ``</pre>
- |  `Inline code`
-||  <pre>`# Heading 1`</pre>
- |  <pre>@PASS`Heading 1<br>=========`</pre>
- |  <h1 style="margin: 0.2em 0">Heading 1</h1>
-||  <pre>`## Heading 2`</pre>
- |  <pre>@PASS`Heading 2<br>---------`</pre>
- |  <h2 style="margin: 0.2em 0">Heading 2</h2>
-||2 <pre>`[Link](https://a.com)`</pre>
- |  [Link](https://a.com)
-||2 <pre>`![Image](https://a.com)`</pre>
- |  ![Logo](https://raw.githubusercontent.com/Aloso/unidoc/main/doc/unidoc.svg)
-||2 <pre>`> Blockquote`</pre>
- |  <blockquote style="margin: 0.2em 0">Blockquote</blockquote>
-||  <pre>@PASS`* List<br>* List<br>* List`</pre>
- |  <pre>@PASS`- List<br>- List<br>- List`</pre>
- |  <ul style="margin: 0.2em 0">
-      <li>List</li>
-      <li>List</li>
-      <li>List</li>
-    </ul>
-||  <pre>@PASS`1. List<br>2. List<br>3. List`</pre>
- |  <pre>@PASS`1) List<br>2) List<br>3) List`</pre>
- |  <ol style="margin: 0.2em 0">
-      <li>List</li>
-      <li>List</li>
-      <li>List</li>
-    </ol>
-||2 <pre>@PASS`Horizontal ruler:<br><br>---`</pre>
- |  Horizontal ruler:<hr style="margin-bottom: 0.4em">
-||2 <pre>@PASS` \```<br>\<code block\><br>\``` `</pre>
- |  <pre class="toget"><code>\<code block\></code></pre>
-||  <pre>@PASS`|| Table | with<br>|| a few | cells`</pre>
- |  <pre>@PASS`|| Table<br> | with<br>|| a few<br> | cells`</pre>
- |  <table>
-      <tr>
-        <td>Table</td>
-        <td>with</td>
-      </tr>
-      <tr>
-         <td>a few</td>
-         <td>cells</td>
-      </tr>
-    </table>
-||2 <pre>`%{1/4 x^2 + 3x = sqrt 15}`</pre>
- |  %{1/4 x^2 + 3x = sqrt 15}
-</div>
-</section>
-
-
-<section id="tutorial">
 ## Tutorial
 
 Read on to get a deeper understanding of Unidoc and of how it differs from Markdown.
@@ -488,30 +409,24 @@ A macro must always be attached to a block or element:
 
 @(.playground)
 ```
-@(green)
+@(.green)
 # Heading
 
-@(green)
+@(.green)
 Paragraph
 
-@(green)
+@(.green)
 - List
 - List
 - List
 
-@(green){Text enclosed in curly braces}
+@(.green){Text enclosed in curly braces}
 
-@(green)`Inline code`
+@(.green)`Inline code`
 
-@(green)<kbd>An HTML element</kbd>
+@(.green)<kbd>An HTML element</kbd>
 
-@(green)[A link](https://www.google.com)
-
-<style>
-  [green] {
-    border-left: 5px solid green;
-  }
-</style>
+@(.green)[A link](https://www.google.com)
 ```
 
 The above macros add an HTML attribute to elements, which are displayed with a green border.
@@ -669,116 +584,3 @@ There are a few more rules, though:
 @LOOSE
 - A formatting range can't be empty (so `**` doesn't close itself immediately).
 - If one of the delimiters can both open and close a formatting range, the sum of the length of their delimiter runs mustn't be divisible by 3, unless both delimiter run lengths are divisible by 3.
-</section>
-
-
-<section id="macros">
-## List of available macros
-
-### `@()`
-
-The macro with no name is used to add HTML attributes to elements. For example, the following adds a CSS class, id, or `title` attribute to a code block:
-
-@(.playground)
-```
-@(.cls #id)`Some code`
-
-@(title="hello world")`Hover me`
-```
-
-It can also be applied to HTML:
-
-@(.playground)
-```
-@(title="hello world")<span>Hover me</span>
-```
-
-The above is equivalent to using braces, since braces after a macro are converted to a `<span>` element:
-
-@(.playground)
-```
-@(title="hello world"){Hover me}
-```
-
-
-### `@LOOSE`
-
-When applied to a list, the text in each list item is wrapped in a `<p>` element, so there's more vertical space between the list items:
-
-@(.playground)
-```
-@LOOSE
-- This is a paragraph of text.
-- And here's another paragraph of text.
-```
-
-
-### `@BULLET`
-
-When applied to a list, the it uses the specified bullet type. This uses the [list-style] CSS property. It has loads of possible values, here are the values that are well-supported across different browsers:
-
-[list-style]: https://developer.mozilla.org/de/docs/Web/CSS/list-style "MDN documentation"
-
-- armenian
-- circle
-- decimal
-- decimal-leading-zero
-- disc
-- georgian
-- lower-alpha
-- lower-greek
-- lower-latin
-- lower-roman
-- square
-- upper-alpha
-- upper-greek
-- upper-latin
-- upper-roman
-
-@(.playground)
-```
-@BULLET(lower-alpha)
-1. Lorem
-2. Ipsum
-3. Dolor
-4. Sit
-5. Amet
-```
-
-
-### `@PASS`
-
-With `@PASS`, formatted text is parsed even in inline code and in code blocks:
-
-@(.playground)
-````
-@PASS
-```
-This is **bold**
-```
-
-@PASS`This is **bold**`.
-````
-
-You can specify which kinds of syntax is parsed in the block. For example, `@PASS(macros inline)` (or abbreviated: `@PASS(@ i)`) only parses macros and inline formatting. Here's the full list of syntax types that can be enabled with `@PASS`:
-
-||# Identifier |# Abbr. |# Explanation
-|| `inline`    | `i`    | Inline formatting (bold, italic, etc.)
-|| `link_img`  | `li`   | Links and images
-|| `codeblock` | `c`    | Code blocks
-|| `heading`   | `h`    | Headings
-|| `tbreak`    | `b`    | Thematic breaks
-|| `subst`     | `s`    | Text substitutions such as `->` to →
-|| `list`      | `l`    | Lists
-|| `limiter`   | `$`    | Limiters
-|| `macro`     | `@`    | Macros
-|| `math`      | `%`    | Math blocks
-|| `table`     | `|`    | Tables
-|| `quote`     | `>`    | Blockquotes
-|| `html`      | `<`    | HTML elements
-
-
-### `@NOPASS`
-
-`@NOPASS` disables all formatting in the block, so it behaves like inline code and code blocks.
-</section>

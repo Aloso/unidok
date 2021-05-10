@@ -1,12 +1,70 @@
 import * as wasm from "unidoc-playground"
 
-const elems = document.getElementsByClassName('playground');
-for (const elem of elems) {
-    initializePlayground(elem)
-}
-
 document.getElementById('open-playground')
     .addEventListener('click', addBigPlayground)
+
+const nav = document.getElementById('main-nav')
+const buttons = []
+let openButton = null
+for (const btn of nav.children) {
+    if (btn.tagName === 'BUTTON') {
+        buttons.push(btn)
+        btn.addEventListener('click', () => {
+            openTab(btn)
+        })
+        if ('#' + btn.getAttribute('data-cls') === window.location.hash) {
+            openTab(btn)
+        }
+    }
+}
+if (openButton == null) openTab(buttons[0])
+
+function openTab(button) {
+    if (openButton != null) {
+        openButton.classList.remove('open')
+    }
+    openButton = button
+    openButton.classList.add('open')
+    window.location.hash = button.getAttribute('data-cls')
+
+    const fileName = button.getAttribute('data-file')
+    fetch(`/sections/${fileName}`)
+        .then(response => response.text())
+        .then(text => {
+            const content = document.getElementById('content')
+            content.className = button.getAttribute('data-cls')
+            convertToHtml(text, content)
+
+            const elems = document.getElementsByClassName('playground');
+            for (const elem of elems) {
+                initializePlayground(elem)
+            }
+        })
+        .catch(e => console.error(e))
+}
+
+/**
+ * @param {HTMLElement} target
+ */
+function convertToHtml(text, target) {
+    target.innerHTML = wasm.compile(text)
+
+    const mathElems = target.getElementsByTagName('math')
+    /** @type {HTMLElement[]} */
+    const mathElemsCopy = []
+    for (const elem of mathElems) {
+        mathElemsCopy.push(elem)
+    }
+    if (mathElemsCopy.length > 0) {
+        for (const elem of mathElemsCopy) {
+            const converted = MathJax.mathml2chtml(elem.outerHTML)
+            elem.replaceWith(converted)
+        }
+
+        MathJax.startup.document.clear()
+        MathJax.startup.document.updateDocument()
+    }
+}
 
 /**
  * @param {HTMLElement} elem
@@ -64,21 +122,7 @@ function initializePlayground(elem) {
                 if (is_html) {
                     preview.innerText = wasm.compile(value)
                 } else {
-                    preview.innerHTML = wasm.compile(value)
-
-                    const mathElems = preview.getElementsByTagName('math')
-                    /** @type {HTMLElement[]} */
-                    const mathElemsCopy = []
-                    for (const elem of mathElems) {
-                        mathElemsCopy.push(elem)
-                    }
-                    for (const elem of mathElemsCopy) {
-                        const converted = MathJax.mathml2chtml(elem.outerHTML)
-                        elem.replaceWith(converted)
-
-                        MathJax.startup.document.clear()
-                        MathJax.startup.document.updateDocument()
-                    }
+                    convertToHtml(value, preview)
                 }
             }, 20)
         } catch (e) {
