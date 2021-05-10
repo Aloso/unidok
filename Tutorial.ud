@@ -1,0 +1,586 @@
+## Tutorial
+
+Read on to get a deeper understanding of Unidoc and of how it differs from Markdown.
+This tutorial contains code snippets.
+If you have JavaScript enabled, you can modify them and see the result <span class="media-big">on the right</span><span class="media-small">below</span>.
+
+
+### Headings
+
+Headings are prefixed with 1 to 6 number signs (`#`), followed by a space:
+
+@(.playground)
+```
+# Heading 1
+## Heading 2
+### Heading 3
+#### Heading 4
+##### Heading 5
+###### Heading 6
+```
+
+Alternatively, headings can be underlined with equals signs or dashes:
+
+@(.playground)
+```
+Heading 1
+=========
+
+Heading 2
+---------
+```
+
+@(.differences){
+  @(.mini-title)
+  Differences to Markdown
+
+  In Markdown, headings can have number signs on both ends
+  (i.e. `## Heading ##`). This is not allowed in Unidoc.
+
+  In Unidoc, underlined headings require at least 2
+  equals signs or dashes.
+}
+
+
+### Paragraphs
+
+@(.playground)
+```
+This is a paragraph of text.
+Single line breaks are ignored.
+
+Paragraphs are separated with a blank line.
+```
+
+
+### Blockquotes
+
+Blockquotes are indented with a `>` marker:
+
+@(.playground)
+```
+> This is a blockquote.
+>
+> It contains multiple paragraphs.
+```
+
+Blockquotes can contain anything:
+
+@(.playground)
+```
+> ### A heading
+> - A list
+> > A nested blockquote
+```
+
+@(.differences){
+  @(.mini-title)
+  Differences to Markdown
+
+  The `>` marker can be omitted on blank lines:
+
+  @(.playground)
+  ```
+  > A paragraph
+
+  > A paragraph in the same blockquote
+  ```
+
+  To separate blockquotes, you can add a _limiter_ (`$`) between them:
+
+  @(.playground)
+  ```
+  > A paragraph
+  $
+  > A paragraph in another blockquote
+  ```
+
+  In Unidoc, quote markers (`>`) must be correctly indented:
+
+  @(.playground)
+  ```
+   > A blockquote
+    > Incorrectly indented line
+  ```
+}
+
+
+### Lists
+
+Lists can be ordered:
+
+@(.playground)
+```
+1. An ordered list
+2. With two items
+```
+
+Or unordered:
+
+@(.playground)
+```
+- An unordered list
+- With two items
+```
+
+Ordered lists can use a dot (`1.`) or a closing parenthesis (`1)`).
+Unordered lists can use dashes (`-`), stars (`*`) or plus characters (`+`).
+
+List items can contain anything:
+
+@(.playground)
+```
++ An unordered list
++ With a nested list:
+  * This is a nested list
+  * > And here's a blockquote
+    >
+    > Make sure the indentation is correct!
+```
+
+Note that a list marker must always be followed by a space, and subsequent lines must be properly indented.
+
+@(.differences){
+  @(.mini-title)
+  Differences to Markdown
+
+  Unidoc doesn't support _laziness_; as soon as a line
+  isn't indented far enough to the right, the list item ends:
+
+  @(.playground)
+  ```
+  - The list item
+    continues on this line
+  But this is not part of the list item!
+  ```
+  The width of a list marker does not depend on
+  the number of spaces after the marker:
+
+  @(.playground)
+  ```
+  -   A list item
+    - A nested list item
+  ```
+  An ordered list can interrupt a paragraph,
+  even when it doesn't start with 1:
+
+  @(.playground)
+  ```
+  A paragraph interrupted by
+  4. A list item
+  ```
+}
+
+
+### Inline formatting
+
+By default, the following inline formatting modes are supported:
+
+@(.playground)
+```
+*Italic*, _also italic_,
+**bold**, __also bold__,
+^superscript^, #subscript#,
+~strikethrough~ and `inline code`.
+```
+
+Inline code is a special case, because its content isn't formatted by default:
+
+@(.playground)
+```
+`Absolutely **no** formatting!`
+```
+
+When the inline code contains backticks, use a different number of backticks as formatting delimiters:
+
+@(.playground)
+```
+``This: ` is okay, as is this: ``` ``
+```
+
+Formatting delimiters can appear in the middle of a word, except for underscores:
+
+@(.playground)
+```
+- n^x^
+- **B**old first letter
+- __T__his doesn't work
+```
+
+
+### Links and images
+
+Links and images consist of a description in square brackets, followed by a URL in parentheses:
+
+@(.playground)
+```
+[This is a link](https://www.google.com).
+
+![An image](https://raw.githubusercontent.com/Aloso/unidoc/main/doc/unidoc.svg)
+```
+
+The parentheses can also contain a title in double quotes, which appears when the cursor hovers over the link/image:
+
+@(.playground)
+```
+[This is a link](https://github.com/Aloso/unidoc "This is a title").
+```
+
+It's possible to define a link reference somewhere and use it somewhere else:
+
+@(.playground)
+```
+This is a [link]. Here's a [link reference][link] with a custom text.
+
+[link]: https://github.com/Aloso "Link title"
+```
+
+@(.differences){
+  @(.mini-title)
+  Differences to Markdown
+
+  Link reference definitions may not contain line breaks.
+
+  URLs can't be surrounded with angle brackets.
+
+  URLs can contain whitespace (in Markdown, this is only
+  allowed when the URL is surrounded with angle brackets).
+}
+
+
+### Thematic breaks
+@(.playground)
+```
+Thematic breaks are rendered as a horizontal line:
+
+------------------
+```
+
+Thematic breaks can consist of dashes (`-`), stars (`*`) or underscores (`_`), and must be at least 3 characters long.
+
+@(.differences){
+  @(.mini-title)
+  Differences to Markdown
+
+  Thematic breaks can't have internal spaces:
+
+  @(.playground)
+  ```
+  This is a weird list, not a thematic break:
+
+  - - -
+  ```
+}
+
+
+### Code blocks
+
+Code blocks start and end with a _code fence_. A code fence is a line with at least three backticks (`` ` ``) or tildes (`~`):
+
+@(.playground)
+````
+```
+Code block
+```
+````
+
+The closing code fence must have at least as many backticks or tildes as the opening code fence. Backticks and tildes can't be mixed.
+
+As in inline code, no formatting is performed in code blocks:
+
+@(.playground)
+````````
+``````
+**Not bold**
+[Not a link](#)
+
+```
+```
+``````
+````````
+
+Code blocks are ideal for programming code. The programming language can be written after the opening code fence, to support syntax highlighting:
+
+@(.playground)
+````
+```rust
+fn foo() -> &'static str {
+    "Hello, world!"
+}
+```
+````
+
+@(.differences){
+  @(.mini-title)
+  Differences to Markdown
+
+  Unidoc deliberately does _not_ support indented code blocks,
+  only fenced code blocks.
+
+  The closing code fence must have the same indentation
+  as the opening code fence.
+}
+
+
+### Comments
+@(.playground)
+```
+// Comments start with two slashes.
+// They are NOT displayed, so they're
+// perfect for editorial notes.
+```
+
+
+### Tables
+
+Tables are not part of the CommonMark specification, but there's a well-supported syntax for tables in many Markdown parsers. Unidoc uses a different, more powerful syntax.
+
+Each table row starts with two vertical bars, table cells are separated with a single vertical bar:
+
+@(.playground)
+```
+|| This is   | a table
+|| with four | table cells
+```
+
+A table cell can be prefixed with
+- A number sign (`#`) to make it a header cell
+- A `<`, `^` or `>`, to align it left, centered or right, respectively
+- An additional `<`, `^` or `>`, to vertically align it at the top, middle, or bottom, respectively:
+
+@(.playground)
+```
+||#< These   |#  are header cells
+||^  Center  |>  Right       | <br><br>
+||<> Bottom  |>< Right-top   | <br><br>
+```
+
+A table cell can also be prefixed with one or two numbers, e.g. `2x4`, where the first number is the number of columns and the second is the number of rows the cell should span. Either number can be omitted, i.e. `2` is the same as `2x1`, and `x3` is the same as `1x3`.
+
+@(.playground)
+```
+|| Lorem      | ipsum | dolor | sit
+|| amet,      |^3x2 consetetur
+|| sadipscing
+```
+
+Table cells can start on a new line, which is useful when the table is rather big:
+
+@(.playground)
+```
+||# First table cell
+ |# Second table cell
+||  Third table cell
+ |  Fourth table cell
+```
+
+
+### HTML
+
+HTML can be used anywhere:
+
+@(.playground style="min-height:200px")
+```
+<kbd>Ctrl+K</kbd>
+<span class="hello">world</span>
+
+<style>
+  .hello {
+    color: orange;
+  }
+</style>
+```
+
+
+### Macros
+@(.differences){
+  Macros are a work in progress, but a handful of macros already works.
+}
+
+There are macros for a variety of uses. Macros always start with a `@`, optionally followed by an all-uppercase word, optionally followed by arguments in parentheses:
+
+```
+@THIS(is a macro)
+@AS_IS_THIS
+@(and this)
+```
+
+A macro must always be attached to a block or element:
+
+@(.playground)
+```
+@(.green)
+# Heading
+
+@(.green)
+Paragraph
+
+@(.green)
+- List
+- List
+- List
+
+@(.green){Text enclosed in curly braces}
+
+@(.green)`Inline code`
+
+@(.green)<kbd>An HTML element</kbd>
+
+@(.green)[A link](https://www.google.com)
+```
+
+The above macros add an HTML attribute to elements, which are displayed with a green border.
+
+You can find a list of available macros further down.
+
+
+### Escapes
+
+Special characters can be escaped with the backslash (`\`):
+
+@(.playground)
+```
+\### This is not a heading
+
+\> This is not a quote
+and \**this is not bold**.
+
+\|| This is not a table
+
+\@FOO{This is not a macro}
+```
+
+To escape an image, if you add a backslash before the `!`, it will be treated as a link:
+
+@(.playground)
+```
+\![Alternative text](url)
+```
+
+Instead add the backslash before the brackets:
+
+@(.playground)
+```
+!\[Alternative text](url)
+```
+
+Numbers can't be escaped. Therefore, to escape an ordered list, put the backslashes before the dots or parentheses:
+
+@(.playground)
+```
+1\. Not a list
+2\. Not a list
+```
+
+
+### Limiter
+
+The limiter, `$` isn't rendered, ever. It's just and indication that parsing should be interrupted. Example:
+
+@(.playground)
+```
+~ This ~isn't formatted as strikethrough because the word is surrounded by whitespace.
+
+But$~ this ~$is!
+
+Nested superscripts don't work reliably: n^x^2^^
+
+Unless they're surrounded by `$` where necessary to disambiguate nesting order: n^x$^2^^ or n$^x$^2^$^$
+```
+
+The limiter can also be used to split a blockquote or list into several parts:
+
+@(.playground)
+```
+> A blockquote
+$
+> Another blockquote
+
+1. A list
+$
+15. Another list
+```
+
+The limiter can make a blank line non-blank to connect paragraphs:
+
+@(.playground)
+```
+This paragraph
+$
+continues here.
+```
+
+Since HTML elements are considered <em>inline</em> only if there's text in the same line after the opening tag, a <code>$</code> can help:
+
+@(.playground)
+```
+<div>$
+    This is considered inline!
+</div>
+```
+
+
+### Substitutions
+
+Some characters are automatically substituted. For example, quotes, apostrophes, 3 dots, (R), (C) and (TM).
+
+@(.differences){
+  This is not yet implemented.
+}
+
+
+### Deep dive: Binding power
+
+Since inline formatting can be nested, it presents a problem: How do we know if a formatting delimiter (e.g. `*`) should close a formatting range or open a new one? In Markdown, a formatting delimiter can be _left-flanking_ and/or _right-flanking_. This system has also been adopted (and slightly extended) in Unidoc.
+
+For example, when parsing `**Hello**`, the first two stars are left-flanking and the last two stars are right-flanking. A formatting range must start with a left-flanking delimiter and end with a right-flanking delimiter.
+
+To determine if a delimiter is left-flanking or right-flanking, delimiters must first be grouped into _delimiter runs_. A delimiter run is a sequence of one or more consecutive delimiters with the same symbol, e.g. `***` or `^^`. Whether a delimiter is left- or right-flanking is decided by the character directly before and after the delimiter run. If both characters are whitespace, then the delimiter is neither left- nor right-flanking (and is therefore displayed as-is). Otherwise, the characters are assigned a value which I call "binding power":
+
+||# Type                                                      |# Value
+||  Letters (a-z, α-ω, ㄱ-ㅉ, etc.)                            |  3
+||  Visible characters that aren't letters (.,:;!?#@°&" etc.) |  2
+||  Whitespace (space, tab, line break, etc.)                 |  1
+||  Limiter `$`                                               |  0
+
+If the left character has a higher binding power than the right character, the delimiter is right-flanking. If the right character's binding power is higher, the delimiter is left-flanking. If the binding powers are equal, the delimiter is both left- and right-flanking.
+
+This is best shown with a few examples:
+
+#### Left-flanking delimiters
+```
+**T
+-**T
+ **"T"
+$** T
+```
+
+#### Right-flanking delimiters
+```
+T**
+T**.
+"T"**
+T **$
+```
+
+#### Left- and right-flanking delimiters
+```
+T**T
+"**.
+$**$
+```
+
+When a delimiter is both left- and right-flanking, the parser still has to make a decision. When a matching left-flanking delimiter exists, that delimiter is chosen (even if other, non-matching delimiters are in between):
+
+@(.playground)
+```
+^Lorem **ipsum^dolor^ sit** amet^
+
+^Lorem **ipsum ^dolor^ sit** amet^
+```
+
+There are a few more rules, though:
+
+@LOOSE
+- A formatting range can't be empty (so `**` doesn't close itself immediately).
+- If one of the delimiters can both open and close a formatting range, the sum of the length of their delimiter runs mustn't be divisible by 3, unless both delimiter run lengths are divisible by 3.
