@@ -79,7 +79,7 @@ footer {
     padding-top: 10px;
     padding-bottom: 10px;
     line-height: 30px;
-    font-size: 18px;
+    font-size: 110%;
     color: #bbb;
     position: sticky;
     top: 100vh;
@@ -147,20 +147,24 @@ pre {
 }
 
 @media (max-width: 700px) {
+    html, body {
+        font-size: 15px;
+    }
+
     .basics .wrap-table > table {
-        min-width: 500px;
+        min-width: 490px;
     }
     .basics table,
     .basics table p,
     .basics table ul,
     .basics table ol {
-        font-size: 18px;
+        font-size: 17px;
     }
     .basics table td pre:not(.toget) {
-        font-size: 16px;
+        font-size: 15px;
     }
     .basics table td pre.toget {
-        font-size: 15px;
+        font-size: 14px;
     }
 }
 
@@ -238,12 +242,6 @@ pre {
     scrollbar-color: #555 transparent;
 }
 
-@media (max-width: 650px) {
-    .input {
-        font-size: 16px;
-    }
-}
-
 .input::-webkit-scrollbar,
 .preview::-webkit-scrollbar {
     background-color: transparent;
@@ -314,28 +312,6 @@ pre {
     display: none;
 }
 
-@media (max-width: 650px) {
-    .media-big {
-        display: none;
-    }
-    .media-small {
-        display: initial;
-    }
-
-    .playground {
-        flex-direction: column;
-    }
-
-    .input {
-        box-shadow: inset 0 -1px 0 0 #555;
-        width: auto;
-        min-height: 175px;
-    }
-    .preview {
-        width: auto;
-    }
-}
-
 .differences {
     margin: 1em 0;
     padding: 1em;
@@ -365,7 +341,7 @@ pre {
 
 .mini-title {
     font-weight: bold;
-    font-size: 110%;
+    font-size: 115%;
     margin-bottom: 0.7em;
 }
 
@@ -499,4 +475,36 @@ p, ul, ol, table {
 
 h1 *, h2 *, h3 *, h4 *, h5 *, h6 * {
     font-weight: bold;
+}
+
+@media (max-width: 650px) {
+    .media-big {
+        display: none;
+    }
+    .media-small {
+        display: initial;
+    }
+
+    .playground {
+        flex-direction: column;
+    }
+
+    .input {
+        font-size: 15px;
+        box-shadow: inset 0 -1px 0 0 #555;
+        width: auto;
+        min-height: 150px;
+    }
+    .preview, .preview.html {
+        width: auto;
+        font-size: 15px;
+    }
+
+    .show-html {
+        display: none;
+    }
+
+    p, ul, ol, table {
+        font-size: 18px;
+    }
 }
