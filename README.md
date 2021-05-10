@@ -43,7 +43,6 @@ Unidoc should look familiar if you're familiar with Markdown. It follows the Com
 ### MVP
 
 * Bug: Excess spaces/tabs in empty line can interrupt blockquote
-* Bug: HTML blocks can't contain block macros
 
 * Code blocks
   * Syntax highlighting
@@ -55,9 +54,8 @@ Unidoc should look familiar if you're familiar with Markdown. It follows the Com
   * Need a way to automatically include the MathJax script (perhaps with a macro)
 
 * Replacements
-  * Quotes, apostrophe: `"`, `'`
+  * Smart punctuation: `"`, `'`, `--`, `...`
   * Arrows: `->`, `=>`, `<-`, `<=`, `<->`, `<=>`
-  * Em dash, ellipsis: `--`, `...`
   * Symbols: `(C)`, `(TM)`, `(R)`
 
 * Macros

@@ -1,7 +1,15 @@
 ## Tutorial
 
-Read on to get a deeper understanding of Unidoc and of how it differs from Markdown. This tutorial contains code snippets. You can modify them and see the result <span class="media-big">on the right</span><span class="media-small">below</span>.
+This tutorial should give you a deeper understanding of Unidoc and of how it differs from Markdown. You can modify the code snippets and see the result <span class="media-big">on the right</span><span class="media-small">below</span>.
 
+@(.differences){
+  @(.mini-title)
+  About this document
+
+  Since Unidoc is evolving rapidly, this tutorial is sometimes a bit out of date. Please report errors in the [issue tracker][issue-tracker].
+}
+
+[issue-tracker]: https://github.com/Aloso/unidoc/issues
 
 ### Headings
 

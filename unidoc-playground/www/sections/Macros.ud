@@ -1,5 +1,14 @@
 ## List of available macros
 
+@(.differences){
+  @(.mini-title)
+  About this document
+
+  Since Unidoc is evolving rapidly, this tutorial is sometimes a bit out of date. Please report errors in the [issue tracker][issue-tracker].
+}
+
+[issue-tracker]: https://github.com/Aloso/unidoc/issues
+
 ### `@()`
 
 The macro with no name is used to add HTML attributes to elements. For example, the following adds a CSS class, id, or `title` attribute to a code block:
