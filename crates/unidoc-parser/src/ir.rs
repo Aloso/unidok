@@ -54,6 +54,7 @@ pub enum SegmentIr<'a> {
     Image(ImageIr<'a>),
     InlineMacro(InlineMacroIr<'a>),
     InlineHtml(HtmlNodeIr<'a>),
+    HtmlEntity(HtmlEntity),
     Format(InlineFormatIr<'a>),
     Code(CodeIr<'a>),
 }
@@ -317,6 +318,7 @@ impl<'a> IntoIR<'a> for Segment {
             Segment::Image(b) => SegmentIr::Image(b.into_ir(text, state)),
             Segment::InlineMacro(b) => SegmentIr::InlineMacro(b.into_ir(text, state)),
             Segment::InlineHtml(h) => SegmentIr::InlineHtml(h.into_ir(text, state)),
+            Segment::HtmlEntity(e) => SegmentIr::HtmlEntity(e),
             Segment::Format(b) => SegmentIr::Format(b.into_ir(text, state)),
             Segment::Code(b) => SegmentIr::Code(b.into_ir(text, state)),
         }

@@ -1,3 +1,4 @@
+use crate::html::HtmlEntity;
 use crate::ir::*;
 
 /// A visitor trait for IR nodes. Create a struct and implement this trait to
@@ -95,6 +96,7 @@ pub trait IrVisitor {
             SegmentIr::Image(i) => self.visit_image(i),
             SegmentIr::InlineMacro(m) => self.visit_inline_macro(m),
             SegmentIr::InlineHtml(h) => self.visit_html_node(h, true),
+            SegmentIr::HtmlEntity(e) => self.visit_html_entity(e),
             SegmentIr::Format(f) => self.visit_inline_format(f),
             SegmentIr::Code(c) => self.visit_code(c),
 
@@ -152,6 +154,8 @@ pub trait IrVisitor {
             HtmlNodeIr::Doctype(_) => {}
         }
     }
+
+    fn visit_html_entity(&mut self, _: &mut HtmlEntity) {}
 
     fn visit_html_element(&mut self, element: &mut HtmlElemIr, _is_inline: bool) {
         self.visit_html_attributes(&mut element.attrs);

@@ -8,6 +8,10 @@ impl ToPlaintext for SegmentIr<'_> {
     fn to_plaintext(&self, buf: &mut String) {
         match self {
             SegmentIr::LineBreak => buf.push('\n'),
+            &SegmentIr::HtmlEntity(e) => {
+                buf.push('&');
+                buf.push_str(e.0);
+            }
             SegmentIr::Limiter => {}
             &SegmentIr::Text(t) => buf.push_str(t),
             SegmentIr::Text2(t) => buf.push_str(t),

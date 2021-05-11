@@ -12,6 +12,7 @@ impl fmt::Debug for Node<'_> {
             Node::Comment(ref c) => write!(f, "<!--{}-->", c),
             Node::Doctype(d) => fmt::Display::fmt(d, f),
             Node::Fragment(ref d) => fmt::Debug::fmt(d, f),
+            Node::Entity(e) => write!(f, "&{}", e),
         }
     }
 }

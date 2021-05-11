@@ -14,6 +14,7 @@ impl<'a> IntoNode<'a> for SegmentIr<'a> {
             SegmentIr::EscapedText(t) => Node::Text(t),
             SegmentIr::LineBreak => Node::Text("\n"),
             SegmentIr::Limiter => Node::Fragment(vec![]),
+            SegmentIr::HtmlEntity(e) => Node::Entity(e.0),
             SegmentIr::Braces(b) => b.into_node(),
             SegmentIr::Link(l) => l.into_node(),
             SegmentIr::Image(i) => i.into_node(),

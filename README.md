@@ -47,9 +47,6 @@ Unidoc should look familiar if you're familiar with Markdown. It follows the Com
 * Code blocks
   * Syntax highlighting
 
-* HTML
-  * HTML entities
-
 * Math
   * Need a way to automatically include the MathJax script (perhaps with a macro)
 

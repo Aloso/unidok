@@ -3,7 +3,7 @@ use std::convert::TryFrom;
 use super::format::{is_in_word, is_not_flanking, FlankType, Flanking, FormatDelim};
 use super::*;
 use crate::blocks::*;
-use crate::html::{HtmlElem, HtmlNode};
+use crate::html::{HtmlElem, HtmlEntity, HtmlNode};
 use crate::macros::utils::ParseClosingBrace;
 use crate::macros::InlineMacro;
 use crate::parsing_mode::ParsingMode;
@@ -24,6 +24,7 @@ pub enum Segment {
     Image(Image),
     InlineMacro(InlineMacro),
     InlineHtml(HtmlNode),
+    HtmlEntity(HtmlEntity),
     Format(InlineFormat),
     Code(Code),
 }
@@ -133,6 +134,7 @@ enum Item {
     Image(Image),
     Macro(InlineMacro),
     Html(HtmlNode),
+    HtmlEntity(HtmlEntity),
     Escaped(Escaped),
     LineBreak,
     Limiter,
@@ -167,6 +169,7 @@ enum StackItem {
     Image(Image),
     Macro(InlineMacro),
     Html(HtmlNode),
+    HtmlEntity(HtmlEntity),
     Escaped(Escaped),
     LineBreak,
     Limiter,
@@ -208,6 +211,7 @@ fn parse_paragraph_items(items: Vec<Item>) -> Vec<StackItem> {
             Item::Image(i) => stack.push(StackItem::Image(i)),
             Item::Macro(m) => stack.push(StackItem::Macro(m)),
             Item::Html(h) => stack.push(StackItem::Html(h)),
+            Item::HtmlEntity(e) => stack.push(StackItem::HtmlEntity(e)),
             Item::Escaped(e) => stack.push(StackItem::Escaped(e)),
             Item::LineBreak => stack.push(StackItem::LineBreak),
             Item::Limiter => stack.push(StackItem::Limiter),
@@ -266,6 +270,7 @@ fn stack_to_segments(stack: Vec<StackItem>) -> Vec<Segment> {
             StackItem::Image(i) => Segment::Image(i),
             StackItem::Macro(m) => Segment::InlineMacro(m),
             StackItem::Html(h) => Segment::InlineHtml(h),
+            StackItem::HtmlEntity(e) => Segment::HtmlEntity(e),
             StackItem::Escaped(e) => Segment::Escaped(e),
             StackItem::LineBreak => Segment::LineBreak,
             StackItem::Limiter => Segment::Limiter,
@@ -334,7 +339,8 @@ fn find_special(c: char) -> bool {
     matches!(
         c,
         ('*' | '_' | '~' | '^' | '#' | '`')
-            | ('%' | '|' | '[' | ']' | '{' | '}' | '!' | '@' | '\\' | '$' | '<' | '\n' | '\r')
+            | ('%' | '|' | '[' | ']' | '{' | '}' | '!' | '@' | '\\' | '$' | '<' | '&')
+            | ('\n' | '\r')
     )
 }
 
@@ -481,6 +487,14 @@ impl ParseSegments<'_> {
                 if let Context::InlineHtml(elem) | Context::BlockHtml(elem) = context {
                     if input.can_parse(HtmlElem::closing_tag_parser(elem)) {
                         return Some(true);
+                    }
+                }
+            }
+            '&' => {
+                if self.mode.is(ParsingMode::HTML) {
+                    if let Some(entity) = input.parse(HtmlEntity::parser()) {
+                        items.push(Item::HtmlEntity(entity));
+                        return Some(false);
                     }
                 }
             }
