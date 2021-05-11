@@ -46,32 +46,33 @@ header #subtitle {
 
 nav {
     padding-bottom: 0;
-    border-bottom: 1px solid #ffffff17;
+    border-bottom: 1px solid #ffffff27;
 }
 
 nav button {
     display: inline-block;
     margin: 0 0.3em -1px 0;
     padding: 0.6em 0.8em;
-    color: #ccc;
-    background-color: transparent;
-    border: 1px solid #ffffff17;
-    border-bottom: 1px solid #222;
-    border-radius: 6px 6px 0 0;
+    color: white;
+    background-color: #12448f;
+    border: 1px solid #2a68c5;
+    border-radius: 8px 8px 0 0;
     text-decoration: none;
-    font-size: 120%;
+    font-size: 115%;
     font-family: inherit;
     transition: background-color .2s;
 }
+nav button:last-child {
+    margin-right: 0;
+}
 nav button.open {
-    background-color: #12448f;
-    border: 1px solid #2a68c5;
-    color: white;
+    background-color: transparent;
+    border: 1px solid #ffffff27;
+    border-bottom: 1px solid #222;
+    color: #ccc;
 }
 nav button:not(.open):hover {
-    background-color: #ffffff17;
-    border-bottom: 1px solid transparent;
-    color: white;
+    background-color: #2a68c5;
 }
 
 footer {

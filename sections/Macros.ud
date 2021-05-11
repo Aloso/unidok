@@ -7,6 +7,8 @@
   Since Unidoc is evolving rapidly, this tutorial is sometimes a bit out of date. Please report errors in the [issue tracker][issue-tracker].
 }
 
+Hello &AElig world
+
 [issue-tracker]: https://github.com/Aloso/unidoc/issues
 
 ### `@()`

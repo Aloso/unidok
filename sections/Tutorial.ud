@@ -356,18 +356,18 @@ A table cell can be prefixed with
 
 @(.playground)
 ```
-||#< These   |#  are header cells
-||^  Center  |>  Right       | <br><br>
-||<> Bottom  |>< Right-top   | <br><br>
+||#< Some   |#  header cells
+||^  Center |>  Right     |<br><br>
+||<> Bottom |>< Right-top |<br><br>
 ```
 
 A table cell can also be prefixed with one or two numbers, e.g. `2x4`, where the first number is the number of columns and the second is the number of rows the cell should span. Either number can be omitted, i.e. `2` is the same as `2x1`, and `x3` is the same as `1x3`.
 
 @(.playground)
 ```
-|| Lorem      | ipsum | dolor | sit
-|| amet,      |^3x2 consetetur
-|| sadipscing
+|| A | B | C | D
+|| E |^3x2 F
+|| G
 ```
 
 Table cells can start on a new line, which is useful when the table is rather big:
@@ -437,7 +437,7 @@ Paragraph
 
 The above macros add an HTML attribute to elements, which are displayed with a green border.
 
-You can find a list of available macros further down.
+You can find a list of available macros in the [Macros](javascript:scrollTo({top:0,left:0,behavior:'smooth'})) tab.
 
 
 ### Escapes
@@ -491,7 +491,7 @@ But$~ this ~$is!
 
 Nested superscripts don't work reliably: n^x^2^^
 
-Unless they're surrounded by `$` where necessary to disambiguate nesting order: n^x$^2^^ or n$^x$^2^$^$
+Unless they're prefixed with `$` where necessary to disambiguate nesting order: n$^x$^2^^
 ```
 
 The limiter can also be used to split a blockquote or list into several parts:
@@ -516,7 +516,7 @@ $
 continues here.
 ```
 
-Since HTML elements are considered <em>inline</em> only if there's text in the same line after the opening tag, a <code>$</code> can help:
+Since HTML elements are considered _inline_ only if there's text in the same line after the opening tag, a `$` can help:
 
 @(.playground)
 ```
