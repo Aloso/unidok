@@ -31,13 +31,19 @@ impl Parse for ParseHtmlEntity {
         let rest = input.rest().as_bytes();
         let rest = if rest.len() > 32 { &rest[..32] } else { rest };
 
-        let entity = rest
-            .iter()
-            .copied()
-            .enumerate()
-            .find(|&(_, b)| !b.is_ascii_alphabetic() && b != b';')
-            .map(|(i, _)| &rest[..i])
-            .unwrap_or(rest);
+        let mut idx = 0;
+        for b in rest.iter().copied() {
+            if b == b';' {
+                idx += 1;
+                break;
+            } else if b.is_ascii_alphabetic() {
+                idx += 1;
+            } else {
+                break;
+            }
+        }
+
+        let entity = &rest[..idx];
         let entity = HtmlEntity::from_bytes(entity)?;
         input.bump(entity.0.len());
 
