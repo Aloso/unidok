@@ -58,6 +58,7 @@ Unidoc should look familiar if you're familiar with Markdown. It follows the Com
 * Macros
   * Table of contents (`@TOC`)
   * Table column styling (`@COLS`)
+  * Footnotes section (`@FOOTNOTES`)
 
 ### Lower Priority
 
@@ -69,6 +70,7 @@ Unidoc should look familiar if you're familiar with Markdown. It follows the Com
 
 * HTML
   * Allow uppercase HTML tags
+  * Allow numeric HTML entities
   * Warn when an element is in an element where it is illegal as of HTML5
   * Warn when a block HTML element isn't followed by a line break
 
@@ -80,10 +82,10 @@ Unidoc should look familiar if you're familiar with Markdown. It follows the Com
 * Replacement plugins
   * Math:
     `!=`, `<=`, `>=`, `~=`, `===`, `~~`, `+-`, `-+`, `|->`, `_|_`, `|-`,
-    `\alpha`, `\Alpha`, `\beta`, ..., `\pi`, ..., `\Omega`,
-    `\in`, `\notin`, `\AA`, `\EE`, `\N`, `\Z`, `\Q`, `\R`, `\C`, `\H`, `\F`, `\oo`, `\aleph` ...
+    `\AA`, `\EE`, `\N`, `\Z`, `\Q`, `\R`, `\C`, `\H`, `\F`, `\oo` ...
     * <https://en.wikipedia.org/wiki/Glossary_of_mathematical_symbols>
     * <http://asciimath.org/>
+    * Note that greek letters and many operators can be entered with HTML entities, e.g. `&pi;` = &pi;, `&notin;` = &notin;
   * Other, e.g.: `?!`, `!?`
 
 * Footnotes

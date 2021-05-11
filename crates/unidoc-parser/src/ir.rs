@@ -505,11 +505,18 @@ impl<'a> IntoIR<'a> for Link {
                             title: lrd.title.clone(),
                         }
                     }
-                    None => LinkIr {
-                        href: None,
-                        text: vec![SegmentIr::Text2(format!("[{}]", reference))],
-                        title: None,
-                    },
+                    None => {
+                        let text = if let Some(mut segments) = self.text {
+                            let len = segments.len();
+                            segments.push(Segment::Text2("["));
+                            segments.rotate_left(len);
+                            segments.push(Segment::Text3(format!("][{}]", reference)));
+                            collapse_text(segments).into_ir(text, state)
+                        } else {
+                            vec![SegmentIr::Text2(format!("[{}]", reference))]
+                        };
+                        LinkIr { href: None, text, title: None }
+                    }
                 }
             }
         }
@@ -542,11 +549,18 @@ impl<'a> IntoIR<'a> for Image {
                             title: lrd.title.clone(),
                         }
                     }
-                    None => ImageIr {
-                        href: None,
-                        alt: vec![SegmentIr::Text2(format!("[{}]", reference))],
-                        title: None,
-                    },
+                    None => {
+                        let alt = if let Some(mut segments) = self.alt {
+                            let len = segments.len();
+                            segments.push(Segment::Text2("!["));
+                            segments.rotate_left(len);
+                            segments.push(Segment::Text3(format!("][{}]", reference)));
+                            collapse_text(segments).into_ir(text, state)
+                        } else {
+                            vec![SegmentIr::Text2(format!("![{}]", reference))]
+                        };
+                        ImageIr { href: None, alt, title: None }
+                    }
                 }
             }
         }

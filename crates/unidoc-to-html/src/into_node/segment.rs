@@ -40,7 +40,7 @@ impl<'a> IntoNode<'a> for BracesIr<'a> {
 }
 
 impl<'a> IntoNode<'a> for LinkIr<'a> {
-    fn into_node(mut self) -> Node<'a> {
+    fn into_node(self) -> Node<'a> {
         match self.href {
             Some(href) => {
                 let href = Attr { key: "href", value: Some(href) };
@@ -59,17 +59,13 @@ impl<'a> IntoNode<'a> for LinkIr<'a> {
                     contains_blocks: false,
                 })
             }
-            None if self.text.len() == 1 => self.text.pop().unwrap().into_node(),
-            None => panic!(
-                "Wrong text segment length in unresolved link reference: Expected 1, got {}",
-                self.text.len()
-            ),
+            None => Node::Fragment(self.text.into_nodes()),
         }
     }
 }
 
 impl<'a> IntoNode<'a> for ImageIr<'a> {
-    fn into_node(mut self) -> Node<'a> {
+    fn into_node(self) -> Node<'a> {
         match self.href {
             Some(href) => {
                 let mut buf = String::new();
@@ -88,11 +84,7 @@ impl<'a> IntoNode<'a> for ImageIr<'a> {
                     contains_blocks: false,
                 })
             }
-            None if self.alt.len() == 1 => self.alt.pop().unwrap().into_node(),
-            None => panic!(
-                "Wrong text segment length in unresolved image link reference: Expected 1, got {}",
-                self.alt.len()
-            ),
+            None => Node::Fragment(self.alt.into_nodes()),
         }
     }
 }
