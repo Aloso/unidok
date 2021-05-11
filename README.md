@@ -60,6 +60,8 @@ Unidoc should look familiar if you're familiar with Markdown. It follows the Com
   * Table column styling (`@COLS`)
   * Footnotes section (`@FOOTNOTES`)
 
+* Change behaviour of `$`: Only parse limiter directly next to a delimiter run, after a link reference or in an otherwise empty line
+
 ### Lower Priority
 
 * Lists
@@ -102,7 +104,6 @@ Unidoc should look familiar if you're familiar with Markdown. It follows the Com
   * Details that can be opened with summary (`@DETAILS`)
   * Image caption (`@CAPTION`)
   * Metadata (`@META`)
-  * `@()` should have a shortcut for `style=...`
 
 ### Version 1.0
 
@@ -121,64 +122,113 @@ Unidoc should look familiar if you're familiar with Markdown. It follows the Com
 
 * IDE support
 
-### Vague Ideas for the Distant Future
+### Random Ideas
+
+* `@()` could have a shortcut for `style=...`
+
+* Metadata section at the top, like in Liquid:
+  ````
+  ---
+  author: John Doe
+  date: 2025-01-01
+  ---
+  ````
 
 * Stolen from Asciidoctor:
   * Admonition blocks (e.g. `@TIP`)
   * Sidebar blocks (e.g. `@SIDEBAR`)
   * Example blocks (e.g. `@EXAMPLE(title)`)
   * Labeled lists (e.g. `Label:: content`), Q&A lists, glossary lists, bibliography lists
+
 * Emojis (e.g. `:makeup:`)
-* Custom inline formatting delimiters (e.g. `=Keyboard-shortcut=`)
+
+* Custom inline formatting delimiters (e.g. `=Foo= ´bar´`)
   * The following symbols are potentially available: `+`, `?`, `´`, `=`, `:`, `;`
+
+* Support XML (e.g. for `<svg>` elements)
+
+
 
 ### Design Discussion
 
-* The `#` character is useful, e.g. for GitHub issues and pull requests, Twitter hashtags, etc. We could use `~` for subscript and require two tildes for strikethrough (as in GFM).
+* The `#` character is useful, e.g. for GitHub issues and pull requests, Twitter hashtags, etc. Should we use `~` for subscript and require two tildes for strikethrough?
 
-* Backslash and dollar sign (limiter) have overlapping purposes. Furthermore, the dollar sign must _always_ be escaped, which is not only annoying, but can cause problems, since an unescaped dollar sign that should be escaped is easy to miss.
+* In Markdown, numbered lists can only interrupt a paragraph if they start with the number 1. On one hand, this is an inconsistency and an edge case that probably very few people know about. On the other hand, it is rarely a problem, therefore we gain little by diverging from the CommonMark spec.
 
-* In Markdown, numbered lists can only interrupt a paragraph if they start with the number 1. On one hand, this is an inconsistency and an edge case that probably very few people know about. On the other hand, it is useful (99% of the time, it "just works", without you having to know how). Also, when it doesn't work, the solution is simple and intuitive: Add another line break. In the other direction, the solution is less intuitive: Either remove the line break before the number, or escape the dot or parenthesis of the number list marker:
+  Comparison (the number 4 is used as an example for any non-negative number other than 1):
 
-  ```markdown
-  Hope's favourite number is
-  4. This is a list item in Unidoc, but not in Markdown.
+  <table>
+    <tr>
+      <th rowspan="2">Input</th>
+      <th rowspan="2">Expected</th>
+      <th colspan="2">Solution for</th>
+      <th rowspan="2">Likeliness</th>
+    </tr>
+    <tr>
+      <th>CommonMark</th>
+      <th>Unidoc</th>
+    </tr>
+    <tr>
+      <td>
+      <pre style="margin:0">Text<br/>1. Text</pre>
+      </td>
+      <td align="center">list</td>
+      <td colspan="2" align="center"><strong>it works!</strong></td>
+      <td align="center">High</td>
+    </tr>
+    <tr>
+      <td>
+      <pre style="margin:0">Text<br/>1. Text</pre>
+      </td>
+      <td align="center">paragraph</td>
+      <td colspan="2" align="center">escape the dot</td>
+      <td align="center">Very low * †</td>
+    </tr>
+    <tr>
+      <td>
+      <pre style="margin:0">Text<br/>4. Text</pre>
+      </td>
+      <td align="center">list</td>
+      <td align="center">insert blank line</td>
+      <td align="center"><strong>it works!</strong></td>
+      <td align="center">Low ‡</td>
+    </tr>
+    <tr>
+      <td>
+      <pre style="margin:0">Text<br/>4. Text</pre>
+      </td>
+      <td align="center">paragraph</td>
+      <td align="center"><strong>it works!</strong></td>
+      <td align="center">escape the dot</td>
+      <td align="center">Low *</td>
+    </tr>
+  </table>
 
-  Marcus' favourite number is
-  1. This is a list item in both Unidoc and Markdown.
-  ```
+  \* This is unlikely because there's no reason to add a line break before the number. The line break would more likely be _after_ the number.
 
-  Disambiguation im Markdown:
+  † This is unlikely because it only applies to the number 1.
 
-  ```markdown
-  Hope's favourite number is
+  ‡ This is unlikely because lists rarely start with a number other than 1.
 
-  4. This is a list item.
+* Should blockquotes allow empty lines in between? This is different than in Markdown, where a blank line terminates a blockquote. This might be unexpected, and an inexperienced writer might not know what to do to fix (the fix is to insert a `$`).
 
-  Marcus' favourite number is
-  1\. Not a list item
-  ```
+* It's odd that macros can attach to `inline code`, but not to other types of inline formatting. This is because inline code has a different parsing strategy than other formatting. Specifically, backticks that surround inline code don't need to be left- or right-flanking; for example, this is valid inline code: `` ` text ` `` but this is not a valid emphasis: `* text *`
 
-* Blockquotes can have empty lines in between. This is different than in Markdown, where a blank line terminates a blockquote. This might be unexpected, and an inexperienced writer might not know what to do to fix (the fix is to insert a `$`).
+  When a macro appears before a formatting delimiter, the parsing strategy could be changed, but is it worth the added complexity? Note that this already works: `@MACRO{**bold text**}`
 
-* It's odd that macros can attach to `inline code`, but not to other types of inline formatting. This is due to how formatting is parsed. While parsing a paragraph, it is split into _items_; an item can be
-
-  * a formatting delimiter
-  * a link, image, HTML node, math element, escape sequence, limiter or inline code
-  * a line break
-  * a string of text that doesn't contain any of the above
-
-  In the next step, Unidoc determines what delimiters open a formatting range, which close a formatting range, and which do neither (and are therefore printed in the output as-is). However, to attach macros to any formatting range, that formatting range must be parsable in one go, which is not possible, or would require profound changes to how inline formatting works in the presence of macros.
-
-  Note that inline code works very different than other kinds of formatting. This is because, according to the CommonMark specification, inline code binds "more tightly" than emphasis and strong emphasis (`*italic*` and `**bold**` text). This means that `` **Hello `world**!` `` is rendered as \*\*Hello `world**!`, and not **Hello \`world**!\`. Generally speaking, inline code can be parsed in one go: When the first backtick sequence is encountered, it always opens an inline code element, which is closed by the next backtick sequence of equal length.
-
-* It's unfortunate that a sequence of dashes can be either a thematic break or a heading underline. I would prefer if this ambiguity didn't exist, even though it is easy to resolve. However, deprecating thematic breaks made of dashes would break a lot of Markdown documents; one current advantage of Unidoc is that most Markdown documents need no or very few changes to become an equivalent Unidoc document.
+* It's unfortunate that a sequence of dashes can be either a thematic break or a heading underline. I would prefer if this ambiguity didn't exist, even though it is easy to resolve. However, deprecating thematic breaks made of dashes would break a lot of Markdown documents; one current advantage of Unidoc is that many Markdown documents need no or very few changes to become an equivalent Unidoc document.
 
 * Unidoc tries to behave the same as CommonMark, unless there's a good reason to break compatibility. One interesting case are tables: Tables aren't part of the CommonMark specification, only the GFM (GitHub-flavored Markdown) specification. However, GFM-style tables are supported in many Markdown implementations. Therefore it would make sense if Unidoc tables were backwards-compatible with GFM-style tables.
 
   I decided against that because I find them inflexible and cumbersome to type. Furthermore, they are only readable when the content fits in a single line, and the line that separates the table header from the body seems out of place when there is no table header. Lastly, GFM-style tables are difficult to parse.
 
-* Math support isn't strictly required, since MathJax has AsciiMath support. However, I believe that doing some of the work up front (converting AsciiMath to MathML) makes the website faster, although I haven't measured this. Also, it means that special characters in math formulas (`_ * ~ [] |`) aren't accidentally interpreted as Unidoc. Not having to escape them makes the formulas easier to read and to write.
+* The Rust AsciiMath implementation used by Unidoc behaves slightly different than the official implementation and might also contain a few bugs. Possible solutions:
+
+  * Use the [official implementation](https://github.com/asciimath/asciimathml/blob/master/ASCIIMathML.js). This requires that NodeJS is installed on the build machine.
+
+  * Don't convert AsciiMath to MathML, and include MathJax with AsciiMath support. Note that the recommended way to use MathJax searches the entire document for text enclosed in `\(`...`\)`, so this is less performant and might also interpret text as Math that isn't supposed to be.
+
+  * Improve `asciimath-rs`, or translate the official JavaScript implementation into Rust
 
 ## License
 
