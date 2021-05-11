@@ -19,9 +19,9 @@ Text in the same line is forbidden.
 -------------- ~
 
 ............................................................
-<h1>Title followed by a thematic break</h1>
+<h1 id="title-followed-by-a-thematic-break">Title followed by a thematic break</h1>
 <hr/>
-<h2>And another thematic break:</h2>
+<h2 id="and-another-thematic-break">And another thematic break:</h2>
 <hr/>
 <p>And another one:</p>
 <hr/>

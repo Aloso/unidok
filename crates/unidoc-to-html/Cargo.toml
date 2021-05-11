@@ -9,3 +9,4 @@ edition = "2018"
 unidoc-parser = { path = "../unidoc-parser", version = "0.1" }
 itertools = "0.10.0"
 asciimath-rs = "0.5.8"
+slug = "0.1.4"

@@ -9,7 +9,7 @@ use unidoc_parser::ir::{
 
 use super::helpers::into_nodes_trimmed;
 use crate::into_node::segment::add_attributes;
-use crate::{Attr, Element, IntoNode, IntoNodes, Node};
+use crate::{Attr, Element, IntoNode, IntoNodes, Node, ToPlaintext};
 
 impl<'a> IntoNode<'a> for BlockIr<'a> {
     fn into_node(self) -> Node<'a> {
@@ -196,11 +196,19 @@ impl<'a> IntoNode<'a> for HeadingIr<'a> {
             6 => ElemName::H6,
             l => panic!("Invalid heading level {}", l),
         };
+        let mut plain_content = String::new();
+        self.to_plaintext(&mut plain_content);
+        let plain_content = plain_content;
+        let slug = slug::slugify(&plain_content);
+        let attrs =
+            if slug.is_empty() { vec![] } else { vec![Attr { key: "id", value: Some(slug) }] };
+
+        let content = into_nodes_trimmed(self.segments);
 
         Node::Element(Element {
             name,
-            attrs: vec![],
-            content: Some(into_nodes_trimmed(self.segments)),
+            attrs,
+            content: Some(content),
             is_block_level: true,
             contains_blocks: false,
         })
