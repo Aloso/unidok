@@ -42,8 +42,6 @@ Unidoc should look familiar if you're familiar with Markdown. It follows the Com
 
 ### MVP
 
-* Bug: Excess spaces/tabs in empty line can interrupt blockquote
-
 * Code blocks
   * Syntax highlighting
 

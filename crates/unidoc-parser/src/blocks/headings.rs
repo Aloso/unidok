@@ -52,8 +52,11 @@ impl Parse for ParseHeading<'_> {
             .parse(Segments::parser(self.ind, Context::Heading, ParsingMode::new_all()))?
             .into_segments_no_underline_zero()?;
 
+        let heading = Heading { level, segments, kind: HeadingKind::Atx };
+        input.state_mut().headings.push(heading.clone());
+
         input.apply();
-        Some(Heading { level, segments, kind: HeadingKind::Atx })
+        Some(heading)
     }
 
     fn can_parse(&mut self, input: &mut Input) -> bool {

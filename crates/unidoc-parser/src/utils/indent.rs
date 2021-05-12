@@ -1,6 +1,6 @@
 use std::num::NonZeroU8;
 
-use super::{ParseAtMostNSpaces, ParseLineEnd};
+use super::{ParseAtMostNSpaces, ParseWsAndLineEnd};
 use crate::{Input, Parse};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -119,12 +119,12 @@ fn parse_indentation_rec(node: INode<'_>, input: &mut Input) -> State {
                         let s: u8 = s.into();
                         match input.parse(ParseAtMostNSpaces(s)) {
                             Some(n) if n == s => State::Continue,
-                            Some(_) if input.can_parse(ParseLineEnd) => State::Done,
+                            Some(_) if input.parse(ParseWsAndLineEnd).is_some() => State::Done,
                             _ => State::Error,
                         }
                     }
                     Indentation::QuoteMarker => match input.parse(ParseQuoteMarker) {
-                        None if input.can_parse(ParseLineEnd) => State::Done,
+                        None if input.parse(ParseWsAndLineEnd).is_some() => State::Done,
                         Some(_) => State::Continue,
                         _ => State::Error,
                     },
