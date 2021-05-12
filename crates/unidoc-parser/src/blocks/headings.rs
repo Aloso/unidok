@@ -1,43 +1,12 @@
-use crate::inlines::{Segment, Segments};
+use unidoc_repr::ast::blocks::{Heading, HeadingKind};
+
+use crate::inlines::Segments;
 use crate::parsing_mode::ParsingMode;
 use crate::utils::{ParseLineBreak, ParseLineEnd, ParseSpaces, While};
 use crate::{Context, Indents, Input, Parse};
 
-/// A heading
-///
-/// ### Examples
-///
-/// ````markdown
-/// Heading 1
-/// =======
-///
-/// Heading 2
-/// -------
-/// ### Heading 3
-/// ````
-#[derive(Debug, Clone, PartialEq)]
-pub struct Heading {
-    pub level: u8,
-    pub kind: HeadingKind,
-    pub segments: Vec<Segment>,
-}
-
-impl Heading {
-    pub(crate) fn parser(ind: Indents<'_>) -> ParseHeading<'_> {
-        ParseHeading { ind }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum HeadingKind {
-    /// A heading with leading number signs
-    Atx,
-    /// A heading underlined with dashes or equal signs
-    Setext,
-}
-
 pub(crate) struct ParseHeading<'a> {
-    ind: Indents<'a>,
+    pub ind: Indents<'a>,
 }
 
 impl Parse for ParseHeading<'_> {

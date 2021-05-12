@@ -1,13 +1,17 @@
 use asciimath_rs::format::mathml::ToMathML;
 use itertools::Itertools;
-use unidoc_parser::html::ElemName;
-use unidoc_parser::inlines::Formatting;
-use unidoc_parser::ir::*;
+use unidoc_repr::ast::html::ElemName;
+use unidoc_repr::ast::segments::Formatting;
+use unidoc_repr::ir::macros::*;
+use unidoc_repr::ir::segments::*;
+use unidoc_repr::ir::IrState;
+use unidoc_repr::ToPlaintext;
 
-use crate::{Attr, Element, IntoNode, IntoNodes, Node, ToPlaintext};
+use crate::into_node::macros::apply_post_annotations;
+use crate::{Attr, Element, IntoNode, IntoNodes, Node};
 
 impl<'a> IntoNode<'a> for SegmentIr<'a> {
-    fn into_node(self) -> Node<'a> {
+    fn into_node(self, state: &IrState<'a>) -> Node<'a> {
         match self {
             SegmentIr::Text(t) => Node::Text(t),
             SegmentIr::Text2(t) => Node::Text2(t),
@@ -15,32 +19,33 @@ impl<'a> IntoNode<'a> for SegmentIr<'a> {
             SegmentIr::LineBreak => Node::Text("\n"),
             SegmentIr::Limiter => Node::Fragment(vec![]),
             SegmentIr::HtmlEntity(e) => Node::Entity(e.0),
-            SegmentIr::Braces(b) => b.into_node(),
-            SegmentIr::Link(l) => l.into_node(),
-            SegmentIr::Image(i) => i.into_node(),
-            SegmentIr::InlineHtml(h) => h.into_node(),
-            SegmentIr::Format(f) => f.into_node(),
-            SegmentIr::Code(c) => c.into_node(),
-            SegmentIr::InlineMacro(m) => m.into_node(),
-            SegmentIr::Math(m) => m.into_node(),
+            SegmentIr::Braces(b) => b.into_node(state),
+            SegmentIr::Link(l) => l.into_node(state),
+            SegmentIr::Image(i) => i.into_node(state),
+            SegmentIr::InlineHtml(h) => h.into_node(state),
+            SegmentIr::Format(f) => f.into_node(state),
+            SegmentIr::Code(c) => c.into_node(state),
+            SegmentIr::Math(m) => m.into_node(state),
         }
     }
 }
 
 impl<'a> IntoNode<'a> for BracesIr<'a> {
-    fn into_node(self) -> Node<'a> {
-        Node::Element(Element {
+    fn into_node(self, state: &IrState<'a>) -> Node<'a> {
+        let mut node = Node::Element(Element {
             name: ElemName::Span,
             attrs: vec![],
-            content: Some((self.segments).into_nodes()),
+            content: Some((self.segments).into_nodes(state)),
             is_block_level: false,
             contains_blocks: false,
-        })
+        });
+        apply_post_annotations(self.annotations, &mut node, state);
+        node
     }
 }
 
 impl<'a> IntoNode<'a> for LinkIr<'a> {
-    fn into_node(self) -> Node<'a> {
+    fn into_node(self, state: &IrState<'a>) -> Node<'a> {
         match self.href {
             Some(href) => {
                 let href = Attr { key: "href", value: Some(href) };
@@ -51,21 +56,23 @@ impl<'a> IntoNode<'a> for LinkIr<'a> {
                     vec![href]
                 };
 
-                Node::Element(Element {
+                let mut node = Node::Element(Element {
                     name: ElemName::A,
                     attrs,
-                    content: Some(self.text.into_nodes()),
+                    content: Some(self.text.into_nodes(state)),
                     is_block_level: false,
                     contains_blocks: false,
-                })
+                });
+                apply_post_annotations(self.annotations, &mut node, state);
+                node
             }
-            None => Node::Fragment(self.text.into_nodes()),
+            None => Node::Fragment(self.text.into_nodes(state)),
         }
     }
 }
 
 impl<'a> IntoNode<'a> for ImageIr<'a> {
-    fn into_node(self) -> Node<'a> {
+    fn into_node(self, state: &IrState<'a>) -> Node<'a> {
         match self.href {
             Some(href) => {
                 let mut buf = String::new();
@@ -76,21 +83,23 @@ impl<'a> IntoNode<'a> for ImageIr<'a> {
                 let src = Attr { key: "src", value: Some(href) };
                 let alt = Attr { key: "alt", value: Some(buf) };
 
-                Node::Element(Element {
+                let mut node = Node::Element(Element {
                     name: ElemName::Img,
                     attrs: vec![src, alt],
                     content: None,
                     is_block_level: false,
                     contains_blocks: false,
-                })
+                });
+                apply_post_annotations(self.annotations, &mut node, state);
+                node
             }
-            None => Node::Fragment(self.alt.into_nodes()),
+            None => Node::Fragment(self.alt.into_nodes(state)),
         }
     }
 }
 
 impl<'a> IntoNode<'a> for InlineFormatIr<'a> {
-    fn into_node(self) -> Node<'a> {
+    fn into_node(self, state: &IrState<'a>) -> Node<'a> {
         let name = match self.formatting {
             Formatting::Bold => ElemName::Strong,
             Formatting::Italic => ElemName::Em,
@@ -102,7 +111,7 @@ impl<'a> IntoNode<'a> for InlineFormatIr<'a> {
         Node::Element(Element {
             name,
             attrs: vec![],
-            content: Some(self.segments.into_nodes()),
+            content: Some(self.segments.into_nodes(state)),
             is_block_level: false,
             contains_blocks: false,
         })
@@ -110,32 +119,16 @@ impl<'a> IntoNode<'a> for InlineFormatIr<'a> {
 }
 
 impl<'a> IntoNode<'a> for CodeIr<'a> {
-    fn into_node(self) -> Node<'a> {
-        Node::Element(Element {
+    fn into_node(self, state: &IrState<'a>) -> Node<'a> {
+        let mut node = Node::Element(Element {
             name: ElemName::Code,
             attrs: vec![],
-            content: Some(self.segments.into_nodes()),
+            content: Some(self.segments.into_nodes(state)),
             is_block_level: false,
             contains_blocks: false,
-        })
-    }
-}
-
-impl<'a> IntoNode<'a> for InlineMacroIr<'a> {
-    fn into_node(self) -> Node<'a> {
-        match self.name {
-            "" => {
-                let node = self.segment.into_node();
-
-                if let Node::Element(mut elem) = node {
-                    add_attributes(self.args, &mut elem);
-                    Node::Element(elem)
-                } else {
-                    node
-                }
-            }
-            _ => self.segment.into_node(),
-        }
+        });
+        apply_post_annotations(self.annotations, &mut node, state);
+        node
     }
 }
 
@@ -203,8 +196,8 @@ fn add_attribute_kv<'a>(
     attrs.push(Attr { key, value: Some(value.to_string()) });
 }
 
-impl<'a> IntoNode<'a> for MathIr {
-    fn into_node(self) -> Node<'a> {
+impl<'a> IntoNode<'a> for MathIr<'a> {
+    fn into_node(self, _: &IrState) -> Node<'a> {
         let formatted = asciimath_rs::parse(self.text).to_mathml();
 
         Node::Element(Element {

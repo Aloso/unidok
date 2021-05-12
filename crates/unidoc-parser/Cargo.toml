@@ -8,3 +8,4 @@ edition = "2018"
 
 [dependencies]
 detached-str = { path = "../detached-str", version = "0.1" }
+unidoc-repr = { path = "../unidoc-repr", version = "0.1" }

@@ -1,29 +1,12 @@
-use super::links::{LinkTarget, ParseLinkTargetReference, ParseLinkTargetUrl};
-use super::{Segment, Segments};
+use unidoc_repr::ast::segments::Image;
+
+use super::links::{ParseLinkTargetReference, ParseLinkTargetUrl};
+use super::Segments;
 use crate::parsing_mode::ParsingMode;
 use crate::{Context, Indents, Input, Parse};
 
-/// An image that should be shown in the document.
-///
-/// ### Syntax
-///
-/// ```markdown
-/// ![Alt text](https://www.example.com/image.jpg "a title")
-/// ```
-#[derive(Debug, Clone, PartialEq)]
-pub struct Image {
-    pub alt: Option<Vec<Segment>>,
-    pub target: LinkTarget,
-}
-
-impl Image {
-    pub(crate) fn parser(ind: Indents<'_>) -> ParseImage<'_> {
-        ParseImage { ind }
-    }
-}
-
 pub(crate) struct ParseImage<'a> {
-    ind: Indents<'a>,
+    pub ind: Indents<'a>,
 }
 
 impl Parse for ParseImage<'_> {

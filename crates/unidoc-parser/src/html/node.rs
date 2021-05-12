@@ -1,35 +1,27 @@
-use super::{CDataSection, Doctype, HtmlComment, HtmlElem};
+use unidoc_repr::ast::html::HtmlNode;
+
 use crate::{Indents, Input, Parse};
 
-#[derive(Debug, Clone, PartialEq)]
-pub enum HtmlNode {
-    Element(HtmlElem),
-    CData(CDataSection),
-    Comment(HtmlComment),
-    Doctype(Doctype),
-}
-
-impl HtmlNode {
-    pub(crate) fn parser(ind: Indents<'_>) -> ParseHtmlNode<'_> {
-        ParseHtmlNode { ind }
-    }
-}
+use super::cdata::ParseCDataSection;
+use super::comment::ParseHtmlComment;
+use super::doctype::ParseDoctype;
+use super::elem::ParseHtmlElem;
 
 pub(crate) struct ParseHtmlNode<'a> {
-    ind: Indents<'a>,
+    pub ind: Indents<'a>,
 }
 
 impl Parse for ParseHtmlNode<'_> {
     type Output = HtmlNode;
 
     fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
-        Some(if let Some(elem) = input.parse(HtmlElem::parser(self.ind)) {
+        Some(if let Some(elem) = input.parse(ParseHtmlElem { ind: self.ind }) {
             HtmlNode::Element(elem)
-        } else if let Some(comment) = input.parse(HtmlComment::parser(self.ind)) {
+        } else if let Some(comment) = input.parse(ParseHtmlComment { ind: self.ind }) {
             HtmlNode::Comment(comment)
-        } else if let Some(doctype) = input.parse(Doctype::parser()) {
+        } else if let Some(doctype) = input.parse(ParseDoctype) {
             HtmlNode::Doctype(doctype)
-        } else if let Some(cdata) = input.parse(CDataSection::parser()) {
+        } else if let Some(cdata) = input.parse(ParseCDataSection) {
             HtmlNode::CData(cdata)
         } else {
             return None;

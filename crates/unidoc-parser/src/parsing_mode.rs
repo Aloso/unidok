@@ -44,10 +44,10 @@ impl ParsingMode {
         self
     }
 
-    pub fn unset(mut self, PmParam(n): PmParam) -> Self {
-        self.0 &= n ^ !0;
-        self
-    }
+    // pub fn unset(mut self, PmParam(n): PmParam) -> Self {
+    //     self.0 &= n ^ !0;
+    //     self
+    // }
 
     pub fn is(&self, PmParam(n): PmParam) -> bool {
         (self.0 & n) != 0
@@ -55,10 +55,6 @@ impl ParsingMode {
 
     pub fn is_nothing(&self) -> bool {
         self.0 == 0
-    }
-
-    pub fn is_all(&self) -> bool {
-        self.0 == 0b11_1111_1111_1111
     }
 }
 

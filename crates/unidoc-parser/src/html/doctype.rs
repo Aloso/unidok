@@ -1,16 +1,7 @@
+use unidoc_repr::ast::html::Doctype;
+
 use crate::utils::{AsciiCI, ClosingQuoteMark, ParseOneWS, ParseSpaces, QuoteMark};
-use crate::{Parse, StrSlice};
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct Doctype {
-    pub text: StrSlice,
-}
-
-impl Doctype {
-    pub(crate) fn parser() -> ParseDoctype {
-        ParseDoctype
-    }
-}
+use crate::Parse;
 
 pub(crate) struct ParseDoctype;
 

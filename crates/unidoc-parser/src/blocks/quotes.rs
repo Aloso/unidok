@@ -1,54 +1,12 @@
+use unidoc_repr::ast::blocks::Quote;
+
 use crate::utils::{ParseQuoteMarker, ParseSpacesU8};
-use crate::{Block, Context, Indents, Input, Parse};
+use crate::{Context, Indents, Input, Parse};
 
-#[rustfmt::skip]
-/// A quote (in HTML, `<blockquote>`).
-///
-/// ### Syntax
-///
-/// Every line is prefixed with `>` followed by a space:
-///
-/// ```markdown
-/// > This is
-/// > a quote.
-/// ```
-///
-/// Quotes can be nested within other quotes or in lists:
-///
-/// ```markdown
-/// - > A quote containing
-///   > > another quote.
-///   > > * and a list.
-/// ```
-///
-/// this renders like this:
-///
-/// - > A quote containing
-///   > > another quote.
-///   > > * and a list.
-///
-/// Quotes are block elements, they can contain anything. They can't appear inline (in the middle of a line) however:
-///
-/// ```markdown
-/// Not > a quote
-/// ```
-///
-/// renders like this:
-///
-/// Not > a quote
-#[derive(Debug, Clone, PartialEq)]
-pub struct Quote {
-    pub content: Vec<Block>,
-}
+use super::ParseBlock;
 
-impl Quote {
-    pub fn parser(ind: Indents<'_>) -> ParseQuote<'_> {
-        ParseQuote { ind }
-    }
-}
-
-pub struct ParseQuote<'a> {
-    ind: Indents<'a>,
+pub(crate) struct ParseQuote<'a> {
+    pub ind: Indents<'a>,
 }
 
 impl Parse for ParseQuote<'_> {
@@ -62,7 +20,7 @@ impl Parse for ParseQuote<'_> {
         input.parse(ParseQuoteMarker)?;
         let ind = ind.push_quote();
 
-        let content = input.parse(Block::multi_parser(Context::Global, ind))?;
+        let content = input.parse(ParseBlock::new_multi(Context::Global, ind))?;
 
         input.apply();
         Some(Quote { content })

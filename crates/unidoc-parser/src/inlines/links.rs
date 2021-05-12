@@ -1,47 +1,14 @@
 use std::mem::replace;
 
-use super::segments::{Segment, Segments};
+use unidoc_repr::ast::segments::{Link, LinkTarget};
+
+use super::segments::Segments;
 use crate::parsing_mode::ParsingMode;
 use crate::utils::Until;
-use crate::{Context, Indents, Input, Parse, StrSlice};
-
-/// A hyperlink.
-///
-/// ### Syntax
-///
-/// ```markdown
-/// [Link text](https://www.example.com "a title")
-/// ```
-///
-/// The title is optional. The link text can contain formatting.
-///
-/// The URL can be absolute or relative. It can contain whitespace, and even
-/// parentheses, if they're balanced. Unbalanced parentheses must be escaped
-/// with a backslash. Double quotes must be escaped if they're preceded by
-/// whitespace.
-///
-/// The title must be wrapped in double quotes. It can't contain formatting.
-/// Double quotes in the title can be escaped with a backslash.
-#[derive(Debug, Clone, PartialEq)]
-pub struct Link {
-    pub text: Option<Vec<Segment>>,
-    pub target: LinkTarget,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum LinkTarget {
-    Url { href: String, title: Option<String> },
-    Reference(StrSlice),
-}
-
-impl Link {
-    pub(crate) fn parser(ind: Indents<'_>) -> ParseLink<'_> {
-        ParseLink { ind }
-    }
-}
+use crate::{Context, Indents, Input, Parse};
 
 pub(crate) struct ParseLink<'a> {
-    ind: Indents<'a>,
+    pub ind: Indents<'a>,
 }
 
 impl Parse for ParseLink<'_> {

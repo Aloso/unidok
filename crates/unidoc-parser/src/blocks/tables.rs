@@ -1,74 +1,18 @@
-use crate::inlines::{Segment, Segments};
+use unidoc_repr::ast::blocks::{CellAlignment, CellMeta, Table, TableCell, TableRow};
+
+use crate::inlines::Segments;
 use crate::parsing_mode::ParsingMode;
 use crate::utils::{ParseLineBreak, ParseLineEnd, ParseSpacesU8, While};
-use crate::{Context, Indents, Parse, ParseInfallible};
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct Table {
-    pub rows: Vec<TableRow>,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct TableRow {
-    pub is_header_row: bool,
-    pub cells: Vec<TableCell>,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct TableCell {
-    pub meta: CellMeta,
-    pub segments: Vec<Segment>,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct CellMeta {
-    pub is_header_cell: bool,
-    pub alignment: CellAlignment,
-    pub vertical_alignment: CellAlignment,
-    pub rowspan: u16,
-    pub colspan: u16,
-}
-
-impl CellMeta {
-    pub(crate) fn parser() -> ParseCellMeta {
-        ParseCellMeta
-    }
-}
-
-impl Default for CellMeta {
-    fn default() -> Self {
-        CellMeta {
-            is_header_cell: false,
-            alignment: CellAlignment::Unset,
-            vertical_alignment: CellAlignment::Unset,
-            rowspan: 1,
-            colspan: 1,
-        }
-    }
-}
-
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub enum CellAlignment {
-    Unset,
-    LeftTop,
-    RightBottom,
-    Center,
-}
-
-impl Table {
-    pub(crate) fn parser(ind: Indents<'_>) -> ParseTable<'_> {
-        ParseTable { ind }
-    }
-}
+use crate::{Context, Indents, Input, Parse, ParseInfallible};
 
 pub(crate) struct ParseTable<'a> {
-    ind: Indents<'a>,
+    pub ind: Indents<'a>,
 }
 
 impl Parse for ParseTable<'_> {
     type Output = Table;
 
-    fn parse(&mut self, input: &mut crate::Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
         let ind = self.ind;
 
@@ -104,7 +48,7 @@ impl Parse for ParseTable<'_> {
         Some(Table { rows })
     }
 
-    fn can_parse(&mut self, input: &mut crate::Input) -> bool {
+    fn can_parse(&mut self, input: &mut Input) -> bool {
         let rest = input.rest().trim_start_matches(|c| matches!(c, ' ' | '\t'));
         rest.starts_with("||") || rest.starts_with("#||")
     }
@@ -117,7 +61,7 @@ struct ParseTableRow<'a> {
 impl Parse for ParseTableRow<'_> {
     type Output = TableRow;
 
-    fn parse(&mut self, input: &mut crate::Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
         let is_header_row = input.parse('#').is_some();
         input.parse("||")?;
@@ -125,7 +69,7 @@ impl Parse for ParseTableRow<'_> {
         let mut contents = Vec::new();
 
         loop {
-            let meta = input.parse_i(CellMeta::parser());
+            let meta = input.parse_i(ParseCellMeta);
             let segments = if matches!(input.peek_char(), Some('\n' | '\r') | None) {
                 vec![]
             } else {
@@ -164,7 +108,7 @@ pub(crate) struct ParseCellMeta;
 impl ParseInfallible for ParseCellMeta {
     type Output = CellMeta;
 
-    fn parse_infallible(&self, input: &mut crate::Input) -> Self::Output {
+    fn parse_infallible(&self, input: &mut Input) -> Self::Output {
         let mut input = input.start();
 
         let is_header_cell = input.parse('#').is_some();
@@ -187,7 +131,7 @@ struct ParseCellAlignment;
 impl ParseInfallible for ParseCellAlignment {
     type Output = CellAlignment;
 
-    fn parse_infallible(&self, input: &mut crate::Input) -> Self::Output {
+    fn parse_infallible(&self, input: &mut Input) -> Self::Output {
         let al = match input.peek_char() {
             Some('<') => CellAlignment::LeftTop,
             Some('>') => CellAlignment::RightBottom,
@@ -204,7 +148,7 @@ struct ParseRowsAndColumns;
 impl Parse for ParseRowsAndColumns {
     type Output = (u16, u16);
 
-    fn parse(&mut self, input: &mut crate::Input) -> Option<Self::Output> {
+    fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
         let mut col_span: Option<u16> = None;
@@ -229,65 +173,5 @@ impl Parse for ParseRowsAndColumns {
         } else {
             None
         }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Bius(u8);
-
-impl Bius {
-    const BOLD: u8 = 1;
-    const ITALIC: u8 = 2;
-    const UNDERLINE: u8 = 4;
-    const STRIKE: u8 = 8;
-
-    pub fn new() -> Bius {
-        Bius(0)
-    }
-
-    pub fn bold(mut self) -> Bius {
-        self.0 |= Bius::BOLD;
-        self
-    }
-
-    pub fn italic(mut self) -> Bius {
-        self.0 |= Bius::ITALIC;
-        self
-    }
-
-    pub fn underline(mut self) -> Bius {
-        self.0 |= Bius::UNDERLINE;
-        self
-    }
-
-    pub fn strikethrough(mut self) -> Bius {
-        self.0 |= Bius::STRIKE;
-        self
-    }
-
-    pub fn is_initial(&self) -> bool {
-        self.0 == 0
-    }
-
-    pub fn is_bold(&self) -> bool {
-        self.0 & Bius::BOLD != 0
-    }
-
-    pub fn is_italic(&self) -> bool {
-        self.0 & Bius::ITALIC != 0
-    }
-
-    pub fn is_underline(&self) -> bool {
-        self.0 & Bius::UNDERLINE != 0
-    }
-
-    pub fn is_strikethrough(&self) -> bool {
-        self.0 & Bius::STRIKE != 0
-    }
-}
-
-impl Default for Bius {
-    fn default() -> Self {
-        Self::new()
     }
 }

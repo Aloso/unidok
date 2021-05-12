@@ -92,6 +92,15 @@ name = "unidoc-parser"
 version = "0.1.0"
 dependencies = [
  "detached-str",
+ "unidoc-repr",
+]
+
+[[package]]
+name = "unidoc-repr"
+version = "0.1.0"
+dependencies = [
+ "detached-str",
+ "slug",
 ]
 
 [[package]]
@@ -100,6 +109,6 @@ version = "0.1.0"
 dependencies = [
  "asciimath-rs",
  "itertools",
- "slug",
  "unidoc-parser",
+ "unidoc-repr",
 ]

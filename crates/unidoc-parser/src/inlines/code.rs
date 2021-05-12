@@ -1,25 +1,17 @@
 use std::convert::TryInto;
 
+use unidoc_repr::ast::segments::{Code, Segment};
+
 use crate::parsing_mode::ParsingMode;
 use crate::utils::{ParseLineBreak, ParseLineEnd, While};
 use crate::{Context, Indents, Input, Parse};
 
-use super::{Segment, Segments};
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct Code {
-    pub segments: Vec<Segment>,
-}
-
-impl Code {
-    pub(crate) fn parser(ind: Indents<'_>, mode: Option<ParsingMode>) -> ParseCode<'_> {
-        ParseCode { ind, mode }
-    }
-}
+use super::segments::{strip_space_end, strip_space_start};
+use super::Segments;
 
 pub(crate) struct ParseCode<'a> {
-    ind: Indents<'a>,
-    mode: Option<ParsingMode>,
+    pub ind: Indents<'a>,
+    pub mode: Option<ParsingMode>,
 }
 
 impl Parse for ParseCode<'_> {
@@ -69,10 +61,10 @@ impl Parse for ParseCode<'_> {
         };
 
         if let Some(s) = segments.first_mut() {
-            s.strip_space_start(&input);
+            strip_space_start(s, &input);
         }
         if let Some(s) = segments.last_mut() {
-            s.strip_space_end(&input);
+            strip_space_end(s, &input);
         }
 
         input.apply();

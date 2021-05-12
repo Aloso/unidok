@@ -1,16 +1,7 @@
+use unidoc_repr::ast::html::CDataSection;
+
 use crate::utils::Until;
-use crate::{Parse, StrSlice};
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct CDataSection {
-    pub text: StrSlice,
-}
-
-impl CDataSection {
-    pub(crate) fn parser() -> ParseCDataSection {
-        ParseCDataSection
-    }
-}
+use crate::Parse;
 
 pub(crate) struct ParseCDataSection;
 

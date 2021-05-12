@@ -1,6 +1,6 @@
 macro_rules! parse {
     ($text:literal, $parser:expr, None) => {{
-        use crate::ir::IntoIR;
+        use unidoc_repr::IntoIR;
 
         let str = $text;
         let mut input = crate::Input::new(str);
@@ -14,7 +14,7 @@ macro_rules! parse {
     }};
 
     ($text:literal, $parser:expr, $expected:expr) => {{
-        use crate::ir::IntoIR;
+        use unidoc_repr::IntoIR;
 
         let str = $text;
         let mut input = crate::Input::new(str);

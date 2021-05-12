@@ -1,56 +1,8 @@
-use crate::inlines::Braces;
+use unidoc_repr::ast::macros::{TokenTree, TokenTreeAtom};
+
+use crate::inlines::braces::ParseBraces;
 use crate::utils::{Indents, ParseSpaces, ParseWsNoBlankLinkes, QuotedStringWithEscapes};
-use crate::{Input, Parse, StrSlice};
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum TokenTree {
-    Atom(TokenTreeAtom),
-    KV(StrSlice, TokenTreeAtom),
-}
-
-impl TokenTree {
-    pub(crate) fn parser(ind: Indents<'_>) -> ParseTokenTree<'_> {
-        ParseTokenTree { ind }
-    }
-
-    pub(crate) fn multi_parser(ind: Indents<'_>) -> ParseTokenTrees<'_> {
-        ParseTokenTrees { ind }
-    }
-
-    pub fn as_atom(&self) -> Option<&TokenTreeAtom> {
-        if let Self::Atom(v) = self {
-            Some(v)
-        } else {
-            None
-        }
-    }
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum TokenTreeAtom {
-    Word(StrSlice),
-    QuotedWord(String),
-    Tuple(Vec<TokenTree>), // [foo=bar, baz="", quux]
-    Braces(Braces),
-}
-
-impl TokenTreeAtom {
-    pub fn as_word(&self) -> Option<StrSlice> {
-        if let Self::Word(v) = *self {
-            Some(v)
-        } else {
-            None
-        }
-    }
-
-    pub fn as_quoted_word(&self) -> Option<&str> {
-        if let Self::QuotedWord(v) = self {
-            Some(v)
-        } else {
-            None
-        }
-    }
-}
+use crate::{Input, Parse};
 
 #[derive(Clone, Copy)]
 pub(crate) struct ParseTokenTree<'a> {
@@ -109,14 +61,14 @@ impl Parse for ParseTokenTreeAtom<'_> {
         match input.peek_char() {
             Some('[') => {
                 input.bump(1);
-                let tuple = input.parse(TokenTree::multi_parser(self.ind))?;
+                let tuple = input.parse(ParseTokenTrees { ind: self.ind })?;
                 input.parse(']')?;
                 input.apply();
                 Some(TokenTreeAtom::Tuple(tuple))
             }
             Some('{') => {
                 input.bump(1);
-                let braces = input.parse(Braces::parser(self.ind))?;
+                let braces = input.parse(ParseBraces { ind: self.ind })?;
                 input.parse('}')?;
                 input.apply();
                 Some(TokenTreeAtom::Braces(braces))
@@ -139,14 +91,14 @@ impl Parse for ParseTokenTreeAtom<'_> {
 }
 
 pub(crate) struct ParseTokenTrees<'a> {
-    ind: Indents<'a>,
+    pub ind: Indents<'a>,
 }
 
 impl Parse for ParseTokenTrees<'_> {
     type Output = Vec<TokenTree>;
 
     fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
-        let parser = TokenTree::parser(self.ind);
+        let parser = ParseTokenTree { ind: self.ind };
         let mut token_trees = Vec::new();
 
         input.parse(ParseWsNoBlankLinkes(self.ind))?;

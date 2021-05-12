@@ -1,21 +1,10 @@
+use unidoc_repr::ast::blocks::LinkRefDef;
+
 use crate::utils::{ParseLineBreak, ParseLineEnd, ParseSpacesU8, QuotedStringWithEscapes, Until};
-use crate::{Indents, Input, Parse, StrSlice};
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct LinkRefDef {
-    pub name: StrSlice,
-    pub url: StrSlice,
-    pub title: Option<String>,
-}
-
-impl LinkRefDef {
-    pub(crate) fn parser(ind: Indents<'_>) -> ParseLinkRefDef<'_> {
-        ParseLinkRefDef { ind }
-    }
-}
+use crate::{Indents, Input, Parse};
 
 pub(crate) struct ParseLinkRefDef<'a> {
-    ind: Indents<'a>,
+    pub ind: Indents<'a>,
 }
 
 impl Parse for ParseLinkRefDef<'_> {

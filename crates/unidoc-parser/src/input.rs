@@ -1,13 +1,14 @@
 use std::ops::{Deref, DerefMut, Index};
 
-use crate::parser_state::ParserState;
+use unidoc_repr::ast::AstState;
+
 use crate::{Parse, ParseInfallible, Str, StrSlice};
 
 #[derive(Debug, Clone)]
 pub struct Input {
     text: Str,
     idx: usize,
-    state: ParserState,
+    state: AstState,
 }
 
 impl Input {
@@ -87,12 +88,16 @@ impl Input {
         parser.can_parse(self)
     }
 
-    pub fn state(&self) -> &ParserState {
+    pub fn state(&self) -> &AstState {
         &self.state
     }
 
-    pub fn state_mut(&mut self) -> &mut ParserState {
+    pub fn state_mut(&mut self) -> &mut AstState {
         &mut self.state
+    }
+
+    pub fn into_state(self) -> AstState {
+        self.state
     }
 }
 

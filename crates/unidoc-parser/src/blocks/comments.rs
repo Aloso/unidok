@@ -1,23 +1,7 @@
+use unidoc_repr::ast::blocks::Comment;
+
 use crate::utils::{ParseSpaces, Until};
-use crate::{Input, Parse, StrSlice};
-
-/// A line comment
-///
-/// ### Example
-///
-/// ````md
-/// // This is a comment
-/// ````
-#[derive(Debug, Clone, PartialEq)]
-pub struct Comment {
-    pub content: StrSlice,
-}
-
-impl Comment {
-    pub(crate) fn parser() -> ParseComment {
-        ParseComment
-    }
-}
+use crate::{Input, Parse};
 
 pub(crate) struct ParseComment;
 

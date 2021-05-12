@@ -1,19 +1,10 @@
+use unidoc_repr::ast::html::HtmlComment;
+
 use crate::utils::{ParseLineBreak, Until};
 use crate::{Indents, Input, Parse};
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct HtmlComment {
-    pub text: String,
-}
-
-impl HtmlComment {
-    pub(crate) fn parser(ind: Indents<'_>) -> ParseHtmlComment<'_> {
-        ParseHtmlComment { ind }
-    }
-}
-
 pub(crate) struct ParseHtmlComment<'a> {
-    ind: Indents<'a>,
+    pub ind: Indents<'a>,
 }
 
 impl Parse for ParseHtmlComment<'_> {

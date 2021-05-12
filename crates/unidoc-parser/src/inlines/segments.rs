@@ -1,67 +1,54 @@
 use std::convert::TryFrom;
 
+use unidoc_repr::ast::html::{HtmlEntity, HtmlNode};
+use unidoc_repr::ast::macros::InlineMacro;
+use unidoc_repr::ast::segments::*;
+
+use super::code::ParseCode;
+use super::escaped::ParseEscaped;
 use super::format::{is_in_word, is_not_flanking, FlankType, Flanking, FormatDelim};
-use super::*;
-use crate::blocks::*;
-use crate::html::{HtmlElem, HtmlEntity, HtmlNode};
+use super::images::ParseImage;
+use super::limiters::ParseLimiter;
+use super::links::ParseLink;
+use super::math::ParseMath;
+use crate::blocks::{
+    Context, ParseCodeBlock, ParseComment, ParseHeading, ParseLinkRefDef, ParseList, ParseQuote,
+    ParseTable, ParseThematicBreak, Underline,
+};
+use crate::html::elem::ParseHtmlElem;
+use crate::html::entities::ParseHtmlEntity;
+use crate::html::node::ParseHtmlNode;
 use crate::macros::utils::ParseClosingBrace;
-use crate::macros::InlineMacro;
+use crate::macros::ParseInlineMacro;
 use crate::parsing_mode::ParsingMode;
 use crate::utils::{ParseLineBreak, While};
 use crate::{Indents, Input, Parse, StrSlice};
 
-#[derive(Debug, Clone, PartialEq)]
-pub enum Segment {
-    LineBreak,
-    Text(StrSlice),
-    Text2(&'static str),
-    Text3(String),
-    Escaped(Escaped),
-    Limiter,
-    Braces(Braces),
-    Math(Math),
-    Link(Link),
-    Image(Image),
-    InlineMacro(InlineMacro),
-    InlineHtml(HtmlNode),
-    HtmlEntity(HtmlEntity),
-    Format(InlineFormat),
-    Code(Code),
-}
-
-impl Segment {
-    pub fn strip_space_start(&mut self, input: &Input) -> bool {
-        match self {
-            Segment::Text(s) if s.to_str(input.text()).starts_with(' ') => {
-                *s = s.get(1..);
-                true
-            }
-            Segment::Text2(s) if s.starts_with(' ') => {
-                *s = &s[1..];
-                true
-            }
-            _ => false,
+pub fn strip_space_start(segment: &mut Segment, input: &Input) -> bool {
+    match segment {
+        Segment::Text(s) if s.to_str(input.text()).starts_with(' ') => {
+            *s = s.get(1..);
+            true
         }
-    }
-
-    pub fn strip_space_end(&mut self, input: &Input) -> bool {
-        match self {
-            Segment::Text(s) if s.to_str(input.text()).ends_with(' ') => {
-                *s = s.get(..s.len() - 1);
-                true
-            }
-            Segment::Text2(s) if s.ends_with(' ') => {
-                *s = &s[..s.len() - 1];
-                true
-            }
-            _ => false,
+        Segment::Text2(s) if s.starts_with(' ') => {
+            *s = &s[1..];
+            true
         }
+        _ => false,
     }
 }
 
-impl Default for Segment {
-    fn default() -> Self {
-        Segment::Text2("")
+pub fn strip_space_end(segment: &mut Segment, input: &Input) -> bool {
+    match segment {
+        Segment::Text(s) if s.to_str(input.text()).ends_with(' ') => {
+            *s = s.get(..s.len() - 1);
+            true
+        }
+        Segment::Text2(s) if s.ends_with(' ') => {
+            *s = &s[..s.len() - 1];
+            true
+        }
+        _ => false,
     }
 }
 
@@ -429,7 +416,7 @@ impl ParseSegments<'_> {
                 }
 
                 if self.mode.is(ParsingMode::INLINE) {
-                    if let Some(code) = input.parse(Code::parser(ind, None)) {
+                    if let Some(code) = input.parse(ParseCode { ind, mode: None }) {
                         items.push(Item::Code(code));
                         return Some(false);
                     }
@@ -440,7 +427,7 @@ impl ParseSegments<'_> {
             }
             '%' => {
                 if self.mode.is(ParsingMode::MATH) {
-                    if let Some(math) = input.parse(Math::parser(ind)) {
+                    if let Some(math) = input.parse(ParseMath { ind }) {
                         items.push(Item::Math(math));
                         return Some(false);
                     }
@@ -448,7 +435,7 @@ impl ParseSegments<'_> {
             }
             '!' => {
                 if self.mode.is(ParsingMode::LINKS_IMAGES) {
-                    if let Some(img) = input.parse(Image::parser(ind)) {
+                    if let Some(img) = input.parse(ParseImage { ind }) {
                         items.push(Item::Image(img));
                         return Some(false);
                     }
@@ -456,7 +443,8 @@ impl ParseSegments<'_> {
             }
             '@' => {
                 if self.mode.is(ParsingMode::MACROS) {
-                    if let Some(mac) = input.parse(InlineMacro::parser(ind, Some(self.mode))) {
+                    if let Some(mac) = input.parse(ParseInlineMacro { ind, mode: Some(self.mode) })
+                    {
                         items.push(Item::Macro(mac));
                         return Some(false);
                     }
@@ -464,35 +452,35 @@ impl ParseSegments<'_> {
             }
             '\\' => {
                 if self.mode.is(ParsingMode::INLINE) {
-                    if let Some(esc) = input.parse(Escaped::parser()) {
+                    if let Some(esc) = input.parse(ParseEscaped) {
                         items.push(Item::Escaped(esc));
                         return Some(false);
                     }
                 }
             }
             '$' => {
-                if self.mode.is(ParsingMode::LIMITER) && input.parse(Limiter::parser()).is_some() {
+                if self.mode.is(ParsingMode::LIMITER) && input.parse(ParseLimiter).is_some() {
                     items.push(Item::Limiter);
                     return Some(false);
                 }
             }
             '<' => {
                 if self.mode.is(ParsingMode::HTML) {
-                    if let Some(html) = input.parse(HtmlNode::parser(ind)) {
+                    if let Some(html) = input.parse(ParseHtmlNode { ind }) {
                         items.push(Item::Html(html));
                         return Some(false);
                     }
                 }
 
                 if let Context::InlineHtml(elem) | Context::BlockHtml(elem) = context {
-                    if input.can_parse(HtmlElem::closing_tag_parser(elem)) {
+                    if input.can_parse(ParseHtmlElem::closing_tag(elem)) {
                         return Some(true);
                     }
                 }
             }
             '&' => {
                 if self.mode.is(ParsingMode::HTML) {
-                    if let Some(entity) = input.parse(HtmlEntity::parser()) {
+                    if let Some(entity) = input.parse(ParseHtmlEntity) {
                         items.push(Item::HtmlEntity(entity));
                         return Some(false);
                     }
@@ -507,7 +495,7 @@ impl ParseSegments<'_> {
 
             '[' => {
                 if self.mode.is(ParsingMode::LINKS_IMAGES) {
-                    if let Some(link) = input.parse(Link::parser(ind)) {
+                    if let Some(link) = input.parse(ParseLink { ind }) {
                         items.push(Item::Link(link));
                         return Some(false);
                     }
@@ -585,14 +573,15 @@ impl ParseSegments<'_> {
 
         let ind = self.ind;
 
-        self.mode.is(P::CODE_BLOCKS) && input.can_parse(CodeBlock::parser(ind, None))
-            || self.mode.is(P::COMMENTS) && input.can_parse(Comment::parser())
-            || self.mode.is(P::HEADINGS) && input.can_parse(Heading::parser(ind))
-            || self.mode.is(P::TABLES) && input.can_parse(Table::parser(ind))
-            || self.mode.is(P::LISTS) && input.can_parse(List::parser(ind, false, &mut None))
-            || self.mode.is(P::THEMATIC_BREAKS) && input.can_parse(ThematicBreak::parser(ind))
-            || self.mode.is(P::QUOTES) && input.can_parse(Quote::parser(ind))
-            || self.mode.is(P::LINKS_IMAGES) && input.can_parse(LinkRefDef::parser(ind))
+        self.mode.is(P::CODE_BLOCKS) && input.can_parse(ParseCodeBlock { ind, mode: None })
+            || self.mode.is(P::COMMENTS) && input.can_parse(ParseComment)
+            || self.mode.is(P::HEADINGS) && input.can_parse(ParseHeading { ind })
+            || self.mode.is(P::TABLES) && input.can_parse(ParseTable { ind })
+            || self.mode.is(P::LISTS)
+                && input.can_parse(ParseList { ind, is_loose: false, list_style: &mut None })
+            || self.mode.is(P::THEMATIC_BREAKS) && input.can_parse(ParseThematicBreak { ind })
+            || self.mode.is(P::QUOTES) && input.can_parse(ParseQuote { ind })
+            || self.mode.is(P::LINKS_IMAGES) && input.can_parse(ParseLinkRefDef { ind })
     }
 }
 

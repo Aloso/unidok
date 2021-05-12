@@ -1,28 +1,7 @@
+use unidoc_repr::ast::html::HtmlAttr;
+
 use crate::utils::{ParseWs, QuotedString, Until};
 use crate::{Indents, Input, Parse, StrSlice};
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct HtmlAttr {
-    pub key: StrSlice,
-    pub value: Option<String>,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum AttrQuotes {
-    Double,
-    Single,
-    None,
-}
-
-impl HtmlAttr {
-    fn parser(ind: Indents<'_>) -> ParseAttribute<'_> {
-        ParseAttribute { ind }
-    }
-
-    pub(crate) fn multi_parser(ind: Indents<'_>) -> ParseAttributes<'_> {
-        ParseAttributes { ind }
-    }
-}
 
 pub(crate) struct ParseAttribute<'a> {
     ind: Indents<'a>,
@@ -55,7 +34,7 @@ impl Parse for ParseAttribute<'_> {
 }
 
 pub(crate) struct ParseAttributes<'a> {
-    ind: Indents<'a>,
+    pub ind: Indents<'a>,
 }
 
 impl Parse for ParseAttributes<'_> {
@@ -65,7 +44,7 @@ impl Parse for ParseAttributes<'_> {
         let mut attrs = vec![];
 
         while !matches!(input.peek_char(), Some('>' | '/')) {
-            attrs.push(input.parse(HtmlAttr::parser(self.ind))?);
+            attrs.push(input.parse(ParseAttribute { ind: self.ind })?);
         }
 
         Some(attrs)

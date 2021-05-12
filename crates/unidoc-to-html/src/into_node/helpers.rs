@@ -1,10 +1,15 @@
-use unidoc_parser::ir::{ElemContentIr, SegmentIr};
+use unidoc_repr::ir::html::ElemContentIr;
+use unidoc_repr::ir::segments::SegmentIr;
+use unidoc_repr::ir::IrState;
 
 use crate::{IntoNode, IntoNodes, Node};
 
 /// Converts the segments into nodes, while removing whitespace at the start and
 /// end of the node.
-pub(super) fn into_nodes_trimmed(mut segments: Vec<SegmentIr<'_>>) -> Vec<Node<'_>> {
+pub(super) fn into_nodes_trimmed<'a>(
+    mut segments: Vec<SegmentIr<'a>>,
+    state: &IrState<'a>,
+) -> Vec<Node<'a>> {
     while let Some(seg) = segments.last_mut() {
         if trim_segments_end(seg) {
             segments.pop();
@@ -18,8 +23,8 @@ pub(super) fn into_nodes_trimmed(mut segments: Vec<SegmentIr<'_>>) -> Vec<Node<'
 
     while let Some(seg) = iter.next() {
         if let Some(seg) = trim_segments_start(seg) {
-            result.push(seg.into_node());
-            result.extend(iter.map(IntoNode::into_node));
+            result.push(seg.into_node(state));
+            result.extend(iter.map(|n| n.into_node(state)));
             break;
         }
     }
@@ -67,10 +72,13 @@ fn trim_segments_end(seg: &mut SegmentIr) -> bool {
     }
 }
 
-pub(super) fn elem_content_ir_into_nodes(content: ElemContentIr<'_>) -> Vec<Node<'_>> {
+pub(super) fn elem_content_ir_into_nodes<'a>(
+    content: ElemContentIr<'a>,
+    state: &IrState<'a>,
+) -> Vec<Node<'a>> {
     match content {
-        ElemContentIr::Blocks(b) => b.into_nodes(),
-        ElemContentIr::Inline(i) => i.into_nodes(),
+        ElemContentIr::Blocks(b) => b.into_nodes(state),
+        ElemContentIr::Inline(i) => i.into_nodes(state),
         ElemContentIr::Verbatim(v) => vec![Node::Verbatim(v)],
     }
 }

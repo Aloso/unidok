@@ -1,54 +1,16 @@
 use std::convert::TryInto;
 
+use unidoc_repr::ast::blocks::{CodeBlock, Fence};
+
 use crate::parsing_mode::ParsingMode;
 use crate::utils::{ParseLineBreak, ParseSpacesU8, ParseWsAndLineEnd, Until, While};
 use crate::{Indents, Input, Parse, StrSlice};
 
-use super::{Block, Context};
-
-#[rustfmt::skip]
-/// A code block
-///
-/// ### Example
-///
-/// ````md
-/// ```rust
-/// pub struct Foo;
-/// ```
-/// ````
-#[derive(Debug, Clone, PartialEq)]
-pub struct CodeBlock {
-    pub info: StrSlice,
-    pub fence: Fence,
-    pub lines: Vec<Block>,
-    pub indent: u8,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Fence {
-    Backticks(u32),
-    Tildes(u32),
-}
-
-impl Fence {
-    fn can_close(self, opening_fence: Fence) -> bool {
-        match (opening_fence, self) {
-            (Fence::Backticks(a), Fence::Backticks(b)) => a <= b,
-            (Fence::Tildes(a), Fence::Tildes(b)) => a <= b,
-            _ => false,
-        }
-    }
-}
+use super::{Context, ParseBlock};
 
 pub(crate) struct ParseCodeBlock<'a> {
-    ind: Indents<'a>,
-    mode: Option<ParsingMode>,
-}
-
-impl CodeBlock {
-    pub(crate) fn parser(ind: Indents<'_>, mode: Option<ParsingMode>) -> ParseCodeBlock<'_> {
-        ParseCodeBlock { ind, mode }
-    }
+    pub ind: Indents<'a>,
+    pub mode: Option<ParsingMode>,
 }
 
 impl Parse for ParseCodeBlock<'_> {
@@ -81,7 +43,7 @@ impl Parse for ParseCodeBlock<'_> {
             }
             drop(input2);
 
-            let line = input.parse(Block::parser(context, ind, Some(mode), false, None))?;
+            let line = input.parse(ParseBlock::new(context, ind, Some(mode), false, None))?;
             lines.push(line);
         }
 

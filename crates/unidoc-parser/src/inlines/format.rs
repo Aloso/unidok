@@ -1,46 +1,7 @@
 use std::cmp::Ordering;
 use std::convert::TryFrom;
 
-use super::Segment;
-
-/// Inline formatting (bold, italic, etc.)
-///
-/// - `**bold**`, `__bold__`
-/// - `*italic*`, `_italic_`
-/// - `~strikethrough~`
-/// - `^superscript^`
-/// - `#subscript#`
-/// - `` `code` ``
-///
-/// Inline formatting generally can't span multiple paragraphs. To achieve this,
-/// you need to add braces or a macro within the formatting, e.g.
-///
-/// ```markdown
-/// **{this is
-///
-/// bold}**.
-/// ```
-///
-/// which generates code like this:
-///
-/// ```html
-/// <p><b>this is</b></p>
-/// <p><b>bold</b>.</p>
-/// ```
-#[derive(Debug, Clone, PartialEq)]
-pub struct InlineFormat {
-    pub formatting: Formatting,
-    pub segments: Vec<Segment>,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Formatting {
-    Bold,
-    Italic,
-    StrikeThrough,
-    Superscript,
-    Subscript,
-}
+use unidoc_repr::ast::segments::Formatting;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum Flanking {

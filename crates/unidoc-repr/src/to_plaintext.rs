@@ -1,4 +1,6 @@
-use unidoc_parser::ir::*;
+use crate::ir::blocks::*;
+use crate::ir::html::*;
+use crate::ir::segments::*;
 
 pub trait ToPlaintext {
     fn to_plaintext(&self, buf: &mut String);
@@ -20,7 +22,6 @@ impl ToPlaintext for SegmentIr<'_> {
             SegmentIr::Math(m) => m.to_plaintext(buf),
             SegmentIr::Link(l) => l.to_plaintext(buf),
             SegmentIr::Image(i) => i.to_plaintext(buf),
-            SegmentIr::InlineMacro(m) => m.to_plaintext(buf),
             SegmentIr::InlineHtml(h) => h.to_plaintext(buf),
             SegmentIr::Format(f) => f.to_plaintext(buf),
             SegmentIr::Code(c) => c.to_plaintext(buf),
@@ -36,7 +37,7 @@ impl ToPlaintext for BracesIr<'_> {
     }
 }
 
-impl ToPlaintext for MathIr {
+impl ToPlaintext for MathIr<'_> {
     fn to_plaintext(&self, buf: &mut String) {
         buf.push_str(&self.text);
     }
@@ -74,12 +75,6 @@ impl ToPlaintext for ImageIr<'_> {
     }
 }
 
-impl ToPlaintext for InlineMacroIr<'_> {
-    fn to_plaintext(&self, buf: &mut String) {
-        self.segment.to_plaintext(buf);
-    }
-}
-
 impl ToPlaintext for HtmlNodeIr<'_> {
     fn to_plaintext(&self, buf: &mut String) {
         if let HtmlNodeIr::Element(e) = self {
@@ -108,6 +103,12 @@ impl ToPlaintext for HtmlElemIr<'_> {
     }
 }
 
+impl ToPlaintext for AnnBlockIr<'_> {
+    fn to_plaintext(&self, buf: &mut String) {
+        self.block.to_plaintext(buf);
+    }
+}
+
 impl ToPlaintext for BlockIr<'_> {
     fn to_plaintext(&self, buf: &mut String) {
         match self {
@@ -118,7 +119,11 @@ impl ToPlaintext for BlockIr<'_> {
             BlockIr::ThematicBreak(_) => buf.push_str("---------\n\n"),
             BlockIr::List(_) => {} // TODO: Emit warning
             BlockIr::Quote(q) => q.to_plaintext(buf),
-            BlockIr::BlockMacro(m) => m.content.to_plaintext(buf),
+            BlockIr::Braces(blocks) => {
+                for block in blocks {
+                    block.to_plaintext(buf)
+                }
+            }
             BlockIr::BlockHtml(h) => h.to_plaintext(buf),
             BlockIr::Empty => {}
         }
@@ -139,21 +144,6 @@ impl ToPlaintext for QuoteIr<'_> {
     fn to_plaintext(&self, buf: &mut String) {
         for b in &self.content {
             b.to_plaintext(buf);
-        }
-    }
-}
-
-impl ToPlaintext for BlockMacroContentIr<'_> {
-    fn to_plaintext(&self, buf: &mut String) {
-        match self {
-            BlockMacroContentIr::Prefixed(block) => {
-                block.to_plaintext(buf);
-            }
-            BlockMacroContentIr::Braces(blocks) => {
-                for block in blocks {
-                    block.to_plaintext(buf);
-                }
-            }
         }
     }
 }

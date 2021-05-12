@@ -4,23 +4,21 @@ mod comments;
 mod headings;
 mod link_ref_defs;
 mod lists;
-mod paragraphs;
 mod quotes;
 mod tables;
 mod thematic_breaks;
 
-pub use blocks_impl::Block;
-pub use code_blocks::{CodeBlock, Fence};
-pub use comments::Comment;
-pub use headings::{Heading, HeadingKind, Underline};
-pub use link_ref_defs::LinkRefDef;
-pub use lists::{Bullet, List};
-pub use paragraphs::Paragraph;
-pub use quotes::Quote;
-pub use tables::{Bius, CellAlignment, CellMeta, Table, TableCell, TableRow};
-pub use thematic_breaks::{ThematicBreak, ThematicBreakKind};
+pub(crate) use blocks_impl::ParseBlock;
+pub(crate) use code_blocks::ParseCodeBlock;
+pub(crate) use comments::ParseComment;
+pub(crate) use headings::{ParseHeading, Underline};
+pub(crate) use link_ref_defs::ParseLinkRefDef;
+pub(crate) use lists::ParseList;
+pub(crate) use quotes::ParseQuote;
+pub(crate) use tables::ParseTable;
+pub(crate) use thematic_breaks::ParseThematicBreak;
 
-use crate::html::ElemName;
+use unidoc_repr::ast::html::ElemName;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Context {

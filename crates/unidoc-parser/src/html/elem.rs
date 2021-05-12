@@ -1,70 +1,36 @@
-use crate::blocks::{Block, Context};
-use crate::inlines::{Segment, Segments};
+use unidoc_repr::ast::html::{ElemClose, ElemContent, ElemName, HtmlElem};
+use unidoc_repr::ast::segments::Segment;
+
+use crate::blocks::{Context, ParseBlock};
+use crate::inlines::Segments;
 use crate::parsing_mode::ParsingMode;
 use crate::utils::{ParseLineBreak, ParseLineEnd, ParseSpaces, Until};
 use crate::{Indents, Input, Parse};
 
-use super::{ElemName, HtmlAttr};
+use super::attr::ParseAttributes;
+use super::elem_name::ParseElemName;
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct HtmlElem {
-    pub name: ElemName,
-    pub attrs: Vec<HtmlAttr>,
-    pub content: Option<ElemContent>,
-    pub close: ElemClose,
+pub(crate) struct ParseHtmlElem<'a> {
+    pub ind: Indents<'a>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
-pub enum ElemContent {
-    Blocks(Vec<Block>),
-    Inline(Vec<Segment>),
-    Verbatim(String),
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum ElemClose {
-    /// `<br>`
-    AutoSelfClosing,
-    /// `<br />`
-    SelfClosing,
-    /// ```html
-    /// <ul>
-    ///     <li>Element</li>
-    /// </ul>
-    /// ```
-    Normal,
-    /// ```html
-    /// <ul>
-    ///     <li>Element
-    /// </ul>
-    /// ```
-    AutoClosing,
-}
-
-impl HtmlElem {
-    pub(crate) fn parser(ind: Indents<'_>) -> ParseElement<'_> {
-        ParseElement { ind }
-    }
-    pub(crate) fn closing_tag_parser(elem: ElemName) -> ParseClosingTag {
+impl ParseHtmlElem<'_> {
+    pub(crate) fn closing_tag(elem: ElemName) -> ParseClosingTag {
         ParseClosingTag { elem }
     }
 }
 
-pub(crate) struct ParseElement<'a> {
-    ind: Indents<'a>,
-}
-
-impl Parse for ParseElement<'_> {
+impl Parse for ParseHtmlElem<'_> {
     type Output = HtmlElem;
 
     fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
 
         input.parse('<')?;
-        let name = input.parse(ElemName::parser())?;
+        let name = input.parse(ParseElemName)?;
         input.parse_i(ParseSpaces);
 
-        let attrs = input.parse(HtmlAttr::multi_parser(self.ind))?;
+        let attrs = input.parse(ParseAttributes { ind: self.ind })?;
 
         if input.parse("/>").is_some() {
             input.apply();
@@ -85,7 +51,7 @@ impl Parse for ParseElement<'_> {
 
                     match input2.peek_char() {
                         Some('<') => {
-                            if input2.can_parse(HtmlElem::closing_tag_parser(name)) {
+                            if input2.can_parse(ParseClosingTag { elem: name }) {
                                 break;
                             } else {
                                 input2.bump(1);
@@ -104,13 +70,13 @@ impl Parse for ParseElement<'_> {
                     }
                 }
                 input2.apply();
-                input.try_parse(HtmlElem::closing_tag_parser(name));
+                input.try_parse(ParseClosingTag { elem: name });
                 ElemContent::Verbatim(content)
             } else if name.must_contain_blocks()
                 || (name.can_contain_blocks() && input.parse(ParseLineBreak(self.ind)).is_some())
             {
                 let blocks =
-                    input.parse(Block::multi_parser(Context::BlockHtml(name), self.ind))?;
+                    input.parse(ParseBlock::new_multi(Context::BlockHtml(name), self.ind))?;
                 input.try_parse(ParseClosingTag { elem: name });
                 ElemContent::Blocks(blocks)
             } else {
@@ -155,7 +121,7 @@ impl Parse for ParseClosingTag {
         let mut input = input.start();
 
         input.parse("</")?;
-        let name = input.parse(ElemName::parser())?;
+        let name = input.parse(ParseElemName)?;
         if name != self.elem {
             return None;
         }

@@ -1,4 +1,4 @@
-use crate::inlines::Segment;
+use crate::ast::segments::Segment;
 
 pub fn collapse_text(mut segments: Vec<Segment>) -> Vec<Segment> {
     let len = segments.len();

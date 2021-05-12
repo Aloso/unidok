@@ -1,52 +1,34 @@
 use std::iter;
 
+use unidoc_repr::ast::macros::{BlockMacro, BlockMacroContent};
+
+use crate::blocks::ParseBlock;
 use crate::macros::utils::ParseMacroName;
 use crate::parsing_mode::ParsingMode;
 use crate::utils::{Indents, ParseLineBreak, ParseSpacesU8};
-use crate::{Block, Context, Input, Parse, StrSlice};
+use crate::{Context, Input, Parse};
 
+use super::args::ParseMacroArgs;
 use super::utils::{get_parsing_mode, ParseClosingBrace, ParseOpeningBrace};
-use super::MacroArgs;
 
-/// A block macro
-///
-/// ### Example
-///
-/// ````md
-/// @SOME_MACRO(args)
-/// The macro applies to this paragraph
-/// ````
-#[derive(Debug, Clone, PartialEq)]
-pub struct BlockMacro {
-    pub name: StrSlice,
-    pub args: Option<MacroArgs>,
-    pub content: BlockMacroContent,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum BlockMacroContent {
-    Prefixed(Box<Block>),
-    Braces(Vec<Block>),
-}
-
-impl BlockMacro {
-    pub fn parser(
-        context: Context,
-        ind: Indents<'_>,
-        mode: Option<ParsingMode>,
-        is_loose: bool,
-        list_style: Option<String>,
-    ) -> ParseBlockMacro<'_> {
-        ParseBlockMacro { context, ind, mode, is_loose, list_style }
-    }
-}
-
-pub struct ParseBlockMacro<'a> {
+pub(crate) struct ParseBlockMacro<'a> {
     context: Context,
     ind: Indents<'a>,
     mode: Option<ParsingMode>,
     is_loose: bool,
     list_style: Option<String>,
+}
+
+impl<'a> ParseBlockMacro<'a> {
+    pub fn new(
+        context: Context,
+        ind: Indents<'a>,
+        mode: Option<ParsingMode>,
+        is_loose: bool,
+        list_style: Option<String>,
+    ) -> Self {
+        Self { context, ind, mode, is_loose, list_style }
+    }
 }
 
 impl Parse for ParseBlockMacro<'_> {
@@ -60,7 +42,7 @@ impl Parse for ParseBlockMacro<'_> {
         input.parse('@')?;
         let name = input.parse(ParseMacroName)?;
         let name_str = name.to_str(input.text()).to_string();
-        let args = input.parse(MacroArgs::parser(&name_str, ind))?;
+        let args = input.parse(ParseMacroArgs { ind, name: &name_str })?;
 
         let mode = get_parsing_mode(&name_str, &args, &input)?.or(self.mode);
 
@@ -102,12 +84,12 @@ impl Parse for ParseBlockMacro<'_> {
                 }
             });
 
-            let parser = Block::parser(self.context, ind, mode, is_loose, list_style);
+            let parser = ParseBlock::new(self.context, ind, mode, is_loose, list_style);
             let block = Box::new(input.parse(parser)?);
 
             BlockMacro { name, args, content: BlockMacroContent::Prefixed(block) }
         } else if input.parse(ParseOpeningBrace(self.ind)).is_some() {
-            let blocks = input.parse(Block::multi_parser(Context::BlockBraces, ind))?;
+            let blocks = input.parse(ParseBlock::new_multi(Context::BlockBraces, ind))?;
             input.try_parse(ParseClosingBrace(self.ind));
 
             BlockMacro { name, args, content: BlockMacroContent::Braces(blocks) }

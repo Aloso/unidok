@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
-use crate::blocks::{Heading, LinkRefDef};
+use super::blocks::{Heading, LinkRefDef};
 
-#[derive(Debug, Default, Clone)]
-pub struct ParserState {
+#[derive(Debug, Default, Clone, PartialEq)]
+pub struct AstState {
     pub link_ref_defs: HashMap<String, LinkRefDef>,
     pub headings: Vec<Heading>,
 }

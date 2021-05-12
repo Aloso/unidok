@@ -1,17 +1,15 @@
 mod into_node;
 mod nice_debug;
 mod to_html;
-mod to_plaintext;
 
-use unidoc_parser::html::ElemName;
-use unidoc_parser::ir::*;
+use unidoc_parser::DocIr;
+use unidoc_repr::ast::html::ElemName;
 
 pub use crate::into_node::{IntoNode, IntoNodes};
 pub use crate::to_html::ToHtml;
-pub use crate::to_plaintext::ToPlaintext;
 
 pub fn convert(ir: DocIr<'_>) -> Vec<Node<'_>> {
-    ir.blocks.into_nodes()
+    ir.blocks.into_nodes(&ir.state)
 }
 
 pub fn to_html(nodes: &[Node<'_>]) -> String {

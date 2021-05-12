@@ -1,73 +1,14 @@
+use unidoc_repr::ast::blocks::{Bullet, List};
+
 use crate::utils::{ParseLineBreak, ParseLineEnd, ParseNSpaces, ParseSpacesU8, While};
-use crate::{Block, Context, Indents, Parse};
+use crate::{Context, Indents, Parse};
 
-/// A list
-///
-/// ### Examples
-///
-/// ````md
-/// - List item 1
-/// - List item 2
-///
-/// + List item 3
-/// + List item 4
-///
-/// 5. List item 5
-/// 0. List item 6
-/// ````
-#[derive(Debug, Clone, PartialEq)]
-pub struct List {
-    pub indent_spaces: u8,
-    pub bullet: Bullet,
-    pub items: Vec<Vec<Block>>,
-    pub is_loose: bool,
-    pub list_style: Option<String>,
-}
-
-impl List {
-    pub(crate) fn parser<'a>(
-        ind: Indents<'a>,
-        is_loose: bool,
-        list_style: &'a mut Option<String>,
-    ) -> ParseList<'a> {
-        ParseList { ind, is_loose, list_style }
-    }
-}
+use super::ParseBlock;
 
 pub(crate) struct ParseList<'a> {
-    ind: Indents<'a>,
-    is_loose: bool,
-    list_style: &'a mut Option<String>,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Bullet {
-    Dash,
-    Plus,
-    Star,
-    Dot { start: u32 },
-    Paren { start: u32 },
-}
-
-impl Bullet {
-    pub fn kind(self) -> ListKind {
-        match self {
-            Bullet::Dash => ListKind::Dashes,
-            Bullet::Plus => ListKind::Pluses,
-            Bullet::Star => ListKind::Stars,
-            Bullet::Dot { .. } => ListKind::Dots,
-            Bullet::Paren { .. } => ListKind::Parens,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum ListKind {
-    Dashes,
-    Pluses,
-    Stars,
-    Dots,
-    Parens,
+    pub ind: Indents<'a>,
+    pub is_loose: bool,
+    pub list_style: &'a mut Option<String>,
 }
 
 impl Parse for ParseList<'_> {
@@ -82,7 +23,7 @@ impl Parse for ParseList<'_> {
         loop {
             let ind = self.ind.push_indent(indent_spaces);
 
-            let content_parser = Block::multi_parser(Context::Global, ind);
+            let content_parser = ParseBlock::new_multi(Context::Global, ind);
             items.push(input.parse(content_parser)?);
 
             if input.parse(ParseLineBreak(self.ind)).is_none() {

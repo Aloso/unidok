@@ -1,32 +1,11 @@
+use unidoc_repr::ast::blocks::{ThematicBreak, ThematicBreakKind};
+
 use crate::utils::{ParseLineEnd, ParseSpaces, While};
 use crate::{Indents, Input, Parse};
 
-/// A thematic break, consisting of at least three stars (`***`) or underscores
-/// (`___`).
-///
-/// This is usually rendered as a horizontal ruler (`<hr>`).
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ThematicBreak {
-    pub len: usize,
-    pub kind: ThematicBreakKind,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum ThematicBreakKind {
-    Dashes,
-    Stars,
-    Underscores,
-}
-
-impl ThematicBreak {
-    pub(crate) fn parser(ind: Indents<'_>) -> ParseThematicBreak<'_> {
-        ParseThematicBreak { ind }
-    }
-}
-
 #[derive(Debug, Default, Clone, Copy)]
 pub(crate) struct ParseThematicBreak<'a> {
-    ind: Indents<'a>,
+    pub ind: Indents<'a>,
 }
 
 impl Parse for ParseThematicBreak<'_> {

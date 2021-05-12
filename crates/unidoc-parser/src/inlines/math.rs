@@ -1,36 +1,11 @@
+use unidoc_repr::ast::segments::Math;
+
 use crate::utils::ParseLineBreak;
 use crate::{Indents, Input, Parse};
 
-/// A math block.
-///
-/// ### Syntax
-///
-/// Math is enclosed in `%{}`. The math syntax is [AsciiMath](http://asciimath.org/).
-///
-/// ```markdown
-/// The solution is %{a + b = 5}.
-/// ```
-///
-/// ### Configuration
-///
-/// Usually this requires a JavaScript on your website. With the `static_math`
-/// configuration option, the math formula is converted to HTML directly by
-/// AsciiMath, so no JavaScript is required on the website. This requires
-/// AsciiMath to be installed on the host machine, however.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Math {
-    pub text: String,
-}
-
-impl Math {
-    pub(crate) fn parser(ind: Indents<'_>) -> ParseMath<'_> {
-        ParseMath { ind }
-    }
-}
-
 #[derive(Debug, Clone, Copy, Default)]
 pub(crate) struct ParseMath<'a> {
-    ind: Indents<'a>,
+    pub ind: Indents<'a>,
 }
 
 impl Parse for ParseMath<'_> {
