@@ -1,3 +1,8 @@
+
+@NOTOC
+#### Table of Contents
+
+
 @TOC{}
 
 @(.differences){
@@ -95,11 +100,13 @@ Table of contents:
 @TOC{}
 
 ## Heading 2
+
 ### Heading 3
+
 ## Heading 4
 ````
 
-### `@NO_TOC`
+### `@NOTOC`
 
 When applied to a heading, the heading is not included in the table of contents.
 
@@ -108,8 +115,10 @@ When applied to a heading, the heading is not included in the table of contents.
 @TOC{}
 
 ## Heading 2
-@NO_TOC
+
+@NOTOC
 ### Heading 3
+
 ## Heading 4
 ````
 

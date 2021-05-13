@@ -86,7 +86,7 @@ impl Parse for ParseBlockMacro<'_> {
                 }
             });
 
-            let no_toc = self.no_toc || name_str == "NO_TOC";
+            let no_toc = self.no_toc || name_str == "NOTOC";
 
             let parser = ParseBlock::new(self.context, ind, mode, is_loose, list_style, no_toc);
             let block = Box::new(input.parse(parser)?);

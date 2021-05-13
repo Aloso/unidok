@@ -56,7 +56,6 @@ Unidoc should look familiar if you're familiar with Markdown. It follows the Com
 * Macros
   * Table column styling (`@COLS`)
   * Footnotes section (`@FOOTNOTES`)
-  * Exclude heading from table of contents (`@NO_TOC`)
 
 * Change behaviour of `$`: Only parse limiter directly next to a delimiter run, after a link reference or in an otherwise empty line
 
@@ -98,7 +97,7 @@ Unidoc should look familiar if you're familiar with Markdown. It follows the Com
   * Don't wrap text in a paragraph (`@PURE`)
   * Open link in new tabl (`@BLANK`)
   * Load plugin (`@LOAD`)
-  * Exclude heading from table of contents (`@NO_TOC`)
+  * Exclude heading from table of contents (`@NOTOC`)
   * Details that can be opened with summary (`@DETAILS`)
   * Image caption (`@CAPTION`)
   * Metadata (`@META`)
