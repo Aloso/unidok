@@ -96,8 +96,32 @@ footer a.btn {
 }
 
 footer a:hover,
-footer a:hover {
+footer a:focus {
     text-decoration: underline;
+}
+
+ul.table-of-contents {
+    list-style-type: square;
+    padding-left: 1em;
+}
+
+.table-of-contents ul {
+    list-style-type: disc;
+    padding-left: 1.5em;
+    margin-top: 0.15em;
+}
+
+.table-of-contents li {
+    margin-bottom: 0.15em;
+}
+
+.table-of-contents a {
+    text-decoration: none;
+}
+.table-of-contents a:hover,
+.table-of-contents a:focus {
+    text-decoration: underline;
+    text-underline-offset: 2px;
 }
 
 .button, .button:link, .button:visited {

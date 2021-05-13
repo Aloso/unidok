@@ -1,5 +1,8 @@
 This tutorial should give you a deeper understanding of Unidoc and of how it differs from Markdown. You can modify the code snippets and see the result <span class="media-big">on the right</span><span class="media-small">below</span>.
 
+@NOTOC
+#### Table of Contents
+
 @TOC{}
 
 @(.differences){
@@ -553,7 +556,7 @@ If the left character has a higher binding power than the right character, the d
 
 This is best shown with a few examples:
 
-@NO_TOC
+@NOTOC
 ### Left-flanking delimiters
 ```
 **T
@@ -562,7 +565,7 @@ This is best shown with a few examples:
 $** T
 ```
 
-@NO_TOC
+@NOTOC
 ### Right-flanking delimiters
 ```
 T**
@@ -571,7 +574,7 @@ T**.
 T **$
 ```
 
-@NO_TOC
+@NOTOC
 ### Left- and right-flanking delimiters
 ```
 T**T
