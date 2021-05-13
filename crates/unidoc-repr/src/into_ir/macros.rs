@@ -19,7 +19,7 @@ impl<'a> IntoIR<'a> for BlockMacro {
 
         if r#macro.is_for_list() {
             if let AnnBlockIr { block: BlockIr::List(list), .. } = &mut block {
-                list.macros.push(r#macro.clone());
+                list.macros.push(r#macro);
             }
         } else {
             block.macros.push(r#macro);

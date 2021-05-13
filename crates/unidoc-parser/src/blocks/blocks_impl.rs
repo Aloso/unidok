@@ -9,7 +9,7 @@ use crate::{Indents, Input, Parse};
 
 use super::Context;
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub(crate) struct ParseBlock<'a> {
     context: Context,
     ind: Indents<'a>,
@@ -167,7 +167,7 @@ impl Parse for ParseBlocks<'_> {
         let parser = ParseBlock { context: self.context, ind: self.ind, mode: None, no_toc: false };
 
         let mut v = Vec::new();
-        while let Some(node) = input.parse(parser.clone()) {
+        while let Some(node) = input.parse(parser) {
             v.push(node);
         }
         Some(v)
