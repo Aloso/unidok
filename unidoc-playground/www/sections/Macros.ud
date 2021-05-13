@@ -1,4 +1,4 @@
-## List of available macros
+@TOC{}
 
 @(.differences){
   @(.mini-title)
@@ -7,11 +7,9 @@
   Since Unidoc is evolving rapidly, this tutorial is sometimes a bit out of date. Please report errors in the [issue tracker][issue-tracker].
 }
 
-Hello &AElig world
-
 [issue-tracker]: https://github.com/Aloso/unidoc/issues
 
-### `@()`
+## The empty macro, `@()`
 
 The macro with no name is used to add HTML attributes to elements. For example, the following adds a CSS class, id, or `title` attribute to a code block:
 
@@ -36,6 +34,7 @@ The above is equivalent to using braces, since braces after a macro are converte
 @(title="hello world"){Hover me}
 ```
 
+## Macros for lists
 
 ### `@LOOSE`
 
@@ -81,6 +80,40 @@ When applied to a list, the it uses the specified bullet type. This uses the [li
 5. Amet
 ```
 
+## Macros for the table of contents
+
+### `@TOC`
+
+Inserts a table of contents.
+
+@(.playground)
+````
+# Heading 1
+
+Table of contents:
+
+@TOC{}
+
+## Heading 2
+### Heading 3
+## Heading 4
+````
+
+### `@NO_TOC`
+
+When applied to a heading, the heading is not included in the table of contents.
+
+@(.playground)
+````
+@TOC{}
+
+## Heading 2
+@NO_TOC
+### Heading 3
+## Heading 4
+````
+
+## Parser macros
 
 ### `@PASS`
 

@@ -1,7 +1,8 @@
+use std::cmp::Ordering;
 use std::mem::replace;
 
 use unidoc_repr::ast::html::ElemName;
-use unidoc_repr::ir::blocks::AnnotationIr;
+use unidoc_repr::ir::blocks::{AnnotationIr, HeadingIr};
 use unidoc_repr::ir::macros::MacroArgsIr;
 use unidoc_repr::ir::IrState;
 
@@ -21,28 +22,17 @@ pub(crate) fn apply_post_annotations<'a>(
                 *node = add_attributes_to_node(taken, ann.args);
             }
             "TOC" => {
-                let content = state
-                    .headings
-                    .iter()
-                    .map(|h| {
-                        let content = h.segments.clone().into_nodes(state);
-                        let link = Element {
-                            name: ElemName::A,
-                            attrs: vec![Attr { key: "href", value: Some(format!("#{}", h.slug)) }],
-                            content: Some(content),
-                            is_block_level: false,
-                            contains_blocks: false,
-                        };
-                        Element {
-                            name: ElemName::Li,
-                            attrs: vec![],
-                            content: Some(vec![Node::Element(link)]),
-                            is_block_level: true,
-                            contains_blocks: false,
-                        }
-                    })
-                    .map(Node::Element)
-                    .collect();
+                let first_is_level_1 = state.headings.first().into_iter().any(|h| h.level == 1);
+                let rem_has_level_1 = state.headings.iter().skip(1).any(|h| h.level == 1);
+
+                let level = if rem_has_level_1 { 1 } else { 2 };
+                let headings = if first_is_level_1 && !rem_has_level_1 {
+                    &state.headings[1..]
+                } else {
+                    &state.headings
+                };
+
+                let (content, _) = toc_list(level, headings, state);
 
                 let toc = Element {
                     name: ElemName::Ul,
@@ -56,6 +46,83 @@ pub(crate) fn apply_post_annotations<'a>(
             _ => {}
         }
     }
+}
+
+fn toc_list<'a>(
+    level: u8,
+    headings: &'_ [HeadingIr<'a>],
+    state: &'_ IrState<'a>,
+) -> (Vec<Node<'a>>, usize) {
+    let mut result = Vec::new();
+
+    let mut i = 0;
+    while i < headings.len() {
+        let heading = &headings[i];
+
+        match heading.level.cmp(&level) {
+            Ordering::Equal => {
+                let content = heading.segments.clone().into_nodes(state);
+                let link = Element {
+                    name: ElemName::A,
+                    attrs: vec![Attr { key: "href", value: Some(format!("#{}", heading.slug)) }],
+                    content: Some(content),
+                    is_block_level: false,
+                    contains_blocks: false,
+                };
+                let li = Element {
+                    name: ElemName::Li,
+                    attrs: vec![],
+                    content: Some(vec![Node::Element(link)]),
+                    is_block_level: true,
+                    contains_blocks: false,
+                };
+                result.push(Node::Element(li));
+
+                i += 1;
+            }
+            Ordering::Greater => {
+                let (n, new_i) = toc_list(level + 1, &headings[i..], state);
+                i += new_i;
+
+                if result.is_empty() {
+                    let li = Element {
+                        name: ElemName::Li,
+                        attrs: vec![],
+                        content: Some(vec![]),
+                        is_block_level: true,
+                        contains_blocks: true,
+                    };
+                    result.push(Node::Element(li));
+                }
+
+                let last = result.last_mut().unwrap();
+
+                if let Node::Element(Element { content: Some(content), contains_blocks, .. }) = last
+                {
+                    *contains_blocks = true;
+                    for n in &mut *content {
+                        if let Node::Element(e) = n {
+                            e.is_block_level = true;
+                        }
+                    }
+                    content.push(Node::Element(Element {
+                        name: ElemName::Ul,
+                        attrs: vec![],
+                        content: Some(n),
+                        is_block_level: true,
+                        contains_blocks: true,
+                    }));
+                } else {
+                    unreachable!("Last node in the TOC list is not a proper element");
+                }
+            }
+            Ordering::Less => {
+                return (result, i);
+            }
+        }
+    }
+
+    (result, i)
 }
 
 fn add_attributes_to_node<'a>(node: Node<'a>, args: Option<MacroArgsIr<'a>>) -> Node<'a> {

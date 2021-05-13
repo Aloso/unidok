@@ -54,9 +54,9 @@ Unidoc should look familiar if you're familiar with Markdown. It follows the Com
   * Symbols: `(C)`, `(TM)`, `(R)`
 
 * Macros
-  * Table of contents (`@TOC`)
   * Table column styling (`@COLS`)
   * Footnotes section (`@FOOTNOTES`)
+  * Exclude heading from table of contents (`@NO_TOC`)
 
 * Change behaviour of `$`: Only parse limiter directly next to a delimiter run, after a link reference or in an otherwise empty line
 

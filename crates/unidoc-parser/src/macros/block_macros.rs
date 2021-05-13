@@ -17,6 +17,7 @@ pub(crate) struct ParseBlockMacro<'a> {
     mode: Option<ParsingMode>,
     is_loose: bool,
     list_style: Option<String>,
+    no_toc: bool,
 }
 
 impl<'a> ParseBlockMacro<'a> {
@@ -26,8 +27,9 @@ impl<'a> ParseBlockMacro<'a> {
         mode: Option<ParsingMode>,
         is_loose: bool,
         list_style: Option<String>,
+        no_toc: bool,
     ) -> Self {
-        Self { context, ind, mode, is_loose, list_style }
+        Self { context, ind, mode, is_loose, list_style, no_toc }
     }
 }
 
@@ -84,7 +86,9 @@ impl Parse for ParseBlockMacro<'_> {
                 }
             });
 
-            let parser = ParseBlock::new(self.context, ind, mode, is_loose, list_style);
+            let no_toc = self.no_toc || name_str == "NO_TOC";
+
+            let parser = ParseBlock::new(self.context, ind, mode, is_loose, list_style, no_toc);
             let block = Box::new(input.parse(parser)?);
 
             BlockMacro { name, args, content: BlockMacroContent::Prefixed(block) }

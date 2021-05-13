@@ -7,6 +7,7 @@ use crate::{Context, Indents, Input, Parse};
 
 pub(crate) struct ParseHeading<'a> {
     pub ind: Indents<'a>,
+    pub no_toc: bool,
 }
 
 impl Parse for ParseHeading<'_> {
@@ -22,7 +23,9 @@ impl Parse for ParseHeading<'_> {
             .into_segments_no_underline_zero()?;
 
         let heading = Heading { level, segments, kind: HeadingKind::Atx };
-        input.state_mut().headings.push(heading.clone());
+        if !self.no_toc {
+            input.state_mut().headings.push(heading.clone());
+        }
 
         input.apply();
         Some(heading)

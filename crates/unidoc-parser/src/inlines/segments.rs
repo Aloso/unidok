@@ -575,7 +575,7 @@ impl ParseSegments<'_> {
 
         self.mode.is(P::CODE_BLOCKS) && input.can_parse(ParseCodeBlock { ind, mode: None })
             || self.mode.is(P::COMMENTS) && input.can_parse(ParseComment)
-            || self.mode.is(P::HEADINGS) && input.can_parse(ParseHeading { ind })
+            || self.mode.is(P::HEADINGS) && input.can_parse(ParseHeading { ind, no_toc: true })
             || self.mode.is(P::TABLES) && input.can_parse(ParseTable { ind })
             || self.mode.is(P::LISTS)
                 && input.can_parse(ParseList { ind, is_loose: false, list_style: &mut None })

@@ -43,7 +43,7 @@ impl Parse for ParseCodeBlock<'_> {
             }
             drop(input2);
 
-            let line = input.parse(ParseBlock::new(context, ind, Some(mode), false, None))?;
+            let line = input.parse(ParseBlock::new(context, ind, Some(mode), false, None, true))?;
             lines.push(line);
         }
 

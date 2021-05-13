@@ -16,6 +16,7 @@ pub(crate) struct ParseBlock<'a> {
     mode: Option<ParsingMode>,
     is_loose: bool,
     list_style: Option<String>,
+    no_toc: bool,
 }
 
 impl ParseBlock<'_> {
@@ -25,8 +26,9 @@ impl ParseBlock<'_> {
         mode: Option<ParsingMode>,
         is_loose: bool,
         list_style: Option<String>,
+        no_toc: bool,
     ) -> ParseBlock<'_> {
-        ParseBlock { context, ind, mode, is_loose, list_style }
+        ParseBlock { context, ind, mode, is_loose, list_style, no_toc }
     }
 
     pub(crate) fn new_multi(context: Context, ind: Indents<'_>) -> ParseBlocks<'_> {
@@ -85,7 +87,7 @@ impl Parse for ParseBlock<'_> {
         }
 
         if mode.is(ParsingMode::HEADINGS) {
-            if let Some(heading) = input.parse(ParseHeading { ind }) {
+            if let Some(heading) = input.parse(ParseHeading { ind, no_toc: self.no_toc }) {
                 self.consume_empty_lines(input);
                 return Some(Block::Heading(heading));
             }
@@ -123,6 +125,7 @@ impl Parse for ParseBlock<'_> {
                 self.mode,
                 self.is_loose,
                 self.list_style.take(),
+                self.no_toc,
             );
             if let Some(mac) = input.parse(parser) {
                 self.consume_empty_lines(input);
@@ -182,6 +185,7 @@ impl Parse for ParseBlocks<'_> {
             mode: None,
             is_loose: false,
             list_style: None,
+            no_toc: false,
         };
 
         let mut v = Vec::new();

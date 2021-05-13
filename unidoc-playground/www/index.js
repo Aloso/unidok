@@ -31,7 +31,7 @@ function main() {
             btn.addEventListener('click', () => {
                 openTab(btn, navState)
             })
-            if ('#' + btn.getAttribute('data-cls') === window.location.hash) {
+            if ('?' + btn.getAttribute('data-cls') === window.location.search) {
                 openTab(btn, navState)
             }
         }
@@ -50,7 +50,11 @@ function openTab(button, navState) {
     }
     navState.openButton = button
     navState.openButton.classList.add('open')
-    window.location.hash = button.getAttribute('data-cls')
+
+    const search = '?' + button.getAttribute('data-cls')
+    if (search !== window.location.search) {
+        history.replaceState({}, `Unidoc - ${button.innerText}`, search)
+    }
 
     let finishedLoading = false
     setTimeout(() => {
