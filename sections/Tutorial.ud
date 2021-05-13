@@ -1,6 +1,6 @@
-## Tutorial
-
 This tutorial should give you a deeper understanding of Unidoc and of how it differs from Markdown. You can modify the code snippets and see the result <span class="media-big">on the right</span><span class="media-small">below</span>.
+
+@TOC{}
 
 @(.differences){
   @(.mini-title)
@@ -11,7 +11,7 @@ This tutorial should give you a deeper understanding of Unidoc and of how it dif
 
 [issue-tracker]: https://github.com/Aloso/unidoc/issues
 
-### Headings
+## Headings
 
 Headings are prefixed with 1 to 6 number signs (`#`), followed by a space:
 
@@ -48,7 +48,7 @@ Heading 2
 }
 
 
-### Paragraphs
+## Paragraphs
 
 @(.playground)
 ```
@@ -59,7 +59,7 @@ Paragraphs are separated with a blank line.
 ```
 
 
-### Blockquotes
+## Blockquotes
 
 Blockquotes are indented with a `>` marker:
 
@@ -111,7 +111,7 @@ Blockquotes can contain anything:
 }
 
 
-### Lists
+## Lists
 
 Lists can be ordered:
 
@@ -178,7 +178,7 @@ Note that a list marker must always be followed by a space, and subsequent lines
 }
 
 
-### Inline formatting
+## Inline formatting
 
 By default, the following inline formatting modes are supported:
 
@@ -214,7 +214,7 @@ Formatting delimiters can appear in the middle of a word, except for underscores
 ```
 
 
-### Links and images
+## Links and images
 
 Links and images consist of a description in square brackets, followed by a URL in parentheses:
 
@@ -254,7 +254,7 @@ This is a [link]. Here's a [link reference][link] with a custom text.
 }
 
 
-### Thematic breaks
+## Thematic breaks
 @(.playground)
 ```
 Thematic breaks are rendered as a horizontal line:
@@ -279,7 +279,7 @@ Thematic breaks can consist of dashes (`-`), stars (`*`) or underscores (`_`), a
 }
 
 
-### Code blocks
+## Code blocks
 
 Code blocks start and end with a _code fence_. A code fence is a line with at least three backticks (`` ` ``) or tildes (`~`):
 
@@ -328,7 +328,7 @@ fn foo() -> &'static str {
 }
 
 
-### Comments
+## Comments
 @(.playground)
 ```
 // Comments start with two slashes.
@@ -337,7 +337,7 @@ fn foo() -> &'static str {
 ```
 
 
-### Tables
+## Tables
 
 Tables are not part of the CommonMark specification, but there's a well-supported syntax for tables in many Markdown parsers. Unidoc uses a different, more powerful syntax.
 
@@ -381,7 +381,7 @@ Table cells can start on a new line, which is useful when the table is rather bi
 ```
 
 
-### HTML
+## HTML
 
 HTML can be used anywhere:
 
@@ -398,7 +398,7 @@ HTML can be used anywhere:
 ```
 
 
-### Macros
+## Macros
 @(.differences){
   Macros are a work in progress, but a handful of macros already works.
 }
@@ -440,7 +440,7 @@ The above macros add an HTML attribute to elements, which are displayed with a g
 You can find a list of available macros in the [Macros](javascript:scrollTo({top:0,left:0,behavior:'smooth'})) tab.
 
 
-### Escapes
+## Escapes
 
 Special characters can be escaped with the backslash (`\`):
 
@@ -479,7 +479,7 @@ Numbers can't be escaped. Therefore, to escape an ordered list, put the backslas
 ```
 
 
-### Limiter
+## Limiter
 
 The limiter, `$` isn't rendered, ever. It's just and indication that parsing should be interrupted. Example:
 
@@ -526,7 +526,7 @@ Since HTML elements are considered _inline_ only if there's text in the same lin
 ```
 
 
-### Substitutions
+## Substitutions
 
 Some characters are automatically substituted. For example, quotes, apostrophes, 3 dots, (R), (C) and (TM).
 
@@ -535,7 +535,7 @@ Some characters are automatically substituted. For example, quotes, apostrophes,
 }
 
 
-### Deep dive: Binding power
+## Deep dive: Binding power
 
 Since inline formatting can be nested, it presents a problem: How do we know if a formatting delimiter (e.g. `*`) should close a formatting range or open a new one? In Markdown, a formatting delimiter can be _left-flanking_ and/or _right-flanking_. This system has also been adopted (and slightly extended) in Unidoc.
 
@@ -553,7 +553,8 @@ If the left character has a higher binding power than the right character, the d
 
 This is best shown with a few examples:
 
-#### Left-flanking delimiters
+@NO_TOC
+### Left-flanking delimiters
 ```
 **T
 -**T
@@ -561,7 +562,8 @@ This is best shown with a few examples:
 $** T
 ```
 
-#### Right-flanking delimiters
+@NO_TOC
+### Right-flanking delimiters
 ```
 T**
 T**.
@@ -569,7 +571,8 @@ T**.
 T **$
 ```
 
-#### Left- and right-flanking delimiters
+@NO_TOC
+### Left- and right-flanking delimiters
 ```
 T**T
 "**.
