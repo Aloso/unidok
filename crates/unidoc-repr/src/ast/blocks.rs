@@ -140,8 +140,6 @@ pub struct List {
     pub indent_spaces: u8,
     pub bullet: Bullet,
     pub items: Vec<Vec<Block>>,
-    pub is_loose: bool,
-    pub list_style: Option<String>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

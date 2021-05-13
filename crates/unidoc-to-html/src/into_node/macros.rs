@@ -2,26 +2,26 @@ use std::cmp::Ordering;
 use std::mem::replace;
 
 use unidoc_repr::ast::html::ElemName;
-use unidoc_repr::ir::blocks::{AnnotationIr, HeadingIr};
-use unidoc_repr::ir::macros::MacroArgsIr;
-use unidoc_repr::ir::IrState;
+use unidoc_repr::ir::blocks::HeadingIr;
+use unidoc_repr::ir::macros::MacroIr;
+use unidoc_repr::ir::{macros, IrState};
 
 use crate::{Attr, Element, IntoNodes, Node};
 
 use super::segment::add_attributes;
 
 pub(crate) fn apply_post_annotations<'a>(
-    annotations: Vec<AnnotationIr<'a>>,
+    macros: Vec<MacroIr<'a>>,
     node: &mut Node<'a>,
     state: &IrState<'a>,
 ) {
-    for ann in annotations {
-        match ann.name {
-            "" => {
+    for r#macro in macros {
+        match r#macro {
+            MacroIr::HtmlAttrs(attrs) => {
                 let taken = replace(node, Node::Text(""));
-                *node = add_attributes_to_node(taken, ann.args);
+                *node = add_attributes_to_node(taken, attrs);
             }
-            "TOC" => {
+            MacroIr::Toc => {
                 let first_is_level_1 = state.headings.first().into_iter().any(|h| h.level == 1);
                 let rem_has_level_1 = state.headings.iter().skip(1).any(|h| h.level == 1);
 
@@ -125,7 +125,7 @@ fn toc_list<'a>(
     (result, i)
 }
 
-fn add_attributes_to_node<'a>(node: Node<'a>, args: Option<MacroArgsIr<'a>>) -> Node<'a> {
+fn add_attributes_to_node<'a>(node: Node<'a>, args: Vec<macros::Attr<'a>>) -> Node<'a> {
     if let Node::Element(mut elem) = node {
         add_attributes(args, &mut elem);
         Node::Element(elem)

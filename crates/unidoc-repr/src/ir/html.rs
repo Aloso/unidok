@@ -2,7 +2,7 @@ use crate::ast::html::{ElemClose, ElemName};
 use crate::ir::blocks::AnnBlockIr;
 use crate::ir::segments::SegmentIr;
 
-use super::blocks::AnnotationIr;
+use super::macros::MacroIr;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum HtmlNodeIr<'a> {
@@ -14,7 +14,7 @@ pub enum HtmlNodeIr<'a> {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct HtmlElemIr<'a> {
-    pub annotations: Vec<AnnotationIr<'a>>,
+    pub macros: Vec<MacroIr<'a>>,
     pub name: ElemName,
     pub attrs: Vec<AttrIr<'a>>,
     pub content: Option<ElemContentIr<'a>>,

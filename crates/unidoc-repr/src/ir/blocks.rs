@@ -1,19 +1,13 @@
 use crate::ast::blocks::{Bullet, CellAlignment, Fence, ThematicBreakKind};
-use crate::ir::macros::MacroArgsIr;
 use crate::ir::segments::SegmentIr;
 
 use super::html::HtmlNodeIr;
+use super::macros::MacroIr;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct AnnBlockIr<'a> {
-    pub annotations: Vec<AnnotationIr<'a>>,
+    pub macros: Vec<MacroIr<'a>>,
     pub block: BlockIr<'a>,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct AnnotationIr<'a> {
-    pub name: &'a str,
-    pub args: Option<MacroArgsIr<'a>>,
 }
 
 /// A block. This can be a container (list or blockquote) or a leaf block (code
@@ -86,10 +80,9 @@ pub struct CellMetaIr {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ListIr<'a> {
+    pub macros: Vec<MacroIr<'a>>,
     pub bullet: Bullet,
     pub items: Vec<Vec<AnnBlockIr<'a>>>,
-    pub is_loose: bool,
-    pub list_style: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq)]

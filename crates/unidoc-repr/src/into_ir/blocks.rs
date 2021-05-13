@@ -24,7 +24,7 @@ impl<'a> IntoIR<'a> for Block {
 
             Block::Comment(_) | Block::LinkRefDef(_) => BlockIr::Empty,
         };
-        AnnBlockIr { annotations: vec![], block }
+        AnnBlockIr { macros: vec![], block }
     }
 }
 
@@ -37,7 +37,7 @@ impl<'a> IntoIR<'a> for CodeBlock {
             .into_iter()
             .map(|b| {
                 let b = b.into_ir(text, state);
-                debug_assert!(b.annotations.is_empty());
+                debug_assert!(b.macros.is_empty());
                 b.block
             })
             .collect();
@@ -128,12 +128,7 @@ impl<'a> IntoIR<'a> for List {
     type IR = ListIr<'a>;
 
     fn into_ir(self, text: &'a str, state: &AstState) -> Self::IR {
-        ListIr {
-            bullet: self.bullet,
-            items: self.items.into_ir(text, state),
-            is_loose: self.is_loose,
-            list_style: self.list_style,
-        }
+        ListIr { bullet: self.bullet, items: self.items.into_ir(text, state), macros: vec![] }
     }
 }
 

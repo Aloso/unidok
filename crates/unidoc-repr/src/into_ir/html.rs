@@ -39,7 +39,7 @@ impl<'a> IntoIR<'a> for HtmlElem {
 
     fn into_ir(self, text: &'a str, state: &AstState) -> Self::IR {
         HtmlElemIr {
-            annotations: vec![],
+            macros: vec![],
             name: self.name,
             attrs: self.attrs.into_ir(text, state),
             content: self.content.into_ir(text, state),

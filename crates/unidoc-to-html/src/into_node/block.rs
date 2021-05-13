@@ -3,6 +3,7 @@ use std::mem::take;
 use unidoc_repr::ast::blocks::{Bullet, CellAlignment};
 use unidoc_repr::ast::html::ElemName;
 use unidoc_repr::ir::blocks::*;
+use unidoc_repr::ir::macros::MacroIr;
 use unidoc_repr::ir::IrState;
 
 use super::helpers::into_nodes_trimmed;
@@ -12,7 +13,7 @@ use crate::{Attr, Element, IntoNode, IntoNodes, Node};
 impl<'a> IntoNode<'a> for AnnBlockIr<'a> {
     fn into_node(self, state: &IrState<'a>) -> Node<'a> {
         let mut node = self.block.into_node(state);
-        apply_post_annotations(self.annotations, &mut node, state);
+        apply_post_annotations(self.macros, &mut node, state);
         node
     }
 }
@@ -42,7 +43,7 @@ fn into_nodes_tight<'a>(blocks: Vec<AnnBlockIr<'a>>, state: &IrState<'a>) -> Vec
             let segments = into_nodes_trimmed(p.segments, state);
             if !segments.is_empty() {
                 let mut node = Node::Fragment(segments);
-                apply_post_annotations(block.annotations, &mut node, state);
+                apply_post_annotations(block.macros, &mut node, state);
 
                 let is_fragment = matches!(node, Node::Fragment(_));
                 result.push(node);
@@ -269,8 +270,18 @@ impl<'a> IntoNode<'a> for ListIr<'a> {
             Bullet::Dot { start } | Bullet::Paren { start } => (ElemName::Ol, start),
         };
 
-        let loose = self.is_loose;
-        let list_style = &self.list_style;
+        let mut list_style = None;
+        let mut loose = false;
+
+        for r#macro in self.macros {
+            match r#macro {
+                MacroIr::Loose => loose = true,
+                MacroIr::ListStyle(s) => list_style = Some(s),
+                r#macro => {
+                    panic!("Unexpected macro {:?}", r#macro)
+                }
+            }
+        }
 
         let mut attrs =
             if loose { vec![Attr { key: "class", value: Some("loose".into()) }] } else { vec![] };

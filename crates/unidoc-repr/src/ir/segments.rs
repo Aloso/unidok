@@ -2,7 +2,7 @@ use crate::ast::html::HtmlEntity;
 use crate::ast::segments::Formatting;
 use crate::ir::html::HtmlNodeIr;
 
-use super::blocks::AnnotationIr;
+use super::macros::MacroIr;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum SegmentIr<'a> {
@@ -23,19 +23,19 @@ pub enum SegmentIr<'a> {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct BracesIr<'a> {
-    pub annotations: Vec<AnnotationIr<'a>>,
+    pub macros: Vec<MacroIr<'a>>,
     pub segments: Vec<SegmentIr<'a>>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct MathIr<'a> {
-    pub annotations: Vec<AnnotationIr<'a>>,
+    pub macros: Vec<MacroIr<'a>>,
     pub text: String,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct LinkIr<'a> {
-    pub annotations: Vec<AnnotationIr<'a>>,
+    pub macros: Vec<MacroIr<'a>>,
     pub href: Option<String>,
     pub text: Vec<SegmentIr<'a>>,
     pub title: Option<String>,
@@ -43,7 +43,7 @@ pub struct LinkIr<'a> {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ImageIr<'a> {
-    pub annotations: Vec<AnnotationIr<'a>>,
+    pub macros: Vec<MacroIr<'a>>,
     pub href: Option<String>,
     pub alt: Vec<SegmentIr<'a>>,
     pub title: Option<String>,
@@ -57,6 +57,6 @@ pub struct InlineFormatIr<'a> {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct CodeIr<'a> {
-    pub annotations: Vec<AnnotationIr<'a>>,
+    pub macros: Vec<MacroIr<'a>>,
     pub segments: Vec<SegmentIr<'a>>,
 }

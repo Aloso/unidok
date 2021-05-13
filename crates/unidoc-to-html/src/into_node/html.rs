@@ -29,7 +29,7 @@ impl<'a> IntoNode<'a> for HtmlElemIr<'a> {
             is_block_level: self.name.is_block_level(),
             contains_blocks,
         });
-        apply_post_annotations(self.annotations, &mut node, state);
+        apply_post_annotations(self.macros, &mut node, state);
         node
     }
 }

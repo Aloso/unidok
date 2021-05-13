@@ -39,10 +39,7 @@ impl<'a> IntoIR<'a> for Braces {
     type IR = BracesIr<'a>;
 
     fn into_ir(self, text: &'a str, state: &AstState) -> Self::IR {
-        BracesIr {
-            annotations: vec![],
-            segments: collapse_text(self.segments).into_ir(text, state),
-        }
+        BracesIr { macros: vec![], segments: collapse_text(self.segments).into_ir(text, state) }
     }
 }
 
@@ -50,7 +47,7 @@ impl<'a> IntoIR<'a> for Math {
     type IR = MathIr<'a>;
 
     fn into_ir(self, _: &str, _: &AstState) -> Self::IR {
-        MathIr { annotations: vec![], text: self.text }
+        MathIr { macros: vec![], text: self.text }
     }
 }
 
@@ -62,7 +59,7 @@ impl<'a> IntoIR<'a> for Link {
             LinkTarget::Url { href, title } => {
                 let segments = self.text.unwrap_or_else(|| vec![Segment::Text3(href.clone())]);
                 LinkIr {
-                    annotations: vec![],
+                    macros: vec![],
                     href: Some(href),
                     text: collapse_text(segments).into_ir(text, state),
                     title,
@@ -76,7 +73,7 @@ impl<'a> IntoIR<'a> for Link {
                         let segments = self.text.unwrap_or_else(|| vec![Segment::Text(r)]);
 
                         LinkIr {
-                            annotations: vec![],
+                            macros: vec![],
                             href: Some(href.to_string()),
                             text: collapse_text(segments).into_ir(text, state),
                             title: lrd.title.clone(),
@@ -92,7 +89,7 @@ impl<'a> IntoIR<'a> for Link {
                         } else {
                             vec![SegmentIr::Text2(format!("[{}]", reference))]
                         };
-                        LinkIr { annotations: vec![], href: None, text, title: None }
+                        LinkIr { macros: vec![], href: None, text, title: None }
                     }
                 }
             }
@@ -108,7 +105,7 @@ impl<'a> IntoIR<'a> for Image {
             LinkTarget::Url { href, title } => {
                 let segments = self.alt.unwrap_or_else(|| vec![Segment::Text3(href.clone())]);
                 ImageIr {
-                    annotations: vec![],
+                    macros: vec![],
                     href: Some(href),
                     alt: collapse_text(segments).into_ir(text, state),
                     title,
@@ -122,7 +119,7 @@ impl<'a> IntoIR<'a> for Image {
                         let segments = self.alt.unwrap_or_else(|| vec![Segment::Text(r)]);
 
                         ImageIr {
-                            annotations: vec![],
+                            macros: vec![],
                             href: Some(href.to_string()),
                             alt: collapse_text(segments).into_ir(text, state),
                             title: lrd.title.clone(),
@@ -138,7 +135,7 @@ impl<'a> IntoIR<'a> for Image {
                         } else {
                             vec![SegmentIr::Text2(format!("![{}]", reference))]
                         };
-                        ImageIr { annotations: vec![], href: None, alt, title: None }
+                        ImageIr { macros: vec![], href: None, alt, title: None }
                     }
                 }
             }
@@ -161,6 +158,6 @@ impl<'a> IntoIR<'a> for Code {
     type IR = CodeIr<'a>;
 
     fn into_ir(self, text: &'a str, state: &AstState) -> Self::IR {
-        CodeIr { annotations: vec![], segments: collapse_text(self.segments).into_ir(text, state) }
+        CodeIr { macros: vec![], segments: collapse_text(self.segments).into_ir(text, state) }
     }
 }

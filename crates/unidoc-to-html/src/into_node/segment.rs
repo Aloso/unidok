@@ -1,10 +1,8 @@
 use asciimath_rs::format::mathml::ToMathML;
-use itertools::Itertools;
 use unidoc_repr::ast::html::ElemName;
 use unidoc_repr::ast::segments::Formatting;
-use unidoc_repr::ir::macros::*;
 use unidoc_repr::ir::segments::*;
-use unidoc_repr::ir::IrState;
+use unidoc_repr::ir::{macros, IrState};
 use unidoc_repr::ToPlaintext;
 
 use crate::into_node::macros::apply_post_annotations;
@@ -35,11 +33,11 @@ impl<'a> IntoNode<'a> for BracesIr<'a> {
         let mut node = Node::Element(Element {
             name: ElemName::Span,
             attrs: vec![],
-            content: Some((self.segments).into_nodes(state)),
+            content: Some(self.segments.into_nodes(state)),
             is_block_level: false,
             contains_blocks: false,
         });
-        apply_post_annotations(self.annotations, &mut node, state);
+        apply_post_annotations(self.macros, &mut node, state);
         node
     }
 }
@@ -63,7 +61,7 @@ impl<'a> IntoNode<'a> for LinkIr<'a> {
                     is_block_level: false,
                     contains_blocks: false,
                 });
-                apply_post_annotations(self.annotations, &mut node, state);
+                apply_post_annotations(self.macros, &mut node, state);
                 node
             }
             None => Node::Fragment(self.text.into_nodes(state)),
@@ -90,7 +88,7 @@ impl<'a> IntoNode<'a> for ImageIr<'a> {
                     is_block_level: false,
                     contains_blocks: false,
                 });
-                apply_post_annotations(self.annotations, &mut node, state);
+                apply_post_annotations(self.macros, &mut node, state);
                 node
             }
             None => Node::Fragment(self.alt.into_nodes(state)),
@@ -127,42 +125,24 @@ impl<'a> IntoNode<'a> for CodeIr<'a> {
             is_block_level: false,
             contains_blocks: false,
         });
-        apply_post_annotations(self.annotations, &mut node, state);
+        apply_post_annotations(self.macros, &mut node, state);
         node
     }
 }
 
-pub(super) fn add_attributes<'a>(args: Option<MacroArgsIr<'a>>, elem: &mut Element<'a>) {
-    if let Some(MacroArgsIr::TokenTrees(tts)) = args {
-        let mut classes = Vec::new();
-
-        for tt in tts {
-            match tt {
-                TokenTreeIr::Atom(TokenTreeAtomIr::Word(arg)) => {
-                    if let Some(arg) = arg.strip_prefix('.') {
-                        classes.push(arg);
-                    } else if let Some(arg) = arg.strip_prefix('#') {
-                        elem.attrs.push(Attr { key: "id", value: Some(arg.into()) })
-                    } else {
-                        elem.attrs.push(Attr { key: arg, value: None })
-                    }
+pub(super) fn add_attributes<'a>(args: Vec<macros::Attr<'a>>, elem: &mut Element<'a>) {
+    for attr in args {
+        if let Some(value) = attr.value {
+            match value {
+                macros::AttrValue::Word(word) => {
+                    add_attribute_kv(&mut elem.attrs, attr.key, word);
                 }
-                TokenTreeIr::KV(key, TokenTreeAtomIr::Word(word)) => {
-                    add_attribute_kv(&mut elem.attrs, key, word);
+                macros::AttrValue::QuotedWord(word) => {
+                    add_attribute_kv(&mut elem.attrs, attr.key, word);
                 }
-                TokenTreeIr::KV(key, TokenTreeAtomIr::QuotedWord(word)) => {
-                    add_attribute_kv(&mut elem.attrs, key, word);
-                }
-                _ => {}
             }
-        }
-
-        if !classes.is_empty() {
-            if classes.len() == 1 {
-                add_attribute_kv(&mut elem.attrs, "class", classes.pop().unwrap());
-            } else {
-                add_attribute_kv(&mut elem.attrs, "class", classes.into_iter().join(" "));
-            }
+        } else {
+            elem.attrs.push(Attr { key: attr.key, value: None })
         }
     }
 }

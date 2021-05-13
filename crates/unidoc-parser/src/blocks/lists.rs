@@ -7,8 +7,6 @@ use super::ParseBlock;
 
 pub(crate) struct ParseList<'a> {
     pub ind: Indents<'a>,
-    pub is_loose: bool,
-    pub list_style: &'a mut Option<String>,
 }
 
 impl Parse for ParseList<'_> {
@@ -42,13 +40,7 @@ impl Parse for ParseList<'_> {
         }
 
         input.apply();
-        Some(List {
-            indent_spaces,
-            bullet,
-            items,
-            is_loose: self.is_loose,
-            list_style: self.list_style.take(),
-        })
+        Some(List { indent_spaces, bullet, items })
     }
 }
 

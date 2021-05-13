@@ -1,21 +1,33 @@
-use super::segments::BracesIr;
-
 #[derive(Debug, Clone, PartialEq)]
-pub enum MacroArgsIr<'a> {
-    Raw(&'a str),
-    TokenTrees(Vec<TokenTreeIr<'a>>),
+pub enum MacroIr<'a> {
+    /// `@()`
+    HtmlAttrs(Vec<Attr<'a>>),
+    /// `@LOOSE`
+    Loose,
+    /// `@BULLET()`
+    ListStyle(String),
+    /// `@TOC{}`
+    Toc,
+    /// `@NOTOC`
+    NoToc,
+
+    Invalid,
+}
+
+impl MacroIr<'_> {
+    pub fn is_for_list(&self) -> bool {
+        matches!(self, MacroIr::Loose | MacroIr::ListStyle(_))
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum TokenTreeIr<'a> {
-    Atom(TokenTreeAtomIr<'a>),
-    KV(&'a str, TokenTreeAtomIr<'a>),
+pub struct Attr<'a> {
+    pub key: &'a str,
+    pub value: Option<AttrValue<'a>>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum TokenTreeAtomIr<'a> {
+pub enum AttrValue<'a> {
     Word(&'a str),
     QuotedWord(String),
-    Tuple(Vec<TokenTreeIr<'a>>),
-    Braces(BracesIr<'a>),
 }

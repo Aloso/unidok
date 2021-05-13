@@ -14,8 +14,6 @@ pub(crate) struct ParseBlock<'a> {
     context: Context,
     ind: Indents<'a>,
     mode: Option<ParsingMode>,
-    is_loose: bool,
-    list_style: Option<String>,
     no_toc: bool,
 }
 
@@ -24,11 +22,9 @@ impl ParseBlock<'_> {
         context: Context,
         ind: Indents<'_>,
         mode: Option<ParsingMode>,
-        is_loose: bool,
-        list_style: Option<String>,
         no_toc: bool,
     ) -> ParseBlock<'_> {
-        ParseBlock { context, ind, mode, is_loose, list_style, no_toc }
+        ParseBlock { context, ind, mode, no_toc }
     }
 
     pub(crate) fn new_multi(context: Context, ind: Indents<'_>) -> ParseBlocks<'_> {
@@ -94,11 +90,7 @@ impl Parse for ParseBlock<'_> {
         }
 
         if mode.is(ParsingMode::LISTS) {
-            if let Some(list) = input.parse(ParseList {
-                ind,
-                is_loose: self.is_loose,
-                list_style: &mut self.list_style,
-            }) {
+            if let Some(list) = input.parse(ParseList { ind }) {
                 self.consume_empty_lines(input);
                 return Some(Block::List(list));
             }
@@ -119,14 +111,7 @@ impl Parse for ParseBlock<'_> {
         }
 
         if mode.is(ParsingMode::MACROS) {
-            let parser = ParseBlockMacro::new(
-                self.context,
-                ind,
-                self.mode,
-                self.is_loose,
-                self.list_style.take(),
-                self.no_toc,
-            );
+            let parser = ParseBlockMacro::new(self.context, ind, self.mode, self.no_toc);
             if let Some(mac) = input.parse(parser) {
                 self.consume_empty_lines(input);
                 return Some(Block::BlockMacro(mac));
@@ -179,14 +164,7 @@ impl Parse for ParseBlocks<'_> {
             }
         }
 
-        let parser = ParseBlock {
-            context: self.context,
-            ind: self.ind,
-            mode: None,
-            is_loose: false,
-            list_style: None,
-            no_toc: false,
-        };
+        let parser = ParseBlock { context: self.context, ind: self.ind, mode: None, no_toc: false };
 
         let mut v = Vec::new();
         while let Some(node) = input.parse(parser.clone()) {
