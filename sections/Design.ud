@@ -124,18 +124,14 @@ Here's a list of features I would like to have. They're in no particular order. 
 For other items, there's no guarantee that they will be implemented, but you can open an [issue] and explain why you need a particular feature, and I'll work on resolving the issue. The feature doesn't need to be from the below list.
 
 @NOTOC
-### Syntax highlighting
-
-@(.status){Plannned}
+### Syntax highlighting @NOTXT@(.status){Plannned}
 
 In Markdown, syntax highlighting is optional (since it can be done via JavaScript in the client). However, in static site generators it is common to perform the syntax highlighting during site generation, to make the pages load faster.
 
 I propose to use [syntect](https://lib.rs/crates/syntect) in Unidok, which can be enabled universally with a CLI flag or per-document with a macro.
 
 @NOTOC
-### CLI
-
-@(.status){Plannned}
+### CLI @NOTXT@(.status){Plannned}
 
 Unidok should have a command-line interface that can do the following things:
 
@@ -150,9 +146,7 @@ Unidok should have a command-line interface that can do the following things:
 * Provide an option to emit the IR for debugging
 
 @NOTOC
-### Replacements
-
-@(.status){Plannned}
+### Replacements @NOTXT@(.status){Plannned}
 
 The following text replacements should be enabled by default:
 
@@ -163,9 +157,7 @@ The following text replacements should be enabled by default:
 They can be disabled in the CLI or with a macro.
 
 @NOTOC
-### Security protocol
-
-@(.status){Plannned}
+### Security protocol @NOTXT@(.status){Plannned}
 
 There should be two operating modes, "safe mode" and "unsafe mode". In safe mode, when untrusted input is converted to HTML and displayed, the following should apply:
 
@@ -178,9 +170,7 @@ The safe mode should be the default. Unsafe mode can be enabled in the API, the 
 Further restrictions can be put in place, e.g. to forbid embedding iframes or untrusted JavaScripts in the document.
 
 @NOTOC
-### Language awareness
-
-@(.status){Plannned}
+### Language awareness @NOTXT@(.status){Plannned}
 
 The language should be configurable both in the CLI and with a macro. The language affects
 
@@ -188,9 +178,7 @@ The language should be configurable both in the CLI and with a macro. The langua
 * The `lang` attribute when emitting a complete HTML page
 
 @NOTOC
-### Footnotes
-
-@(.status){Plannned}
+### Footnotes @NOTXT@(.status){Plannned}
 
 The syntax I think is most appropriate is this:
 

@@ -462,11 +462,13 @@ pre code {
 }
 
 .status {
-    padding: 4px 15px;
+    padding: 1px 11px;
     border-radius: 50px;
-    border: 2px solid #fff3;
-    font-size: 90%;
-    color: #fffc;
+    border: 2px solid #28ff7a94;
+    font-size: calc(9px + 33%);
+    color: #28ff7a;
+    font-weight: normal;
+    vertical-align: middle;
 }
 
 #preview p,
