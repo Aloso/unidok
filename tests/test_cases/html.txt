@@ -16,7 +16,7 @@ $<i hello world='!'>@(.cls #id attr .c){span}</i>
 
 ............................................................
 <p><b>Bold text</b> is <a we="some">!</a>
-<i hello world="!"><span class="cls c" id="id" attr>span</span></i></p>
+$<i hello world="!"><span class="cls c" id="id" attr>span</span></i></p>
 <p><span class="x"><code>code</code></span> <code class="x">code</code> @(.x)<em>italic</em> @(.x)<sub>subscript</sub> <br class="x"/></p>
 <img src=""/>
 <ul>

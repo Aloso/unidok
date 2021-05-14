@@ -21,7 +21,7 @@ use crate::html::node::ParseHtmlNode;
 use crate::macros::utils::ParseClosingBrace;
 use crate::macros::ParseInlineMacro;
 use crate::parsing_mode::ParsingMode;
-use crate::utils::{ParseLineBreak, While};
+use crate::utils::{is_ws, ParseLineBreak, While};
 use crate::{Indents, Input, Parse, StrSlice};
 
 pub fn strip_space_start(segment: &mut Segment, input: &Input) -> bool {
@@ -126,6 +126,22 @@ enum Item {
     LineBreak,
     Limiter,
     Underline(Underline),
+}
+
+impl Item {
+    fn is_blank_text(&self, input: &Input) -> bool {
+        matches!(*self, Item::Text(t) if input[t].trim_start_matches(is_ws).is_empty())
+    }
+
+    fn can_appear_before_limiter(&self) -> bool {
+        matches!(
+            self,
+            Item::Code(_)
+                | Item::Escaped(_)
+                | Item::FormatDelim { .. }
+                | Item::Link(Link { text: None, .. })
+        )
+    }
 }
 
 impl Default for Item {
@@ -459,9 +475,27 @@ impl ParseSegments<'_> {
                 }
             }
             '$' => {
-                if self.mode.is(ParsingMode::LIMITER) && input.parse(ParseLimiter).is_some() {
-                    items.push(Item::Limiter);
-                    return Some(false);
+                if self.mode.is(ParsingMode::LIMITER) {
+                    let parser_state = {
+                        if matches!(items.last(), Some(i) if i.can_appear_before_limiter())
+                            || matches!(input.rest()[1..].chars().next(),
+                                Some(c) if FormatDelim::try_from(c).is_ok())
+                        {
+                            Some(false)
+                        } else {
+                            match items.iter().rev().find(|i| !i.is_blank_text(input)) {
+                                Some(Item::LineBreak) | None => Some(true),
+                                _ => None,
+                            }
+                        }
+                    };
+
+                    if let Some(require_line_end) = parser_state {
+                        if input.parse(ParseLimiter { require_line_end }).is_some() {
+                            items.push(Item::Limiter);
+                            return Some(false);
+                        }
+                    }
                 }
             }
             '<' => {
@@ -585,6 +619,6 @@ impl ParseSegments<'_> {
 }
 
 fn is_blank_line(s: &str) -> bool {
-    let s = s.trim_start_matches(|c| matches!(c, ' ' | '\t'));
+    let s = s.trim_start_matches(is_ws);
     matches!(s.bytes().next(), Some(b'\n' | b'\r') | None)
 }

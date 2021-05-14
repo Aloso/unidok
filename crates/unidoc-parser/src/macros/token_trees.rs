@@ -1,7 +1,7 @@
 use unidoc_repr::ast::macros::{TokenTree, TokenTreeAtom};
 
 use crate::inlines::braces::ParseBraces;
-use crate::utils::{Indents, ParseSpaces, ParseWsNoBlankLinkes, QuotedStringWithEscapes};
+use crate::utils::{is_ws, Indents, ParseSpaces, ParseWsNoBlankLinkes, QuotedStringWithEscapes};
 use crate::{Input, Parse};
 
 #[derive(Clone, Copy)]
@@ -27,7 +27,7 @@ impl Parse for ParseTokenTree<'_> {
                 let idx =
                     rest.find(|c| matches!(c, '=' | ' ' | '\t' | '\n' | '\r' | ')' | ']' | '}'));
                 if let Some(idx) = idx {
-                    let remaining = rest[idx..].trim_start_matches(|c| matches!(c, ' ' | '\t'));
+                    let remaining = rest[idx..].trim_start_matches(is_ws);
                     if remaining.starts_with('=') {
                         let key = input.bump(idx);
                         input.parse_i(ParseSpaces);

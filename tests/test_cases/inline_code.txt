@@ -19,7 +19,7 @@ whereas this is not
 <code>&lt;code can [contain](arbitrary) @THINGS{!}</code></p>
 <p><code>this is not a fenced code block</code></p>
 <pre><code data-language="but"></code></pre>
-<p><code>whereas this is not</code></p>
+<p>$<code>whereas this is not</code></p>
 <p><strong>bold text <code>can contain code</code></strong> <code>**but not vice versa**</code> unless...</p>
 <p><code>This code <strong>can</strong> <a href="formatting">contain</a></code>.</p>
 <p><code>This code **should** <span class="cls">only</span> [support](macros)</code>.</p>

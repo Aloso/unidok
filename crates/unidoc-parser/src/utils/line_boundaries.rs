@@ -1,3 +1,4 @@
+use crate::utils::is_ws;
 use crate::{Input, Parse};
 
 use super::ParseSpaces;
@@ -41,9 +42,6 @@ impl Parse for ParseWsAndLineEnd {
     }
 
     fn can_parse(&mut self, input: &mut Input) -> bool {
-        matches!(
-            input.rest().trim_start_matches(|c| matches!(c, ' ' | '\t')).chars().next(),
-            Some('\n' | '\r') | None
-        )
+        matches!(input.rest().trim_start_matches(is_ws).chars().next(), Some('\n' | '\r') | None)
     }
 }

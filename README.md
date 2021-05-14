@@ -57,8 +57,6 @@ Unidoc should look familiar if you're familiar with Markdown. It follows the Com
   * Table column styling (`@COLS`)
   * Footnotes section (`@FOOTNOTES`)
 
-* Change behaviour of `$`: Only parse limiter directly next to a delimiter run, after a link reference or in an otherwise empty line
-
 ### Lower Priority
 
 * Lists

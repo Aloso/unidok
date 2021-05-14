@@ -11,6 +11,6 @@ $|| Definitely not a table
 ............................................................
 <p>||| Not a table</p>
 <p>| Also not a table</p>
-<p>|| Definitely not a table</p>
+<p>$|| Definitely not a table</p>
 <p>|| Definitely not a table</p>
 <p>#|| Definitely not a table</p>

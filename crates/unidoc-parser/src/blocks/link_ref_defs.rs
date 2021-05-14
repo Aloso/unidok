@@ -1,6 +1,8 @@
 use unidoc_repr::ast::blocks::LinkRefDef;
 
-use crate::utils::{ParseLineBreak, ParseLineEnd, ParseSpacesU8, QuotedStringWithEscapes, Until};
+use crate::utils::{
+    is_ws, ParseLineBreak, ParseLineEnd, ParseSpacesU8, QuotedStringWithEscapes, Until,
+};
 use crate::{Indents, Input, Parse};
 
 pub(crate) struct ParseLinkRefDef<'a> {
@@ -20,7 +22,7 @@ impl Parse for ParseLinkRefDef<'_> {
 
         input.try_parse(ParseSpacesU8);
         let url = input.parse_i(Until(|c| matches!(c, '\n' | '\r' | '"' | '\'')));
-        let url_trimmed = url.trim_end_matches(|c| matches!(c, ' ' | '\t'), input.text());
+        let url_trimmed = url.trim_end_matches(is_ws, input.text());
 
         if url_trimmed.is_empty() {
             return None;

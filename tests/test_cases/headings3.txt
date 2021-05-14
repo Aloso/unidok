@@ -12,5 +12,5 @@ $Heading
 <li>Not a heading</li>
 </ul>
 <p>===============</p>
-<h2 id="heading">Heading</h2>
+<h2 id="heading">$Heading</h2>
 <h1 id="heading"><kbd>Heading</kbd></h1>

@@ -2,7 +2,7 @@ use unidoc_repr::ast::blocks::{CellAlignment, CellMeta, Table, TableCell, TableR
 
 use crate::inlines::Segments;
 use crate::parsing_mode::ParsingMode;
-use crate::utils::{ParseLineBreak, ParseLineEnd, ParseSpacesU8, While};
+use crate::utils::{is_ws, ParseLineBreak, ParseLineEnd, ParseSpacesU8, While};
 use crate::{Context, Indents, Input, Parse, ParseInfallible};
 
 pub(crate) struct ParseTable<'a> {
@@ -49,7 +49,7 @@ impl Parse for ParseTable<'_> {
     }
 
     fn can_parse(&mut self, input: &mut Input) -> bool {
-        let rest = input.rest().trim_start_matches(|c| matches!(c, ' ' | '\t'));
+        let rest = input.rest().trim_start_matches(is_ws);
         rest.starts_with("||") || rest.starts_with("#||")
     }
 }
@@ -167,7 +167,7 @@ impl Parse for ParseRowsAndColumns {
             }
         }
 
-        if input.rest().starts_with(|c: char| matches!(c, ' ' | '\t')) {
+        if input.rest().starts_with(is_ws) {
             input.apply();
             Some((col_span.unwrap_or(1), row_span.unwrap_or(1)))
         } else {

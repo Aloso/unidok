@@ -1,6 +1,6 @@
 use unidoc_repr::ast::blocks::Comment;
 
-use crate::utils::{ParseSpaces, Until};
+use crate::utils::{is_ws, ParseSpaces, Until};
 use crate::{Input, Parse};
 
 pub(crate) struct ParseComment;
@@ -20,6 +20,6 @@ impl Parse for ParseComment {
     }
 
     fn can_parse(&mut self, input: &mut Input) -> bool {
-        input.rest().trim_start_matches(|c| matches!(c, ' ' | '\t')).starts_with("//")
+        input.rest().trim_start_matches(is_ws).starts_with("//")
     }
 }

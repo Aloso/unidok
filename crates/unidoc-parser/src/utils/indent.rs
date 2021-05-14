@@ -1,6 +1,6 @@
 use std::num::NonZeroU8;
 
-use super::{ParseAtMostNSpaces, ParseWsAndLineEnd};
+use super::{is_ws, ParseAtMostNSpaces, ParseWsAndLineEnd};
 use crate::{Input, Parse};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -20,7 +20,7 @@ impl Parse for ParseQuoteMarker {
     }
 
     fn can_parse(&mut self, input: &mut Input) -> bool {
-        input.rest().trim_start_matches(|c| matches!(c, ' ' | '\t')).starts_with('>')
+        input.rest().trim_start_matches(is_ws).starts_with('>')
     }
 }
 

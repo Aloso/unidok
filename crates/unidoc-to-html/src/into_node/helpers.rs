@@ -36,11 +36,11 @@ fn trim_segments_start(segment: SegmentIr<'_>) -> Option<SegmentIr<'_>> {
     match segment {
         SegmentIr::LineBreak | SegmentIr::Limiter => None,
         SegmentIr::Text(mut t) => {
-            t = t.trim_start_matches(|c| matches!(c, ' ' | '\t'));
+            t = t.trim_start_matches(is_ws);
             Some(SegmentIr::Text(t)).filter(|_| !t.is_empty())
         }
         SegmentIr::Text2(t) => {
-            let t = t.trim_start_matches(|c| matches!(c, ' ' | '\t'));
+            let t = t.trim_start_matches(is_ws);
             if t.is_empty() {
                 None
             } else {
@@ -48,7 +48,7 @@ fn trim_segments_start(segment: SegmentIr<'_>) -> Option<SegmentIr<'_>> {
             }
         }
         SegmentIr::EscapedText(mut t) => {
-            t = t.trim_start_matches(|c| matches!(c, ' ' | '\t'));
+            t = t.trim_start_matches(is_ws);
             Some(SegmentIr::EscapedText(t)).filter(|_| !t.is_empty())
         }
         s => Some(s),
@@ -59,11 +59,11 @@ fn trim_segments_end(seg: &mut SegmentIr) -> bool {
     match seg {
         SegmentIr::LineBreak | SegmentIr::Limiter => true,
         SegmentIr::Text(t) | SegmentIr::EscapedText(t) => {
-            *t = t.trim_end_matches(|c| matches!(c, ' ' | '\t'));
+            *t = t.trim_end_matches(is_ws);
             t.is_empty()
         }
         SegmentIr::Text2(t) => {
-            while t.ends_with(|c| matches!(c, ' ' | '\t')) {
+            while t.ends_with(is_ws) {
                 t.pop();
             }
             t.is_empty()
@@ -81,4 +81,10 @@ pub(super) fn elem_content_ir_into_nodes<'a>(
         ElemContentIr::Inline(i) => i.into_nodes(state),
         ElemContentIr::Verbatim(v) => vec![Node::Verbatim(v)],
     }
+}
+
+/// Returns whether this is a space or tab.
+#[inline]
+fn is_ws(c: char) -> bool {
+    matches!(c, ' ' | '\t')
 }

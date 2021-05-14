@@ -99,6 +99,7 @@ impl FormatDelim {
 impl TryFrom<char> for FormatDelim {
     type Error = ();
 
+    #[inline]
     fn try_from(value: char) -> Result<Self, Self::Error> {
         Ok(match value {
             '*' => FormatDelim::Star,

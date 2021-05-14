@@ -25,4 +25,4 @@ $// Escaped comment
 </tr>
 </table>
 <p>// Escaped comment</p>
-<p>// Escaped comment</p>
+<p>$// Escaped comment</p>

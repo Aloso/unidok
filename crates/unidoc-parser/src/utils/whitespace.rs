@@ -5,6 +5,12 @@ use crate::{Input, Parse, ParseInfallible};
 
 use super::{Indents, While};
 
+/// Returns whether this is a space or tab.
+#[inline]
+pub fn is_ws(c: char) -> bool {
+    matches!(c, ' ' | '\t')
+}
+
 /// Parses 0-255 spaces or tabs. One tab counts as 4 spaces. This parser never
 /// fails.
 pub struct ParseSpacesU8;
@@ -70,7 +76,7 @@ impl ParseInfallible for ParseSpaces {
 
     #[inline]
     fn parse_infallible(&self, input: &mut Input) -> Self::Output {
-        input.parse_i(While(|c| matches!(c, ' ' | '\t')));
+        input.parse_i(While(is_ws));
     }
 }
 
@@ -139,14 +145,14 @@ impl ParseInfallible for ParseWs<'_> {
     type Output = ();
 
     fn parse_infallible(&self, input: &mut Input) -> Self::Output {
-        input.parse_i(While(|c| matches!(c, ' ' | '\t')));
+        input.parse_i(While(is_ws));
 
         while matches!(input.peek_char(), Some('\n' | '\r')) {
             if input.parse(ParseLineBreak(self.0)).is_none() {
                 break;
             }
 
-            input.parse_i(While(|c| matches!(c, ' ' | '\t')));
+            input.parse_i(While(is_ws));
         }
     }
 }
@@ -157,10 +163,10 @@ impl Parse for ParseWsNoBlankLinkes<'_> {
     type Output = ();
 
     fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
-        input.parse_i(While(|c| matches!(c, ' ' | '\t')));
+        input.parse_i(While(is_ws));
 
         if input.parse(ParseLineBreak(self.0)).is_some() {
-            input.parse_i(While(|c| matches!(c, ' ' | '\t')));
+            input.parse_i(While(is_ws));
 
             if matches!(input.peek_char(), Some('\n' | '\r')) {
                 return None;
