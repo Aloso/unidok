@@ -233,38 +233,32 @@ fn stack_to_segments(stack: Vec<StackItem>) -> Vec<Segment> {
             StackItem::Text(t) => Segment::Text(t),
             StackItem::Text2(t) => Segment::Text2(t),
             StackItem::Formatted { delim, content } => {
-                let delim_inner = match *content.as_slice() {
-                    [StackItem::Formatted { delim, .. }] => Some(delim),
-                    _ => None,
-                };
+                let is_same_delim = matches!(
+                    *content.as_slice(),
+                    [StackItem::Formatted { delim: delim_inner, .. }] if delim == delim_inner
+                );
 
-                let mut content = stack_to_segments(content);
-                if matches!(delim, FormatDelim::Underscore | FormatDelim::Star)
-                    && content.len() == 1
-                    && Some(delim) == delim_inner
-                {
-                    let popped = content.pop().unwrap();
-                    if let Segment::Format(InlineFormat {
-                        formatting: Formatting::Italic,
-                        segments: content_inner,
-                    }) = popped
-                    {
+                let mut segments = stack_to_segments(content);
+
+                if is_same_delim && segments.len() == 1 {
+                    match segments.pop().unwrap() {
                         Segment::Format(InlineFormat {
-                            formatting: Formatting::Bold,
-                            segments: content_inner,
-                        })
-                    } else {
-                        content.push(popped);
-                        Segment::Format(InlineFormat {
-                            formatting: delim.to_format(),
-                            segments: content,
-                        })
+                            formatting: Formatting::Italic,
+                            segments,
+                        }) => {
+                            Segment::Format(InlineFormat { formatting: Formatting::Bold, segments })
+                        }
+                        Segment::Format(f) => Segment::Format(f),
+                        segment => {
+                            segments.push(segment);
+                            Segment::Format(InlineFormat {
+                                formatting: delim.to_format(),
+                                segments,
+                            })
+                        }
                     }
                 } else {
-                    Segment::Format(InlineFormat {
-                        formatting: delim.to_format(),
-                        segments: content,
-                    })
+                    Segment::Format(InlineFormat { formatting: delim.to_format(), segments })
                 }
             }
             StackItem::Code(c) => Segment::Code(c),
