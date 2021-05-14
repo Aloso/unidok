@@ -38,7 +38,31 @@ impl<'a> IntoNode<'a> for BracesIr<'a> {
             contains_blocks: false,
         });
         apply_post_annotations(self.macros, &mut node, state);
-        node
+        remove_redundant_spans(node)
+    }
+}
+
+fn remove_redundant_spans(node: Node<'_>) -> Node<'_> {
+    match node {
+        Node::Element(e) if e.name == ElemName::Span && e.attrs.is_empty() => match e.content {
+            None => Node::Fragment(vec![]),
+            Some(mut n) if n.len() <= 1 => match n.pop() {
+                Some(inner) => inner,
+                None => Node::Fragment(vec![]),
+            },
+            Some(n) => Node::Element(Element {
+                name: e.name,
+                attrs: e.attrs,
+                content: Some(n),
+                is_block_level: e.is_block_level,
+                contains_blocks: e.contains_blocks,
+            }),
+        },
+        Node::Fragment(mut f) if f.len() <= 1 => match f.pop() {
+            Some(inner) => inner,
+            None => Node::Fragment(vec![]),
+        },
+        node => node,
     }
 }
 
