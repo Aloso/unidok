@@ -459,6 +459,14 @@ pre code {
     border-left: 5px solid green;
 }
 
+.status {
+    padding: 4px 15px;
+    border-radius: 50px;
+    border: 2px solid #fff3;
+    font-size: 90%;
+    color: #fffc;
+}
+
 #preview p,
 #preview li {
     line-height: 1.4em;

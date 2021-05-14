@@ -484,7 +484,13 @@ Numbers can't be escaped. Therefore, to escape an ordered list, put the backslas
 
 ## Limiter
 
-The limiter, `$` isn't rendered, ever. It's just and indication that parsing should be interrupted. Example:
+The dollar sign, `$`, is interpreted as a _limiter_ if
+
+* it appears directly after a link reference, escape sequence or next to inline code or an inline formatting delimiter, or
+* it is the only thing in the whole line, or
+* it is the first thing in the paragraph and is directly followed by a line break.
+
+A limiter isn't rendered. It's just and indication that parsing should be interrupted. Example:
 
 @(.playground)
 ```
