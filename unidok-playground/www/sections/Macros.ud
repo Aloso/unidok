@@ -1,0 +1,161 @@
+
+@NOTOC
+#### Table of Contents
+
+
+@TOC{}
+
+@(.differences){
+  @(.mini-title)
+  About this document
+
+  Since Unidok is evolving rapidly, this tutorial is sometimes a bit out of date. Please report errors in the [issue tracker][issue-tracker].
+}
+
+[issue-tracker]: https://github.com/Aloso/unidok/issues
+
+## The empty macro, `@()`
+
+The macro with no name is used to add HTML attributes to elements. For example, the following adds a CSS class, id, or `title` attribute to a code block:
+
+@(.playground)
+```
+@(.cls #id)`Some code`
+
+@(title="hello world")`Hover me`
+```
+
+It can also be applied to HTML:
+
+@(.playground)
+```
+@(title="hello world")<span>Hover me</span>
+```
+
+The above is equivalent to using braces, since braces after a macro are converted to a `<span>` element:
+
+@(.playground)
+```
+@(title="hello world"){Hover me}
+```
+
+## Macros for lists
+
+### `@LOOSE`
+
+When applied to a list, the text in each list item is wrapped in a `<p>` element, so there's more vertical space between the list items:
+
+@(.playground)
+```
+@LOOSE
+- This is a paragraph of text.
+- And here's another paragraph of text.
+```
+
+
+### `@BULLET`
+
+When applied to a list, the it uses the specified bullet type. This uses the [list-style] CSS property. It has loads of possible values, here are the values that are well-supported across different browsers:
+
+[list-style]: https://developer.mozilla.org/de/docs/Web/CSS/list-style "MDN documentation"
+
+- armenian
+- circle
+- decimal
+- decimal-leading-zero
+- disc
+- georgian
+- lower-alpha
+- lower-greek
+- lower-latin
+- lower-roman
+- square
+- upper-alpha
+- upper-greek
+- upper-latin
+- upper-roman
+
+@(.playground)
+```
+@BULLET(lower-alpha)
+1. Lorem
+2. Ipsum
+3. Dolor
+4. Sit
+5. Amet
+```
+
+## Macros for the table of contents
+
+### `@TOC`
+
+Inserts a table of contents.
+
+@(.playground)
+````
+# Heading 1
+
+Table of contents:
+
+@TOC{}
+
+## Heading 2
+
+### Heading 3
+
+## Heading 4
+````
+
+### `@NOTOC`
+
+When applied to a heading, the heading is not included in the table of contents.
+
+@(.playground)
+````
+@TOC{}
+
+## Heading 2
+
+@NOTOC
+### Heading 3
+
+## Heading 4
+````
+
+## Parser macros
+
+### `@PASS`
+
+With `@PASS`, formatted text is parsed even in inline code and in code blocks:
+
+@(.playground)
+````
+@PASS
+```
+This is **bold**
+```
+
+@PASS`This is **bold**`.
+````
+
+You can specify which kinds of syntax is parsed in the block. For example, `@PASS(macros inline)` (or abbreviated: `@PASS(@ i)`) only parses macros and inline formatting. Here's the full list of syntax types that can be enabled with `@PASS`:
+
+||# Identifier |# Abbr. |# Explanation
+|| `inline`    | `i`    | Inline formatting (bold, italic, etc.)
+|| `link_img`  | `li`   | Links and images
+|| `codeblock` | `c`    | Code blocks
+|| `heading`   | `h`    | Headings
+|| `tbreak`    | `b`    | Thematic breaks
+|| `subst`     | `s`    | Text substitutions such as `->` to →
+|| `list`      | `l`    | Lists
+|| `limiter`   | `$`    | Limiters
+|| `macro`     | `@`    | Macros
+|| `math`      | `%`    | Math blocks
+|| `table`     | `|`    | Tables
+|| `quote`     | `>`    | Blockquotes
+|| `html`      | `<`    | HTML elements
+
+
+### `@NOPASS`
+
+`@NOPASS` disables all formatting in the block, so it behaves like inline code and code blocks.

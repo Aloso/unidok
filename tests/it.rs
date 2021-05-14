@@ -44,12 +44,12 @@ fn run_test() -> usize {
         let content = fs::read_to_string(&path).unwrap();
 
         let mut split = content.split(SPLIT);
-        let unidoc = split.next().unwrap();
+        let unidok = split.next().unwrap();
         let expected = split.next();
 
         let (result, parsing_time, rendering_time) = test_case(
             file_name.to_string(),
-            unidoc.to_string(),
+            unidok.to_string(),
             expected.map(ToString::to_string),
             update,
         );
@@ -57,12 +57,12 @@ fn run_test() -> usize {
         match result {
             TcResult::Write(s) => {
                 print_line(CYAN, "write", &file_name, parsing_time, rendering_time);
-                fs::write(path, format!("{}{}{}", unidoc, SPLIT, s)).unwrap();
+                fs::write(path, format!("{}{}{}", unidok, SPLIT, s)).unwrap();
                 c_write += 1;
             }
             TcResult::Update(s) => {
                 print_line(YELLOW, "update", &file_name, parsing_time, rendering_time);
-                fs::write(path, format!("{}{}{}", unidoc, SPLIT, s)).unwrap();
+                fs::write(path, format!("{}{}{}", unidok, SPLIT, s)).unwrap();
                 c_update += 1;
             }
             TcResult::Success => {
@@ -120,7 +120,7 @@ enum TcResult {
 
 fn test_case(
     file_name: String,
-    unidoc: String,
+    unidok: String,
     expected: Option<String>,
     update: bool,
 ) -> (TcResult, Duration, Duration) {
@@ -133,11 +133,11 @@ fn test_case(
 
     let handle = thread::spawn(move || {
         let start = Instant::now();
-        let res = unidoc_parser::parse(&unidoc);
+        let res = unidok_parser::parse(&unidok);
         let parsing_time = start.elapsed();
 
-        let nodes = unidoc_to_html::convert(res);
-        let html = unidoc_to_html::to_html(&nodes);
+        let nodes = unidok_to_html::convert(res);
+        let html = unidok_to_html::to_html(&nodes);
         let rendering_time = start.elapsed() - parsing_time;
 
         finished.store(true, Ordering::Release);

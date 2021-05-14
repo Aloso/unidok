@@ -79,24 +79,24 @@ dependencies = [
 ]
 
 [[package]]
-name = "unidoc"
+name = "unidok"
 version = "0.1.0"
 dependencies = [
  "similar",
- "unidoc-parser",
- "unidoc-to-html",
+ "unidok-parser",
+ "unidok-to-html",
 ]
 
 [[package]]
-name = "unidoc-parser"
+name = "unidok-parser"
 version = "0.1.0"
 dependencies = [
  "detached-str",
- "unidoc-repr",
+ "unidok-repr",
 ]
 
 [[package]]
-name = "unidoc-repr"
+name = "unidok-repr"
 version = "0.1.0"
 dependencies = [
  "detached-str",
@@ -104,11 +104,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "unidoc-to-html"
+name = "unidok-to-html"
 version = "0.1.0"
 dependencies = [
  "asciimath-rs",
  "itertools",
- "unidoc-parser",
- "unidoc-repr",
+ "unidok-parser",
+ "unidok-repr",
 ]

@@ -1,6 +1,6 @@
 use std::time::Instant;
 
-use unidoc_parser::parse;
+use unidok_parser::parse;
 
 fn main() {
     let input = std::env::args().nth(1).unwrap();
@@ -8,8 +8,8 @@ fn main() {
     let start = Instant::now();
     let res = parse(&input);
     let time1 = start.elapsed();
-    let nodes = unidoc_to_html::convert(res);
-    let html = unidoc_to_html::to_html(&nodes);
+    let nodes = unidok_to_html::convert(res);
+    let html = unidok_to_html::to_html(&nodes);
     let time2 = start.elapsed();
 
     println!("{}", html);

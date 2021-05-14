@@ -1,4 +1,4 @@
-# ![Logo](doc/ud.svg)&nbsp; Unidoc
+# ![Logo](doc/ud.svg)&nbsp; Unidok
 
 A powerful, readable, easy-to-learn markup language
 
@@ -6,7 +6,7 @@ This language is inspired by AsciiDoc, but has a syntax that resembles Markdown.
 
 <div align="center">
   <hr>
-  <a href="https://aloso.github.io/unidoc/">Check out the website!</a>
+  <a href="https://aloso.github.io/unidok/">Check out the website!</a>
   <hr>
 </div>
 
@@ -18,16 +18,16 @@ Clone the repository and run `cargo install`.
 
 ## Usage
 
-Unidoc doesn't yet have a proper command-line interface. You can pass a string to it, and it will print the corresponding HTML to stdout. That's it (for now).
+Unidok doesn't yet have a proper command-line interface. You can pass a string to it, and it will print the corresponding HTML to stdout. That's it (for now).
 
 ```shell
-> unidoc '# Hello world'
+> unidok '# Hello world'
 <h1>Hello world</h1>
 ```
 
 ## Principles
 
-Unidoc should look familiar if you're familiar with Markdown. It follows the CommonMark specification closely where it makes sense, but it also omits some Markdown features that I feel are unhelpful, and adds new features. Notable examples are:
+Unidok should look familiar if you're familiar with Markdown. It follows the CommonMark specification closely where it makes sense, but it also omits some Markdown features that I feel are unhelpful, and adds new features. Notable examples are:
 
 * It supports `^superscript^`, `#subscript#`, `~line-through~` text, tables, math formulas, and macros
 
@@ -41,7 +41,7 @@ Unidoc should look familiar if you're familiar with Markdown. It follows the Com
 
 ## Roadmap
 
-[See here](https://aloso.github.io/unidoc/?design#upcoming-features).
+[See here](https://aloso.github.io/unidok/?design#upcoming-features).
 
 ## License
 

@@ -19,11 +19,11 @@ jobs:
       with:
         version: 'v0.9.1'
     - name: Build wasm module
-      working-directory: ./unidoc-playground
+      working-directory: ./unidok-playground
       run: |
         wasm-pack -v build
     - name: Build website
-      working-directory: ./unidoc-playground/www
+      working-directory: ./unidok-playground/www
       run: |
         npm install
         npm run build
@@ -31,4 +31,4 @@ jobs:
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./unidoc-playground/www/dist
+        publish_dir: ./unidok-playground/www/dist
