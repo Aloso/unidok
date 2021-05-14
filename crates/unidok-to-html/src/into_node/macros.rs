@@ -5,6 +5,7 @@ use unidok_repr::ast::html::ElemName;
 use unidok_repr::ir::blocks::HeadingIr;
 use unidok_repr::ir::macros::MacroIr;
 use unidok_repr::ir::{macros, IrState};
+use unidok_repr::try_reduce::{Reduced1, TryReduce};
 
 use crate::filter_for_toc::filter_for_toc;
 use crate::{Attr, Element, IntoNodes, Node};
@@ -130,21 +131,21 @@ fn add_attributes_to_node<'a>(node: Node<'a>, args: Vec<macros::Attr<'a>>) -> No
     if let Node::Element(mut elem) = node {
         add_attributes(args, &mut elem);
         Node::Element(elem)
-    } else if let Node::Fragment(mut nodes) = node {
-        if nodes.len() == 1 {
-            let node = nodes.pop().unwrap();
-            add_attributes_to_node(node, args)
-        } else {
-            let mut elem = Element {
-                name: ElemName::Div,
-                attrs: vec![],
-                content: Some(nodes),
-                is_block_level: true,
-                contains_blocks: true,
-            };
-            add_attributes(args, &mut elem);
-            Node::Element(elem)
-        }
+    } else if let Node::Fragment(nodes) = node {
+        let nodes = match nodes.try_reduce1() {
+            Reduced1::Zero => vec![],
+            Reduced1::One(node) => return add_attributes_to_node(node, args),
+            Reduced1::Many(nodes) => nodes,
+        };
+        let mut elem = Element {
+            name: ElemName::Div,
+            attrs: vec![],
+            content: Some(nodes),
+            is_block_level: true,
+            contains_blocks: true,
+        };
+        add_attributes(args, &mut elem);
+        Node::Element(elem)
     } else {
         panic!("Empty macro can't be applied to this kind of node");
     }

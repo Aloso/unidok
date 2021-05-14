@@ -5,6 +5,7 @@ use unidok_repr::ast::html::ElemName;
 use unidok_repr::ir::blocks::*;
 use unidok_repr::ir::macros::MacroIr;
 use unidok_repr::ir::IrState;
+use unidok_repr::try_reduce::{Reduced1, TryReduce};
 
 use super::helpers::into_nodes_trimmed;
 use super::macros::apply_post_annotations;
@@ -115,59 +116,65 @@ impl<'a> IntoNode<'a> for CodeBlockIr<'a> {
 
 impl<'a> IntoNode<'a> for ParagraphIr<'a> {
     fn into_node(self, state: &IrState<'a>) -> Node<'a> {
-        let mut segments = into_nodes_trimmed(self.segments, state);
+        let segments = into_nodes_trimmed(self.segments, state);
 
-        if segments.is_empty() {
-            Node::Fragment(vec![])
-        } else if segments.len() == 1 && should_make_block_single(&segments[0]) {
-            segments.pop().unwrap()
-        } else if segments.iter().any(|s| should_make_block_multi(s)) {
-            let mut fragment = Vec::<Node>::new();
-            let mut new_segs = Vec::<Node>::new();
+        match segments.try_reduce1() {
+            Reduced1::Zero => Node::Fragment(vec![]),
 
-            for s in segments {
-                if should_make_block_multi(&s) {
-                    if !new_segs.is_empty() {
-                        if new_segs.iter().all(Node::is_whitespace) {
-                            new_segs.clear();
-                        } else {
-                            fragment.push(Node::Element(Element {
-                                name: ElemName::P,
-                                attrs: vec![],
-                                content: Some(take(&mut new_segs)),
-                                is_block_level: true,
-                                contains_blocks: false,
-                            }))
-                        }
-                    }
-                    fragment.push(s);
-                } else {
-                    new_segs.push(s);
-                }
-            }
-            if !new_segs.is_empty() {
-                if new_segs.iter().all(Node::is_whitespace) {
-                    new_segs.clear();
-                } else {
-                    fragment.push(Node::Element(Element {
-                        name: ElemName::P,
-                        attrs: vec![],
-                        content: Some(take(&mut new_segs)),
-                        is_block_level: true,
-                        contains_blocks: false,
-                    }))
-                }
+            Reduced1::One(node)
+                if should_make_block_single(&node) || should_make_block_multi(&node) =>
+            {
+                node
             }
 
-            Node::Fragment(fragment)
-        } else {
-            Node::Element(Element {
+            Reduced1::One(node) => Node::Element(Element {
                 name: ElemName::P,
                 attrs: vec![],
-                content: Some(segments),
+                content: Some(vec![node]),
                 is_block_level: true,
                 contains_blocks: false,
-            })
+            }),
+
+            Reduced1::Many(segments) => {
+                let mut fragment = Vec::<Node>::new();
+                let mut new_segs = Vec::<Node>::new();
+
+                for s in segments {
+                    if should_make_block_multi(&s) {
+                        if !new_segs.is_empty() {
+                            if new_segs.iter().all(Node::is_whitespace) {
+                                new_segs.clear();
+                            } else {
+                                fragment.push(Node::Element(Element {
+                                    name: ElemName::P,
+                                    attrs: vec![],
+                                    content: Some(take(&mut new_segs)),
+                                    is_block_level: true,
+                                    contains_blocks: false,
+                                }))
+                            }
+                        }
+                        fragment.push(s);
+                    } else {
+                        new_segs.push(s);
+                    }
+                }
+                if !new_segs.is_empty() {
+                    if new_segs.iter().all(Node::is_whitespace) {
+                        new_segs.clear();
+                    } else {
+                        fragment.push(Node::Element(Element {
+                            name: ElemName::P,
+                            attrs: vec![],
+                            content: Some(take(&mut new_segs)),
+                            is_block_level: true,
+                            contains_blocks: false,
+                        }))
+                    }
+                }
+
+                Node::Fragment(fragment)
+            }
         }
     }
 }
