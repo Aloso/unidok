@@ -3,6 +3,7 @@ use unidok_repr::ast::html::ElemName;
 use unidok_repr::ast::segments::Formatting;
 use unidok_repr::ir::segments::*;
 use unidok_repr::ir::{macros, IrState};
+use unidok_repr::try_reduce::{Reduced1, TryReduce};
 use unidok_repr::ToPlaintext;
 
 use crate::into_node::macros::apply_post_annotations;
@@ -44,29 +45,27 @@ impl<'a> IntoNode<'a> for BracesIr<'a> {
 
 fn remove_redundant_spans(node: Node<'_>) -> Node<'_> {
     match node {
-        Node::Element(e) if e.name == ElemName::Span => {
+        Node::Element(e @ Element { name: ElemName::Span, .. }) => {
             if e.attrs.is_empty() {
-                match e.content {
-                    None => Node::Fragment(vec![]),
-                    Some(mut n) if n.len() <= 1 => match n.pop() {
-                        Some(inner) => inner,
-                        None => Node::Fragment(vec![]),
-                    },
-                    Some(_) => Node::Element(e),
+                match e.content.map(TryReduce::try_reduce1) {
+                    None | Some(Reduced1::Zero) => Node::Fragment(vec![]),
+                    Some(Reduced1::One(inner)) => inner,
+                    Some(Reduced1::Many(inner)) => {
+                        Node::Element(Element { content: Some(inner), ..e })
+                    }
                 }
             } else {
-                match e.content {
-                    None => Node::Element(e),
-                    Some(ref n) if n.is_empty() => Node::Element(e),
-                    Some(mut n) if n.len() == 1 && n[0].is_element() => match n.pop() {
-                        Some(Node::Element(mut inner)) => {
-                            inner.attrs.extend(e.attrs);
-                            Node::Element(inner)
-                        }
-                        _ => unreachable!(),
-                    },
-                    Some(_) => Node::Element(e),
-                }
+                let content = match e.content.map(TryReduce::try_reduce1) {
+                    None | Some(Reduced1::Zero) => Some(vec![]),
+                    Some(Reduced1::One(Node::Element(mut inner))) => {
+                        inner.attrs.extend(e.attrs);
+                        return Node::Element(inner);
+                    }
+                    Some(Reduced1::One(inner)) => Some(vec![inner]),
+                    Some(Reduced1::Many(inner)) => Some(inner),
+                };
+
+                Node::Element(Element { content, ..e })
             }
         }
         Node::Fragment(mut f) if f.len() <= 1 => match f.pop() {
