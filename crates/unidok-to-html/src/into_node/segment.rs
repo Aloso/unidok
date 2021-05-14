@@ -44,20 +44,31 @@ impl<'a> IntoNode<'a> for BracesIr<'a> {
 
 fn remove_redundant_spans(node: Node<'_>) -> Node<'_> {
     match node {
-        Node::Element(e) if e.name == ElemName::Span && e.attrs.is_empty() => match e.content {
-            None => Node::Fragment(vec![]),
-            Some(mut n) if n.len() <= 1 => match n.pop() {
-                Some(inner) => inner,
-                None => Node::Fragment(vec![]),
-            },
-            Some(n) => Node::Element(Element {
-                name: e.name,
-                attrs: e.attrs,
-                content: Some(n),
-                is_block_level: e.is_block_level,
-                contains_blocks: e.contains_blocks,
-            }),
-        },
+        Node::Element(e) if e.name == ElemName::Span => {
+            if e.attrs.is_empty() {
+                match e.content {
+                    None => Node::Fragment(vec![]),
+                    Some(mut n) if n.len() <= 1 => match n.pop() {
+                        Some(inner) => inner,
+                        None => Node::Fragment(vec![]),
+                    },
+                    Some(_) => Node::Element(e),
+                }
+            } else {
+                match e.content {
+                    None => Node::Element(e),
+                    Some(ref n) if n.is_empty() => Node::Element(e),
+                    Some(mut n) if n.len() == 1 && n[0].is_element() => match n.pop() {
+                        Some(Node::Element(mut inner)) => {
+                            inner.attrs.extend(e.attrs);
+                            Node::Element(inner)
+                        }
+                        _ => unreachable!(),
+                    },
+                    Some(_) => Node::Element(e),
+                }
+            }
+        }
         Node::Fragment(mut f) if f.len() <= 1 => match f.pop() {
             Some(inner) => inner,
             None => Node::Fragment(vec![]),

@@ -47,6 +47,11 @@ impl Node<'_> {
             _ => false,
         }
     }
+
+    /// Returns `true` if the node is [`Element`].
+    pub fn is_element(&self) -> bool {
+        matches!(self, Self::Element(..))
+    }
 }
 
 pub struct Element<'a> {
