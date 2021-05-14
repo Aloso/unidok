@@ -1,8 +1,8 @@
-## What is Unidoc?
+## What is Unidok?
 
-Unidoc is a new Markup language, inspired by AsciiDoctor, but syntactically more similar to Markdown.
+Unidok is a new Markup language, inspired by AsciiDoctor, but syntactically more similar to Markdown.
 This is useful because Markdown is easy to read and to learn.
-However, Unidoc tries to make Markdown's syntax even simpler, while also introducing new, powerful features such as tables and macros.
+However, Unidok tries to make Markdown's syntax even simpler, while also introducing new, powerful features such as tables and macros.
 
 ## Basics
 
@@ -33,7 +33,7 @@ However, Unidoc tries to make Markdown's syntax even simpler, while also introdu
 ||2 <pre>`[Link](https://a.com)`</pre>
  |  [Link](https://a.com)
 ||2 <pre>`![Image](https://a.com)`</pre>
- |  ![Logo](https://raw.githubusercontent.com/Aloso/unidoc/main/doc/unidoc.svg)
+ |  ![Logo](https://raw.githubusercontent.com/Aloso/unidok/main/doc/ud.svg)
 ||2 <pre>`> Blockquote`</pre>
  |  <blockquote style="margin: 0.2em 0">Blockquote</blockquote>
 ||  <pre>@PASS`* List<br>* List<br>* List`</pre>
@@ -69,3 +69,9 @@ However, Unidoc tries to make Markdown's syntax even simpler, while also introdu
 ||2 <pre>`%{1/4 x^2 + 3x = sqrt 15}`</pre>
  |  %{1/4 x^2 + 3x = sqrt 15}
 </div>
+
+## Soon coming to a package registry near you!
+
+[Here](?tutorial) is a more in-depth tutorial.
+
+[Here](?design#upcoming-features) you can see what features are planned that aren't yet implemented.

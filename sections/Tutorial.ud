@@ -1,4 +1,4 @@
-This tutorial should give you a deeper understanding of Unidoc and of how it differs from Markdown. You can modify the code snippets and see the result <span class="media-big">on the right</span><span class="media-small">below</span>.
+This tutorial should give you a deeper understanding of Unidok and of how it differs from Markdown. You can modify the code snippets and see the result <span class="media-big">on the right</span><span class="media-small">below</span>.
 
 @NOTOC
 #### Table of Contents
@@ -9,10 +9,10 @@ This tutorial should give you a deeper understanding of Unidoc and of how it dif
   @(.mini-title)
   About this document
 
-  Since Unidoc is evolving rapidly, this tutorial is sometimes a bit out of date. Please report errors in the [issue tracker][issue-tracker].
+  Since Unidok is evolving rapidly, this tutorial is sometimes a bit out of date. Please report errors in the [issue tracker][issue-tracker].
 }
 
-[issue-tracker]: https://github.com/Aloso/unidoc/issues
+[issue-tracker]: https://github.com/Aloso/unidok/issues
 
 ## Headings
 
@@ -44,9 +44,9 @@ Heading 2
   Differences to Markdown
 
   In Markdown, headings can have number signs on both ends
-  (i.e. `## Heading ##`). This is not allowed in Unidoc.
+  (i.e. `## Heading ##`). This is not allowed in Unidok.
 
-  In Unidoc, underlined headings require at least 2
+  In Unidok, underlined headings require at least 2
   equals signs or dashes.
 }
 
@@ -104,7 +104,7 @@ Blockquotes can contain anything:
   > A paragraph in another blockquote
   ```
 
-  In Unidoc, quote markers (`>`) must be correctly indented:
+  In Unidok, quote markers (`>`) must be correctly indented:
 
   @(.playground)
   ```
@@ -153,7 +153,7 @@ Note that a list marker must always be followed by a space, and subsequent lines
   @(.mini-title)
   Differences to Markdown
 
-  Unidoc doesn't support _laziness_; as soon as a line
+  Unidok doesn't support _laziness_; as soon as a line
   isn't indented far enough to the right, the list item ends:
 
   @(.playground)
@@ -225,14 +225,14 @@ Links and images consist of a description in square brackets, followed by a URL 
 ```
 [This is a link](https://www.google.com).
 
-![An image](https://raw.githubusercontent.com/Aloso/unidoc/main/doc/unidoc.svg)
+![An image](https://raw.githubusercontent.com/Aloso/unidok/main/doc/ud.svg)
 ```
 
 The parentheses can also contain a title in double quotes, which appears when the cursor hovers over the link/image:
 
 @(.playground)
 ```
-[This is a link](https://github.com/Aloso/unidoc "This is a title").
+[This is a link](https://github.com/Aloso/unidok "This is a title").
 ```
 
 It's possible to define a link reference somewhere and use it somewhere else:
@@ -323,7 +323,7 @@ fn foo() -> &'static str {
   @(.mini-title)
   Differences to Markdown
 
-  Unidoc deliberately does _not_ support indented code blocks,
+  Unidok deliberately does _not_ support indented code blocks,
   only fenced code blocks.
 
   The closing code fence must have the same indentation
@@ -342,7 +342,7 @@ fn foo() -> &'static str {
 
 ## Tables
 
-Tables are not part of the CommonMark specification, but there's a well-supported syntax for tables in many Markdown parsers. Unidoc uses a different, more powerful syntax.
+Tables are not part of the CommonMark specification, but there's a well-supported syntax for tables in many Markdown parsers. Unidok uses a different, more powerful syntax.
 
 Each table row starts with two vertical bars, table cells are separated with a single vertical bar:
 
@@ -546,7 +546,7 @@ Some characters are automatically substituted. For example, quotes, apostrophes,
 
 ## Deep dive: Binding power
 
-Since inline formatting can be nested, it presents a problem: How do we know if a formatting delimiter (e.g. `*`) should close a formatting range or open a new one? In Markdown, a formatting delimiter can be _left-flanking_ and/or _right-flanking_. This system has also been adopted (and slightly extended) in Unidoc.
+Since inline formatting can be nested, it presents a problem: How do we know if a formatting delimiter (e.g. `*`) should close a formatting range or open a new one? In Markdown, a formatting delimiter can be _left-flanking_ and/or _right-flanking_. This system has also been adopted (and slightly extended) in Unidok.
 
 For example, when parsing `**Hello**`, the first two stars are left-flanking and the last two stars are right-flanking. A formatting range must start with a left-flanking delimiter and end with a right-flanking delimiter.
 

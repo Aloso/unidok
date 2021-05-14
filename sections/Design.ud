@@ -1,6 +1,6 @@
-Unidoc is still very much in flux. I will add more features, but I might also change existing syntax that will break backwards compatibility. To be able to make good, informed decisions, I value input from the community. I hope that Unidoc will one day have a formalized RFC process, but for now, you can propose new features or changes by filing an [issue].
+Unidok is still very much in flux. I will add more features, but I might also change existing syntax that will break backwards compatibility. To be able to make good, informed decisions, I value input from the community. I hope that Unidok will one day have a formalized RFC process, but for now, you can propose new features or changes by filing an [issue].
 
-[issue]: https://github.com/Aloso/unidoc/issues
+[issue]: https://github.com/Aloso/unidok/issues
 
 @NOTOC
 #### Table of contents
@@ -40,7 +40,7 @@ Comparison (the number 4 is used as an example for any non-negative number other
 |#2  Solution for
 |#x2 Likeliness
 ||#   CommonMark
-|#   Unidoc
+|#   Unidok
 ||   <pre style="margin:0">Text<br>1. Text</pre>
 |^  list
 |^2 **it works!**
@@ -97,11 +97,11 @@ Note that this already works: `@MACRO{**bold text**}`. This creates an unnecessa
 
 It's unfortunate that a sequence of dashes can be either a thematic break or a heading underline. I would prefer if this ambiguity didn't exist, even though it is easy to resolve.
 
-However, deprecating thematic breaks made of dashes would break a lot of Markdown documents; one current advantage of Unidoc is that many Markdown documents need no or only few changes to become an equivalent Unidoc document. This advantage would be diminished by deprecating `---` thematic breaks. A tool to automatically parse Markdown documents and convert it to Unidoc would help.
+However, deprecating thematic breaks made of dashes would break a lot of Markdown documents; one current advantage of Unidok is that many Markdown documents need no or only few changes to become an equivalent Unidok document. This advantage would be diminished by deprecating `---` thematic breaks. A tool to automatically parse Markdown documents and convert it to Unidok would help.
 
 ## Tables
 
-Unidoc tries to behave the same as CommonMark, unless there's a good reason to break compatibility. One interesting case are tables: Tables aren't part of the CommonMark specification, only the GFM (GitHub-flavored Markdown) specification. However, GFM-style tables are supported in many Markdown implementations. Therefore it would make sense if Unidoc tables were backwards-compatible with GFM-style tables.
+Unidok tries to behave the same as CommonMark, unless there's a good reason to break compatibility. One interesting case are tables: Tables aren't part of the CommonMark specification, only the GFM (GitHub-flavored Markdown) specification. However, GFM-style tables are supported in many Markdown implementations. Therefore it would make sense if Unidok tables were backwards-compatible with GFM-style tables.
 
 I decided against that because I find them inflexible and cumbersome to type. Furthermore, they are only readable when the content fits in a single line, and the line that separates the table header from the body seems out of place when there is no table header. Lastly, GFM-style tables are difficult to parse efficiently.
 
@@ -109,7 +109,7 @@ Is there a better syntax, maybe one that is more similar to GFM-style tables, to
 
 ## AsciiMath
 
-The Rust AsciiMath implementation used by Unidoc behaves slightly different than the official implementation and might also contain a few bugs. Possible solutions:
+The Rust AsciiMath implementation used by Unidok behaves slightly different than the official implementation and might also contain a few bugs. Possible solutions:
 
 * Use the [official implementation](https://github.com/asciimath/asciimathml/blob/master/ASCIIMathML.js). This requires that NodeJS is installed on the build machine.
 
@@ -130,20 +130,20 @@ For other items, there's no guarantee that they will be implemented, but you can
 
 In Markdown, syntax highlighting is optional (since it can be done via JavaScript in the client). However, in static site generators it is common to perform the syntax highlighting during site generation, to make the pages load faster.
 
-I propose to use [syntect](https://lib.rs/crates/syntect) in Unidoc, which can be enabled universally with a CLI flag or per-document with a macro.
+I propose to use [syntect](https://lib.rs/crates/syntect) in Unidok, which can be enabled universally with a CLI flag or per-document with a macro.
 
 @NOTOC
 ### CLI
 
 @(.status){Plannned}
 
-Unidoc should have a command-line interface that can do the following things:
+Unidok should have a command-line interface that can do the following things:
 
 * Convert a file and save the result in another file
 * Convert all files in a directory and save the results in another directory
 * Pass configuration options
 * Pass the location of a configuration file
-* Specify permissions, i.e. which directories can be accessed within Unidoc files
+* Specify permissions, i.e. which directories can be accessed within Unidok files
 * Watch for file changes and automatically recompile changed files
 * Provide different log levels
 * Emit warnings when encountering syntax that most likely doesn't do what was intended (e.g. when a link reference doesn't refer to any definition)
@@ -169,8 +169,8 @@ They can be disabled in the CLI or with a macro.
 
 There should be two operating modes, "safe mode" and "unsafe mode". In safe mode, when untrusted input is converted to HTML and displayed, the following should apply:
 
-* The environment converting the input to HTML (from now on called the "build environment") can't be altered from within Unidoc; for example, no files in the build environment can't be modified.
-* Information from the build environment can't be obtained from within Unidoc, unless explicitly permitted; for example, file access is restricted to an allowlisted set of directories
+* The environment converting the input to HTML (from now on called the "build environment") can't be altered from within Unidok; for example, no files in the build environment can't be modified.
+* Information from the build environment can't be obtained from within Unidok, unless explicitly permitted; for example, file access is restricted to an allowlisted set of directories
 * The build environment can't be attacked or compromised in any way, including hacking, crypto-mining, sending spam mail, running a Denial-of-Service attack (e.g. by providing input with exponential parsing complexity), communicating with 3rd-party services using the build environment's credentials, performing illegal activity using the build environment, circumventing paywalls or other restrictions (e.g. to access services only available in certain countries), etc.
 
 The safe mode should be the default. Unsafe mode can be enabled in the API, the command line, and nowhere else.
@@ -269,9 +269,9 @@ They look like this in GFM:
 @NOTOC
 ### Plugins
 
-Plugins could add new macros, text substitutions, URL schemas, HTML tags, change the configuration, read and modify the IR, add document metadata, provide syntax highlighting, provide a file format parser (e.g. to include `*.md` or `*.adoc` files), start a development server, etc. Unidoc could communicate with plugins over stdin/out via JSON.
+Plugins could add new macros, text substitutions, URL schemas, HTML tags, change the configuration, read and modify the IR, add document metadata, provide syntax highlighting, provide a file format parser (e.g. to include `*.md` or `*.adoc` files), start a development server, etc. Unidok could communicate with plugins over stdin/out via JSON.
 
-Plugins probably won't work in the playground, so it might make sense to implement as much as possible in Unidoc directly; this simplifies distribution, as a single executable is sufficient for most purposes.
+Plugins probably won't work in the playground, so it might make sense to implement as much as possible in Unidok directly; this simplifies distribution, as a single executable is sufficient for most purposes.
 
 @NOTOC
 ### Custom replacements

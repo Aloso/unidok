@@ -9,10 +9,10 @@
   @(.mini-title)
   About this document
 
-  Since Unidoc is evolving rapidly, this tutorial is sometimes a bit out of date. Please report errors in the [issue tracker][issue-tracker].
+  Since Unidok is evolving rapidly, this tutorial is sometimes a bit out of date. Please report errors in the [issue tracker][issue-tracker].
 }
 
-[issue-tracker]: https://github.com/Aloso/unidoc/issues
+[issue-tracker]: https://github.com/Aloso/unidok/issues
 
 ## The empty macro, `@()`
 
