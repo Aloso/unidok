@@ -6,6 +6,7 @@ use unidok_repr::ir::blocks::HeadingIr;
 use unidok_repr::ir::macros::MacroIr;
 use unidok_repr::ir::{macros, IrState};
 
+use crate::filter_for_toc::filter_for_toc;
 use crate::{Attr, Element, IntoNodes, Node};
 
 use super::segment::add_attributes;
@@ -61,7 +62,7 @@ fn toc_list<'a>(
 
         match heading.level.cmp(&level) {
             Ordering::Equal => {
-                let content = heading.segments.clone().into_nodes(state);
+                let content = filter_for_toc(&heading.segments).into_nodes(state);
                 let link = Element {
                     name: ElemName::A,
                     attrs: vec![Attr { key: "href", value: Some(format!("#{}", heading.slug)) }],

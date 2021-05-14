@@ -110,17 +110,32 @@ Table of contents:
 
 When applied to a heading, the heading is not included in the table of contents.
 
+When applied to an element within the heading, that element is shown in the heading, but not in the table of contents.
+
 @(.playground)
 ````
 @TOC{}
 
-## Heading 2
+## Heading 5
 
 @NOTOC
-### Heading 3
+### Heading 6
 
-## Heading 4
+## Heading @NOTOC{7}
 ````
+
+### `@NOTXT`
+
+Headings automatically get an `id` assigned. For this id, the content is converted to plaintext and [slugified](https://lib.rs/crates/slug). This slug appears after the URL when the heading is clicked in the table of contents.
+
+When something is annotated with `@NOTXT`, it will be ignored when converting the element to plaintext, so it doesn't appear in the slug.
+
+@(.playground)
+```
+@TOC{}
+
+## A heading @NOTXT{_this isn't in the slug_}
+```
 
 ## Parser macros
 

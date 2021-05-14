@@ -8,5 +8,4 @@ edition = "2018"
 [dependencies]
 unidok-repr = { path = "../unidok-repr", version = "0.1" }
 unidok-parser = { path = "../unidok-parser", version = "0.1" }
-itertools = "0.10.0"
 asciimath-rs = "0.5.8"

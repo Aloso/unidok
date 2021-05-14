@@ -11,6 +11,9 @@ pub enum MacroIr<'a> {
     /// `@NOTOC`
     NoToc,
 
+    /// `@NOTXT`
+    NoText,
+
     Invalid,
 }
 

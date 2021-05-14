@@ -1,3 +1,4 @@
+mod filter_for_toc;
 mod into_node;
 mod nice_debug;
 mod to_html;

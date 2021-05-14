@@ -1,5 +1,6 @@
 use crate::ir::blocks::*;
 use crate::ir::html::*;
+use crate::ir::macros::MacroIr;
 use crate::ir::segments::*;
 
 pub trait ToPlaintext {
@@ -31,6 +32,9 @@ impl ToPlaintext for SegmentIr<'_> {
 
 impl ToPlaintext for BracesIr<'_> {
     fn to_plaintext(&self, buf: &mut String) {
+        if self.macros.iter().any(|m| matches!(m, MacroIr::NoText)) {
+            return;
+        }
         for s in &self.segments {
             s.to_plaintext(buf);
         }
@@ -39,6 +43,9 @@ impl ToPlaintext for BracesIr<'_> {
 
 impl ToPlaintext for MathIr<'_> {
     fn to_plaintext(&self, buf: &mut String) {
+        if self.macros.iter().any(|m| matches!(m, MacroIr::NoText)) {
+            return;
+        }
         buf.push_str(&self.text);
     }
 }
@@ -53,6 +60,9 @@ impl ToPlaintext for InlineFormatIr<'_> {
 
 impl ToPlaintext for CodeIr<'_> {
     fn to_plaintext(&self, buf: &mut String) {
+        if self.macros.iter().any(|m| matches!(m, MacroIr::NoText)) {
+            return;
+        }
         for s in &self.segments {
             s.to_plaintext(buf);
         }
@@ -61,6 +71,9 @@ impl ToPlaintext for CodeIr<'_> {
 
 impl ToPlaintext for LinkIr<'_> {
     fn to_plaintext(&self, buf: &mut String) {
+        if self.macros.iter().any(|m| matches!(m, MacroIr::NoText)) {
+            return;
+        }
         for s in &self.text {
             s.to_plaintext(buf);
         }
@@ -69,6 +82,9 @@ impl ToPlaintext for LinkIr<'_> {
 
 impl ToPlaintext for ImageIr<'_> {
     fn to_plaintext(&self, buf: &mut String) {
+        if self.macros.iter().any(|m| matches!(m, MacroIr::NoText)) {
+            return;
+        }
         for s in &self.alt {
             s.to_plaintext(buf);
         }
@@ -85,6 +101,9 @@ impl ToPlaintext for HtmlNodeIr<'_> {
 
 impl ToPlaintext for HtmlElemIr<'_> {
     fn to_plaintext(&self, buf: &mut String) {
+        if self.macros.iter().any(|m| matches!(m, MacroIr::NoText)) {
+            return;
+        }
         if let Some(content) = &self.content {
             match content {
                 ElemContentIr::Blocks(blocks) => {
@@ -105,7 +124,9 @@ impl ToPlaintext for HtmlElemIr<'_> {
 
 impl ToPlaintext for AnnBlockIr<'_> {
     fn to_plaintext(&self, buf: &mut String) {
-        self.block.to_plaintext(buf);
+        if self.macros.iter().all(|m| !matches!(m, MacroIr::NoText)) {
+            self.block.to_plaintext(buf);
+        }
     }
 }
 

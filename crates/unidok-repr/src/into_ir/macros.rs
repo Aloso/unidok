@@ -135,6 +135,13 @@ impl<'a> IntoIR<'a> for Macro {
                     MacroIr::Invalid
                 }
             }
+            "NOTXT" => {
+                if self.args.is_none() {
+                    MacroIr::NoText
+                } else {
+                    MacroIr::Invalid
+                }
+            }
             "LOOSE" => {
                 if self.args.is_none() {
                     MacroIr::Loose
