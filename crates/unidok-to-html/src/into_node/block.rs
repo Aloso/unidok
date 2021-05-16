@@ -50,13 +50,9 @@ fn into_nodes_tight<'a>(blocks: Vec<AnnBlockIr<'a>>, state: &IrState<'a>) -> Vec
                 result.push(node);
 
                 if is_fragment {
-                    result.push(Node::Element(Element {
-                        name: ElemName::Br,
-                        attrs: vec![],
-                        content: None,
-                        is_block_level: false,
-                        contains_blocks: false,
-                    }))
+                    result.push(Node::Element(elem!(
+                        <Br /> is_block_level: false, contains_blocks: false
+                    )))
                 }
             }
         } else {
@@ -96,21 +92,11 @@ impl<'a> IntoNode<'a> for CodeBlockIr<'a> {
                 .collect()
         };
 
-        let code = Node::Element(Element {
-            name: ElemName::Code,
-            attrs,
-            content: Some(content),
-            is_block_level: false,
-            contains_blocks: false,
-        });
-
-        Node::Element(Element {
-            name: ElemName::Pre,
-            attrs: vec![],
-            content: Some(vec![code]),
-            is_block_level: true,
-            contains_blocks: false,
-        })
+        Node::Element(elem!(<Pre>[
+            Node::Element(elem!(
+                <Code {attrs}>{content} is_block_level: false, contains_blocks: false
+            ))
+        ] is_block_level: true, contains_blocks: false))
     }
 }
 
@@ -127,13 +113,9 @@ impl<'a> IntoNode<'a> for ParagraphIr<'a> {
                 node
             }
 
-            Reduced1::One(node) => Node::Element(Element {
-                name: ElemName::P,
-                attrs: vec![],
-                content: Some(vec![node]),
-                is_block_level: true,
-                contains_blocks: false,
-            }),
+            Reduced1::One(node) => Node::Element(elem!(
+                <P>[node] is_block_level: true, contains_blocks: false
+            )),
 
             Reduced1::Many(segments) => {
                 let mut fragment = Vec::<Node>::new();
@@ -145,13 +127,9 @@ impl<'a> IntoNode<'a> for ParagraphIr<'a> {
                             if new_segs.iter().all(Node::is_whitespace) {
                                 new_segs.clear();
                             } else {
-                                fragment.push(Node::Element(Element {
-                                    name: ElemName::P,
-                                    attrs: vec![],
-                                    content: Some(take(&mut new_segs)),
-                                    is_block_level: true,
-                                    contains_blocks: false,
-                                }))
+                                fragment.push(Node::Element(elem!(
+                                    <P>{ take(&mut new_segs) } is_block_level: true, contains_blocks: false
+                                )))
                             }
                         }
                         fragment.push(s);
@@ -163,13 +141,9 @@ impl<'a> IntoNode<'a> for ParagraphIr<'a> {
                     if new_segs.iter().all(Node::is_whitespace) {
                         new_segs.clear();
                     } else {
-                        fragment.push(Node::Element(Element {
-                            name: ElemName::P,
-                            attrs: vec![],
-                            content: Some(take(&mut new_segs)),
-                            is_block_level: true,
-                            contains_blocks: false,
-                        }))
+                        fragment.push(Node::Element(elem!(
+                            <P>{ take(&mut new_segs) } is_block_level: true, contains_blocks: false
+                        )))
                     }
                 }
 
@@ -215,25 +189,15 @@ impl<'a> IntoNode<'a> for HeadingIr<'a> {
 
         let content = into_nodes_trimmed(self.segments, state);
 
-        Node::Element(Element {
-            name,
-            attrs,
-            content: Some(content),
-            is_block_level: true,
-            contains_blocks: false,
-        })
+        Node::Element(elem!(
+            <{name} {attrs}>{ content } is_block_level: true, contains_blocks: false
+        ))
     }
 }
 
 impl<'a> IntoNode<'a> for ThematicBreakIr {
     fn into_node(self, _: &IrState) -> Node<'a> {
-        Node::Element(Element {
-            name: ElemName::Hr,
-            attrs: vec![],
-            content: None,
-            is_block_level: true,
-            contains_blocks: false,
-        })
+        Node::Element(elem!(<Hr /> is_block_level: true, contains_blocks: false))
     }
 }
 
@@ -250,23 +214,15 @@ impl<'a> IntoNode<'a> for TableIr<'a> {
                     .map(|cell| create_table_cell(is_header_row, cell, state))
                     .collect();
 
-                Node::Element(Element {
-                    name: ElemName::Tr,
-                    attrs: vec![],
-                    content: Some(cells),
-                    is_block_level: true,
-                    contains_blocks: true,
-                })
+                Node::Element(elem!(
+                    <Tr>{ cells } is_block_level: true, contains_blocks: true
+                ))
             })
             .collect();
 
-        Node::Element(Element {
-            name: ElemName::Table,
-            attrs: vec![],
-            content: Some(rows),
-            is_block_level: true,
-            contains_blocks: true,
-        })
+        Node::Element(elem!(
+            <Table>{ rows } is_block_level: true, contains_blocks: true
+        ))
     }
 }
 
@@ -290,56 +246,40 @@ impl<'a> IntoNode<'a> for ListIr<'a> {
             }
         }
 
-        let mut attrs =
-            if loose { vec![Attr { key: "class", value: Some("loose".into()) }] } else { vec![] };
+        let mut attrs = if loose { vec![attr!(class = "loose")] } else { vec![] };
 
         if let Some(list_style) = list_style {
-            attrs.push(Attr { key: "style", value: Some(format!("list-style: {}", list_style)) });
+            attrs.push(attr!(style = format!("list-style: {}", list_style)));
         }
 
         if start != 1 {
-            attrs.push(Attr { key: "start", value: Some(start.to_string()) })
+            attrs.push(attr!(start = start.to_string()))
         };
 
         let items = self
             .items
             .into_iter()
             .map(|it| {
-                let content = if loose {
-                    Some(it.into_nodes(state))
-                } else {
-                    Some(into_nodes_tight(it, state))
-                };
+                let content =
+                    if loose { it.into_nodes(state) } else { into_nodes_tight(it, state) };
 
-                Node::Element(Element {
-                    name: ElemName::Li,
-                    attrs: vec![],
-                    content,
-                    is_block_level: true,
-                    contains_blocks: loose,
-                })
+                Node::Element(elem!(
+                    <Li>{ content } is_block_level: true, contains_blocks: loose
+                ))
             })
             .collect();
 
-        Node::Element(Element {
-            name,
-            attrs,
-            content: Some(items),
-            is_block_level: true,
-            contains_blocks: true,
-        })
+        Node::Element(elem!(
+            <{name} {attrs}>{ items } is_block_level: true, contains_blocks: true
+        ))
     }
 }
 
 impl<'a> IntoNode<'a> for QuoteIr<'a> {
     fn into_node(self, state: &IrState<'a>) -> Node<'a> {
-        Node::Element(Element {
-            name: ElemName::Blockquote,
-            attrs: vec![],
-            content: Some(self.content.into_nodes(state)),
-            is_block_level: true,
-            contains_blocks: true,
-        })
+        Node::Element(elem!(
+            <Blockquote>{ self.content.into_nodes(state) } is_block_level: true, contains_blocks: true
+        ))
     }
 }
 
@@ -351,47 +291,41 @@ fn create_table_cell<'a>(
     let name = if is_header_row || cell.meta.is_header_cell { ElemName::Th } else { ElemName::Td };
 
     let mut attrs = vec![];
-    macro_rules! attr {
-        ($attrs:ident: $key:literal = $value:expr) => {
-            $attrs.push(Attr { key: $key, value: Some($value) });
-        };
-    }
+
     if cell.meta.colspan != 1 {
-        attr!(attrs: "colspan" = cell.meta.colspan.to_string());
+        attrs.push(attr!(colspan = cell.meta.colspan.to_string()));
     }
     if cell.meta.rowspan != 1 {
-        attr!(attrs: "rowspan" = cell.meta.rowspan.to_string());
+        attrs.push(attr!(rowspan = cell.meta.rowspan.to_string()));
     }
     match cell.meta.alignment {
         CellAlignment::Unset => {}
         CellAlignment::LeftTop => {
-            attr!(attrs: "align" = "left".to_string());
+            attrs.push(attr!(align = "left"));
         }
         CellAlignment::RightBottom => {
-            attr!(attrs: "align" = "right".to_string());
+            attrs.push(attr!(align = "right"));
         }
         CellAlignment::Center => {
-            attr!(attrs: "align" = "center".to_string());
+            attrs.push(attr!(align = "center"));
         }
     }
     match cell.meta.vertical_alignment {
         CellAlignment::Unset => {}
         CellAlignment::LeftTop => {
-            attr!(attrs: "valign" = "top".to_string());
+            attrs.push(attr!(valign = "top"));
         }
         CellAlignment::RightBottom => {
-            attr!(attrs: "valign" = "bottom".to_string());
+            attrs.push(attr!(valign = "bottom"));
         }
         CellAlignment::Center => {
-            attr!(attrs: "valign" = "middle".to_string());
+            attrs.push(attr!(valign = "middle"));
         }
     }
 
-    Node::Element(Element {
-        name,
-        attrs,
-        content: Some(into_nodes_trimmed(cell.segments, state)),
-        is_block_level: true,
-        contains_blocks: false,
-    })
+    Node::Element(elem!(
+        <{name} {attrs}>{
+            into_nodes_trimmed(cell.segments, state)
+        } is_block_level: true, contains_blocks: false
+    ))
 }

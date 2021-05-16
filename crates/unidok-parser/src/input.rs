@@ -88,10 +88,6 @@ impl Input {
         parser.can_parse(self)
     }
 
-    pub fn state(&self) -> &AstState {
-        &self.state
-    }
-
     pub fn state_mut(&mut self) -> &mut AstState {
         &mut self.state
     }

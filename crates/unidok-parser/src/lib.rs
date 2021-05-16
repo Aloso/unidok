@@ -32,7 +32,7 @@ pub fn parse(s: &str) -> DocIr {
     let parsed = input.parse(ParseBlock::new_global()).unwrap();
     debug_assert!(input.is_empty());
 
-    let blocks = parsed.into_ir(s, input.state());
+    let blocks = parsed.into_ir(s, input.state_mut());
     let state = IrState::new(s, input.into_state());
     DocIr { blocks, state }
 }

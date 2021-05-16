@@ -8,7 +8,7 @@ use super::utils::collapse_text;
 impl<'a> IntoIR<'a> for HtmlNode {
     type IR = HtmlNodeIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &AstState) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
         match self {
             HtmlNode::Element(e) => HtmlNodeIr::Element(e.into_ir(text, state)),
             HtmlNode::CData(c) => HtmlNodeIr::CData(c.into_ir(text, state)),
@@ -21,7 +21,7 @@ impl<'a> IntoIR<'a> for HtmlNode {
 impl<'a> IntoIR<'a> for Doctype {
     type IR = &'a str;
 
-    fn into_ir(self, text: &'a str, state: &AstState) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
         self.text.into_ir(text, state)
     }
 }
@@ -29,7 +29,7 @@ impl<'a> IntoIR<'a> for Doctype {
 impl<'a> IntoIR<'a> for CDataSection {
     type IR = &'a str;
 
-    fn into_ir(self, text: &'a str, state: &AstState) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
         self.text.into_ir(text, state)
     }
 }
@@ -37,7 +37,7 @@ impl<'a> IntoIR<'a> for CDataSection {
 impl<'a> IntoIR<'a> for HtmlElem {
     type IR = HtmlElemIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &AstState) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
         HtmlElemIr {
             macros: vec![],
             name: self.name,
@@ -51,7 +51,7 @@ impl<'a> IntoIR<'a> for HtmlElem {
 impl<'a> IntoIR<'a> for HtmlAttr {
     type IR = AttrIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &AstState) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
         AttrIr { key: self.key.into_ir(text, state), value: self.value }
     }
 }
@@ -59,7 +59,7 @@ impl<'a> IntoIR<'a> for HtmlAttr {
 impl<'a> IntoIR<'a> for ElemContent {
     type IR = ElemContentIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &AstState) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
         match self {
             ElemContent::Blocks(b) => ElemContentIr::Blocks(b.into_ir(text, state)),
             ElemContent::Inline(i) => ElemContentIr::Inline(collapse_text(i).into_ir(text, state)),

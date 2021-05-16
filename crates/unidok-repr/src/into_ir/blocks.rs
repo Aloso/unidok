@@ -8,7 +8,7 @@ use super::utils::collapse_text;
 impl<'a> IntoIR<'a> for Block {
     type IR = AnnBlockIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &AstState) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
         let block = match self {
             Block::CodeBlock(b) => BlockIr::CodeBlock(b.into_ir(text, state)),
             Block::Paragraph(b) => BlockIr::Paragraph(b.into_ir(text, state)),
@@ -31,7 +31,7 @@ impl<'a> IntoIR<'a> for Block {
 impl<'a> IntoIR<'a> for CodeBlock {
     type IR = CodeBlockIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &AstState) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
         let lines = self
             .lines
             .into_iter()
@@ -54,7 +54,7 @@ impl<'a> IntoIR<'a> for CodeBlock {
 impl<'a> IntoIR<'a> for Paragraph {
     type IR = ParagraphIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &AstState) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
         ParagraphIr { segments: collapse_text(self.segments).into_ir(text, state) }
     }
 }
@@ -62,7 +62,7 @@ impl<'a> IntoIR<'a> for Paragraph {
 impl<'a> IntoIR<'a> for Heading {
     type IR = HeadingIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &AstState) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
         let segments = collapse_text(self.segments).into_ir(text, state);
 
         let mut plaintext = String::new();
@@ -78,7 +78,7 @@ impl<'a> IntoIR<'a> for Heading {
 impl<'a> IntoIR<'a> for ThematicBreak {
     type IR = ThematicBreakIr;
 
-    fn into_ir(self, _: &str, _: &AstState) -> Self::IR {
+    fn into_ir(self, _: &str, _: &mut AstState) -> Self::IR {
         ThematicBreakIr { len: self.len, kind: self.kind }
     }
 }
@@ -86,7 +86,7 @@ impl<'a> IntoIR<'a> for ThematicBreak {
 impl<'a> IntoIR<'a> for Table {
     type IR = TableIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &AstState) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
         TableIr { rows: self.rows.into_ir(text, state) }
     }
 }
@@ -94,7 +94,7 @@ impl<'a> IntoIR<'a> for Table {
 impl<'a> IntoIR<'a> for TableRow {
     type IR = TableRowIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &AstState) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
         TableRowIr { is_header_row: self.is_header_row, cells: self.cells.into_ir(text, state) }
     }
 }
@@ -102,7 +102,7 @@ impl<'a> IntoIR<'a> for TableRow {
 impl<'a> IntoIR<'a> for TableCell {
     type IR = TableCellIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &AstState) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
         TableCellIr {
             meta: self.meta.into_ir(text, state),
             segments: collapse_text(self.segments).into_ir(text, state),
@@ -113,7 +113,7 @@ impl<'a> IntoIR<'a> for TableCell {
 impl<'a> IntoIR<'a> for CellMeta {
     type IR = CellMetaIr;
 
-    fn into_ir(self, _: &'a str, _: &AstState) -> Self::IR {
+    fn into_ir(self, _: &'a str, _: &mut AstState) -> Self::IR {
         CellMetaIr {
             is_header_cell: self.is_header_cell,
             alignment: self.alignment,
@@ -127,7 +127,7 @@ impl<'a> IntoIR<'a> for CellMeta {
 impl<'a> IntoIR<'a> for List {
     type IR = ListIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &AstState) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
         ListIr { bullet: self.bullet, items: self.items.into_ir(text, state), macros: vec![] }
     }
 }
@@ -135,7 +135,7 @@ impl<'a> IntoIR<'a> for List {
 impl<'a> IntoIR<'a> for Quote {
     type IR = QuoteIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &AstState) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
         QuoteIr { content: self.content.into_ir(text, state) }
     }
 }

@@ -6,4 +6,5 @@ use super::blocks::{Heading, LinkRefDef};
 pub struct AstState {
     pub link_ref_defs: HashMap<String, LinkRefDef>,
     pub headings: Vec<Heading>,
+    pub contains_math: bool,
 }

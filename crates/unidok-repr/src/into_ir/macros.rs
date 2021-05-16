@@ -13,7 +13,7 @@ use crate::IntoIR;
 impl<'a> IntoIR<'a> for BlockMacro {
     type IR = AnnBlockIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &AstState) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
         let mut block = self.content.into_ir(text, state);
         let r#macro = Macro { name: self.name, args: self.args }.into_ir(text, state);
 
@@ -32,7 +32,7 @@ impl<'a> IntoIR<'a> for BlockMacro {
 impl<'a> IntoIR<'a> for InlineMacro {
     type IR = SegmentIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &AstState) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
         let mut segment = (*self.segment).into_ir(text, state);
         let r#macro = Macro { name: self.name, args: self.args };
         match &mut segment {
@@ -54,7 +54,7 @@ impl<'a> IntoIR<'a> for InlineMacro {
 impl<'a> IntoIR<'a> for BlockMacroContent {
     type IR = AnnBlockIr<'a>;
 
-    fn into_ir(self, text: &'a str, state: &AstState) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
         match self {
             BlockMacroContent::Prefixed(p) => (*p).into_ir(text, state),
             BlockMacroContent::Braces(b) => {
@@ -72,7 +72,7 @@ struct Macro {
 impl<'a> IntoIR<'a> for Macro {
     type IR = MacroIr<'a>;
 
-    fn into_ir(self, text: &'a str, _: &AstState) -> Self::IR {
+    fn into_ir(self, text: &'a str, _: &mut AstState) -> Self::IR {
         match self.name.to_str(text) {
             "" => {
                 if let Some(MacroArgs::TokenTrees(tts)) = self.args {
@@ -183,6 +183,13 @@ impl<'a> IntoIR<'a> for Macro {
                     }
 
                     MacroIr::ListStyle(style)
+                } else {
+                    MacroIr::Invalid
+                }
+            }
+            "MATH_SCRIPT" => {
+                if self.args.is_none() {
+                    MacroIr::MathScript
                 } else {
                     MacroIr::Invalid
                 }

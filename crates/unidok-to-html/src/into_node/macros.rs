@@ -36,14 +36,19 @@ pub(crate) fn apply_post_annotations<'a>(
 
                 let (content, _) = toc_list(level, headings, state);
 
-                let toc = Element {
-                    name: ElemName::Ul,
-                    attrs: vec![Attr { key: "class", value: Some("table-of-contents".into()) }],
-                    content: Some(content),
-                    is_block_level: true,
-                    contains_blocks: true,
-                };
+                let toc = elem!(<Ul class="table-of-contents"> { content }
+                    is_block_level: true, contains_blocks: true);
                 *node = Node::Element(toc);
+            }
+            MacroIr::MathScript if state.contains_math => {
+                let s1 = elem!(<Script src="https://polyfill.io/v3/polyfill.min.js?features=es6">[]
+                    is_block_level: true, contains_blocks: false);
+
+                let s2 = elem!(<Script id="MathJax-script" async
+                    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/mml-chtml.js">[]
+                    is_block_level: true, contains_blocks: false);
+
+                *node = Node::Fragment(vec![Node::Element(s1), Node::Element(s2)]);
             }
             _ => {}
         }

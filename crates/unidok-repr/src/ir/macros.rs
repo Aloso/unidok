@@ -10,9 +10,11 @@ pub enum MacroIr<'a> {
     Toc,
     /// `@NOTOC`
     NoToc,
-
     /// `@NOTXT`
     NoText,
+
+    /// `@MATH_SCRIPT{}`
+    MathScript,
 
     Invalid,
 }

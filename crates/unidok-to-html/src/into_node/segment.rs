@@ -31,13 +31,9 @@ impl<'a> IntoNode<'a> for SegmentIr<'a> {
 
 impl<'a> IntoNode<'a> for BracesIr<'a> {
     fn into_node(self, state: &IrState<'a>) -> Node<'a> {
-        let mut node = Node::Element(Element {
-            name: ElemName::Span,
-            attrs: vec![],
-            content: Some(self.segments.into_nodes(state)),
-            is_block_level: false,
-            contains_blocks: false,
-        });
+        let mut node = Node::Element(elem!(
+            <Span>{ self.segments.into_nodes(state) } is_block_level: false, contains_blocks: false
+        ));
         apply_post_annotations(self.macros, &mut node, state);
         remove_redundant_spans(node)
     }
@@ -80,21 +76,16 @@ impl<'a> IntoNode<'a> for LinkIr<'a> {
     fn into_node(self, state: &IrState<'a>) -> Node<'a> {
         match self.href {
             Some(href) => {
-                let href = Attr { key: "href", value: Some(href) };
+                let href = attr!(href = href);
                 let attrs = if let Some(title) = self.title {
-                    let title = Attr { key: "title", value: Some(title) };
-                    vec![href, title]
+                    vec![href, attr!(title = title)]
                 } else {
                     vec![href]
                 };
 
-                let mut node = Node::Element(Element {
-                    name: ElemName::A,
-                    attrs,
-                    content: Some(self.text.into_nodes(state)),
-                    is_block_level: false,
-                    contains_blocks: false,
-                });
+                let mut node = Node::Element(elem!(
+                    <A {attrs}>{ self.text.into_nodes(state) } is_block_level: false, contains_blocks: false
+                ));
                 apply_post_annotations(self.macros, &mut node, state);
                 node
             }
@@ -112,16 +103,9 @@ impl<'a> IntoNode<'a> for ImageIr<'a> {
                     a.to_plaintext(&mut buf);
                 }
 
-                let src = Attr { key: "src", value: Some(href) };
-                let alt = Attr { key: "alt", value: Some(buf) };
-
-                let mut node = Node::Element(Element {
-                    name: ElemName::Img,
-                    attrs: vec![src, alt],
-                    content: None,
-                    is_block_level: false,
-                    contains_blocks: false,
-                });
+                let mut node = Node::Element(elem!(
+                    <Img src={href} alt={buf} /> is_block_level: false, contains_blocks: false
+                ));
                 apply_post_annotations(self.macros, &mut node, state);
                 node
             }
@@ -140,25 +124,17 @@ impl<'a> IntoNode<'a> for InlineFormatIr<'a> {
             Formatting::Subscript => ElemName::Sub,
         };
 
-        Node::Element(Element {
-            name,
-            attrs: vec![],
-            content: Some(self.segments.into_nodes(state)),
-            is_block_level: false,
-            contains_blocks: false,
-        })
+        Node::Element(elem!(
+            <{name}>{ self.segments.into_nodes(state) } is_block_level: false, contains_blocks: false
+        ))
     }
 }
 
 impl<'a> IntoNode<'a> for CodeIr<'a> {
     fn into_node(self, state: &IrState<'a>) -> Node<'a> {
-        let mut node = Node::Element(Element {
-            name: ElemName::Code,
-            attrs: vec![],
-            content: Some(self.segments.into_nodes(state)),
-            is_block_level: false,
-            contains_blocks: false,
-        });
+        let mut node = Node::Element(elem!(
+            <Code>{ self.segments.into_nodes(state) } is_block_level: false, contains_blocks: false
+        ));
         apply_post_annotations(self.macros, &mut node, state);
         node
     }
@@ -214,12 +190,8 @@ impl<'a> IntoNode<'a> for MathIr<'a> {
     fn into_node(self, _: &IrState) -> Node<'a> {
         let formatted = asciimath_rs::parse(self.text).to_mathml();
 
-        Node::Element(Element {
-            name: ElemName::Math,
-            attrs: vec![],
-            content: Some(vec![Node::Verbatim(formatted)]),
-            is_block_level: false,
-            contains_blocks: true,
-        })
+        Node::Element(elem!(
+            <Math>[Node::Verbatim(formatted)] is_block_level: false, contains_blocks: true
+        ))
     }
 }
