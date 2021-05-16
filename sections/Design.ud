@@ -130,20 +130,14 @@ In Markdown, syntax highlighting is optional (since it can be done via JavaScrip
 
 I propose to use [syntect](https://lib.rs/crates/syntect) in Unidok, which can be enabled universally with a CLI flag or per-document with a macro.
 
-@NOTOC
-### CLI @NOTXT@(.status){Plannned}
+// ### CLI
 
-Unidok should have a command-line interface that can do the following things:
-
-* Convert a file and save the result in another file
-* Convert all files in a directory and save the results in another directory
-* Pass configuration options
-* Pass the location of a configuration file
-* Specify permissions, i.e. which directories can be accessed within Unidok files
-* Watch for file changes and automatically recompile changed files
-* Provide different log levels
-* Emit warnings when encountering syntax that most likely doesn't do what was intended (e.g. when a link reference doesn't refer to any definition)
-* Provide an option to emit the IR for debugging
+// * Pass configuration options
+// * Pass the location of a configuration file
+// * Specify permissions, i.e. which directories can be accessed within Unidok files
+// * Watch for file changes and automatically recompile changed files
+// * Emit warnings when encountering syntax that most likely doesn't do what was intended (e.g. when a link reference doesn't refer to any definition)
+// * Provide an option to emit the IR for debugging
 
 @NOTOC
 ### Replacements @NOTXT@(.status){Plannned}
