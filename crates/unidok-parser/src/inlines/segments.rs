@@ -248,7 +248,9 @@ fn stack_to_segments(stack: Vec<StackItem>) -> Vec<Segment> {
                         }) => {
                             Segment::Format(InlineFormat { formatting: Formatting::Bold, segments })
                         }
-                        Segment::Format(f) => Segment::Format(f),
+                        Segment::Format(f) if f.formatting != Formatting::Bold => {
+                            Segment::Format(f)
+                        }
                         segment => {
                             segments.push(segment);
                             Segment::Format(InlineFormat {
