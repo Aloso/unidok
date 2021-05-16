@@ -174,3 +174,23 @@ You can specify which kinds of syntax is parsed in the block. For example, `@PAS
 ### `@NOPASS`
 
 `@NOPASS` disables all formatting in the block, so it behaves like inline code and code blocks.
+
+## Math macros
+
+### `@MATH_SCRIPT`
+
+The `@MATH_SCRIPT` macro inserts a script for displaying mathematic formulas, but only if the page contains any math elements. Currently the following scripts are included:
+
+```html
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/mml-chtml.js"></script>
+```
+
+Example:
+
+@(.playground)
+```
+@MATH_SCRIPT{}
+
+%{(1/4)^(-1)=4}
+```
