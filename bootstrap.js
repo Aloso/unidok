@@ -52,20 +52,20 @@
 /******/ 	function promiseResolve() { return Promise.resolve(); }
 /******/
 /******/ 	var wasmImportObjects = {
-/******/ 		"../pkg/unidok_playground_bg.wasm": function() {
+/******/ 		"../unidok-js/pkg/unidok_bg.wasm": function() {
 /******/ 			return {
-/******/ 				"./unidok_playground_bg.js": {
+/******/ 				"./unidok_bg.js": {
 /******/ 					"__wbg_new_59cb74e423758ede": function() {
-/******/ 						return installedModules["../pkg/unidok_playground_bg.js"].exports["__wbg_new_59cb74e423758ede"]();
+/******/ 						return installedModules["../unidok-js/pkg/unidok_bg.js"].exports["__wbg_new_59cb74e423758ede"]();
 /******/ 					},
 /******/ 					"__wbg_stack_558ba5917b466edd": function(p0i32,p1i32) {
-/******/ 						return installedModules["../pkg/unidok_playground_bg.js"].exports["__wbg_stack_558ba5917b466edd"](p0i32,p1i32);
+/******/ 						return installedModules["../unidok-js/pkg/unidok_bg.js"].exports["__wbg_stack_558ba5917b466edd"](p0i32,p1i32);
 /******/ 					},
 /******/ 					"__wbg_error_4bb6c2a97407129a": function(p0i32,p1i32) {
-/******/ 						return installedModules["../pkg/unidok_playground_bg.js"].exports["__wbg_error_4bb6c2a97407129a"](p0i32,p1i32);
+/******/ 						return installedModules["../unidok-js/pkg/unidok_bg.js"].exports["__wbg_error_4bb6c2a97407129a"](p0i32,p1i32);
 /******/ 					},
 /******/ 					"__wbindgen_object_drop_ref": function(p0i32) {
-/******/ 						return installedModules["../pkg/unidok_playground_bg.js"].exports["__wbindgen_object_drop_ref"](p0i32);
+/******/ 						return installedModules["../unidok-js/pkg/unidok_bg.js"].exports["__wbindgen_object_drop_ref"](p0i32);
 /******/ 					}
 /******/ 				}
 /******/ 			};
@@ -158,7 +158,7 @@
 /******/
 /******/ 		// Fetch + compile chunk loading for webassembly
 /******/
-/******/ 		var wasmModules = {"0":["../pkg/unidok_playground_bg.wasm"]}[chunkId] || [];
+/******/ 		var wasmModules = {"0":["../unidok-js/pkg/unidok_bg.wasm"]}[chunkId] || [];
 /******/
 /******/ 		wasmModules.forEach(function(wasmModuleId) {
 /******/ 			var installedWasmModuleData = installedWasmModules[wasmModuleId];
@@ -168,7 +168,7 @@
 /******/ 				promises.push(installedWasmModuleData);
 /******/ 			else {
 /******/ 				var importObject = wasmImportObjects[wasmModuleId]();
-/******/ 				var req = fetch(__webpack_require__.p + "" + {"../pkg/unidok_playground_bg.wasm":"a45a048ba5aed8aea55e"}[wasmModuleId] + ".module.wasm");
+/******/ 				var req = fetch(__webpack_require__.p + "" + {"../unidok-js/pkg/unidok_bg.wasm":"f1637df601dfd7a84699"}[wasmModuleId] + ".module.wasm");
 /******/ 				var promise;
 /******/ 				if(importObject instanceof Promise && typeof WebAssembly.compileStreaming === 'function') {
 /******/ 					promise = Promise.all([WebAssembly.compileStreaming(req), importObject]).then(function(items) {
