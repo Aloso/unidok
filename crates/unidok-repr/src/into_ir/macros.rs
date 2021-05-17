@@ -1,4 +1,4 @@
-use std::iter;
+use std::{iter, mem};
 
 use detached_str::StrSlice;
 
@@ -6,7 +6,7 @@ use crate::ast::macros::*;
 use crate::ast::AstState;
 use crate::ir::blocks::{AnnBlockIr, BlockIr};
 use crate::ir::html::HtmlNodeIr;
-use crate::ir::macros::{Attr, AttrValue, MacroIr};
+use crate::ir::macros::{Attr, AttrValue, FootnoteIr, MacroIr};
 use crate::ir::segments::SegmentIr;
 use crate::IntoIR;
 
@@ -72,7 +72,7 @@ struct Macro {
 impl<'a> IntoIR<'a> for Macro {
     type IR = MacroIr<'a>;
 
-    fn into_ir(self, text: &'a str, _: &mut AstState) -> Self::IR {
+    fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
         match self.name.to_str(text) {
             "" => {
                 if let Some(MacroArgs::TokenTrees(tts)) = self.args {
@@ -190,6 +190,23 @@ impl<'a> IntoIR<'a> for Macro {
             "MATH_SCRIPT" => {
                 if self.args.is_none() {
                     MacroIr::MathScript
+                } else {
+                    MacroIr::Invalid
+                }
+            }
+            "FOOTNOTES" => {
+                if self.args.is_none() {
+                    let links = mem::take(&mut state.footnotes);
+                    let footnotes = links
+                        .into_iter()
+                        .flat_map(|link| {
+                            let num = state.next_footnote_def;
+                            state.next_footnote_def += 1;
+
+                            link.text.map(|t| FootnoteIr { num, text: t.into_ir(text, state) })
+                        })
+                        .collect();
+                    MacroIr::Footnotes(footnotes)
                 } else {
                     MacroIr::Invalid
                 }

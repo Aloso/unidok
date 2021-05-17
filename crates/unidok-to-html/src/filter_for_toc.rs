@@ -15,13 +15,15 @@ pub fn filter_for_toc<'a>(s: &[SegmentIr<'a>]) -> Vec<SegmentIr<'a>> {
                     None
                 }
             }
-            SegmentIr::Link(LinkIr { macros, href, text, title }) => {
+            SegmentIr::Link(LinkIr { macros, href, text, title, .. }) => {
                 if is_allowed_toc(macros) {
                     Some(SegmentIr::Link(LinkIr {
                         macros: macros.clone(),
                         href: href.clone(),
                         text: filter_for_toc(text),
                         title: title.clone(),
+                        name: None,
+                        is_superscript: false,
                     }))
                 } else {
                     None

@@ -53,6 +53,7 @@ pub struct Image {
 pub enum LinkTarget {
     Url { href: String, title: Option<String> },
     Reference(StrSlice),
+    Footnote,
 }
 
 #[derive(Debug, Clone, PartialEq)]

@@ -39,6 +39,8 @@ pub struct LinkIr<'a> {
     pub href: Option<String>,
     pub text: Vec<SegmentIr<'a>>,
     pub title: Option<String>,
+    pub name: Option<String>,
+    pub is_superscript: bool,
 }
 
 #[derive(Debug, Clone, PartialEq)]

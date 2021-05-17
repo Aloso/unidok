@@ -1,3 +1,5 @@
+use super::segments::SegmentIr;
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum MacroIr<'a> {
     /// `@()`
@@ -12,7 +14,8 @@ pub enum MacroIr<'a> {
     NoToc,
     /// `@NOTXT`
     NoText,
-
+    /// `@FOOTNOTES{}`
+    Footnotes(Vec<FootnoteIr<'a>>),
     /// `@MATH_SCRIPT{}`
     MathScript,
 
@@ -35,4 +38,10 @@ pub struct Attr<'a> {
 pub enum AttrValue<'a> {
     Word(&'a str),
     QuotedWord(String),
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct FootnoteIr<'a> {
+    pub num: u32,
+    pub text: Vec<SegmentIr<'a>>,
 }

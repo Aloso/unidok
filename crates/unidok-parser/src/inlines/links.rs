@@ -39,8 +39,9 @@ impl Parse for ParseFullLink<'_> {
             .into_segments_no_underline_zero()?;
         input.parse(']')?;
 
-        let target =
-            input.parse(ParseLinkTargetUrl).or_else(|| input.parse(ParseLinkTargetReference))?;
+        let target = input.parse("[^]").map(|_| LinkTarget::Footnote).or_else(|| {
+            input.parse(ParseLinkTargetUrl).or_else(|| input.parse(ParseLinkTargetReference))
+        })?;
 
         input.apply();
         Some(Link { text: Some(text), target })

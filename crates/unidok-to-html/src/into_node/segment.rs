@@ -76,18 +76,26 @@ impl<'a> IntoNode<'a> for LinkIr<'a> {
     fn into_node(self, state: &IrState<'a>) -> Node<'a> {
         match self.href {
             Some(href) => {
-                let href = attr!(href = href);
-                let attrs = if let Some(title) = self.title {
-                    vec![href, attr!(title = title)]
-                } else {
-                    vec![href]
-                };
+                let mut attrs = vec![attr!(href = href)];
+                if let Some(title) = self.title {
+                    attrs.push(attr!(title = title));
+                }
+                if let Some(name) = self.name {
+                    attrs.push(attr!(name = name));
+                }
 
                 let mut node = Node::Element(elem!(
                     <A {attrs}>{ self.text.into_nodes(state) } is_block_level: false, contains_blocks: false
                 ));
                 apply_post_annotations(self.macros, &mut node, state);
-                node
+
+                if self.is_superscript {
+                    Node::Element(elem!(
+                        <Sup>[node] is_block_level: false, contains_blocks: false
+                    ))
+                } else {
+                    node
+                }
             }
             None => Node::Fragment(self.text.into_nodes(state)),
         }

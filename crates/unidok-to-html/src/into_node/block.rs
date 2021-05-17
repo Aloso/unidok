@@ -107,6 +107,10 @@ impl<'a> IntoNode<'a> for ParagraphIr<'a> {
         match segments.try_reduce1() {
             Reduced1::Zero => Node::Fragment(vec![]),
 
+            Reduced1::One(node) if matches!(&node, Node::Fragment(f) if f.is_empty()) => {
+                Node::Fragment(vec![])
+            }
+
             Reduced1::One(node)
                 if should_make_block_single(&node) || should_make_block_multi(&node) =>
             {

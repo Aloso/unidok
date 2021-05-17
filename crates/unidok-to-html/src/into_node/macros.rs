@@ -3,7 +3,7 @@ use std::mem::replace;
 
 use unidok_repr::ast::html::ElemName;
 use unidok_repr::ir::blocks::HeadingIr;
-use unidok_repr::ir::macros::MacroIr;
+use unidok_repr::ir::macros::{FootnoteIr, MacroIr};
 use unidok_repr::ir::{macros, IrState};
 use unidok_repr::try_reduce::{Reduced1, TryReduce};
 
@@ -49,6 +49,31 @@ pub(crate) fn apply_post_annotations<'a>(
                     is_block_level: true, contains_blocks: false);
 
                 *node = Node::Fragment(vec![Node::Element(s1), Node::Element(s2)]);
+            }
+            MacroIr::MathScript => *node = Node::Fragment(vec![]),
+            MacroIr::Footnotes(footnotes) => {
+                let mut children = Vec::with_capacity(footnotes.len() + 1);
+
+                children.push(Node::Element(elem!(
+                    <Hr class="footnotes-line" /> contains_blocks: false, is_block_level: true
+                )));
+                for FootnoteIr { num, text } in footnotes {
+                    children.push(Node::Element(elem!(
+                        <Div class="footnote-def">[
+                            Node::Element(elem!(
+                                <A href={format!("#footnote-ref-{}", num)} id={num.to_string()}>[
+                                    Node::Text2(num.to_string())
+                                ] contains_blocks: false, is_block_level: false
+                            )),
+                            Node::Text(". "),
+                            Node::Fragment(text.into_nodes(state))
+                        ] contains_blocks: false, is_block_level: true
+                    )));
+                }
+
+                *node = Node::Element(elem!(
+                    <Div class="footnotes-section">{ children } contains_blocks: true, is_block_level: true
+                ))
             }
             _ => {}
         }
