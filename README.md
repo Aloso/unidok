@@ -22,9 +22,9 @@ Unidok is a new Markup language, inspired by AsciiDoctor and Markdown. It is ver
 
 ## Installation
 
-Installation currently requires that you have the Rust toolchain installed (Rust Beta/1.53 or higher, including Cargo).
+[Here](https://github.com/Aloso/unidok/releases) you can find pre-built binaries for Linux, Windows and macOS.
 
-Clone the repository and run `cargo install`.
+If you want to build it yourself, install the Rust toolchain with Rust Beta and run `cargo install`.
 
 ## Principles
 
