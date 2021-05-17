@@ -1,4 +1,4 @@
-name: Build and upload binaries to release
+name: Build binaries for release
 
 # https://eugene-babichenko.github.io/blog/2020/05/09/github-actions-cross-platform-auto-releases/
 # https://mateuscosta.me/rust-releases-with-github-actions
@@ -80,6 +80,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.create_release.outputs.upload_url }}
-          asset_name: colo_${{ matrix.platform }}_${{ steps.vars.outputs.tag }}${{ matrix.file_ending }}
-          asset_path: target/release/colo${{ matrix.file_ending }}
+          asset_name: unidok_${{ matrix.platform }}_${{ steps.vars.outputs.tag }}${{ matrix.file_ending }}
+          asset_path: target/release/unidok${{ matrix.file_ending }}
           asset_content_type: application/octet-stream
