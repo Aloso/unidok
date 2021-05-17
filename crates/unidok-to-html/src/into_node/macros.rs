@@ -52,13 +52,16 @@ pub(crate) fn apply_post_annotations<'a>(
             }
             MacroIr::MathScript => *node = Node::Fragment(vec![]),
             MacroIr::Footnotes(footnotes) => {
-                let mut children = Vec::with_capacity(footnotes.len() + 1);
+                if footnotes.is_empty() {
+                    *node = Node::Fragment(vec![]);
+                } else {
+                    let mut children = Vec::with_capacity(footnotes.len() + 1);
 
-                children.push(Node::Element(elem!(
-                    <Hr class="footnotes-line" /> contains_blocks: false, is_block_level: true
-                )));
-                for FootnoteIr { num, text } in footnotes {
                     children.push(Node::Element(elem!(
+                        <Hr class="footnotes-line" /> contains_blocks: false, is_block_level: true
+                    )));
+                    for FootnoteIr { num, text } in footnotes {
+                        children.push(Node::Element(elem!(
                         <Div class="footnote-def">[
                             Node::Element(elem!(
                                 <A href={format!("#footnote-ref-{}", num)} id={num.to_string()}>[
@@ -69,11 +72,12 @@ pub(crate) fn apply_post_annotations<'a>(
                             Node::Fragment(text.into_nodes(state))
                         ] contains_blocks: false, is_block_level: true
                     )));
-                }
+                    }
 
-                *node = Node::Element(elem!(
-                    <Div class="footnotes-section">{ children } contains_blocks: true, is_block_level: true
-                ))
+                    *node = Node::Element(elem!(
+                        <Div class="footnotes-section">{ children } contains_blocks: true, is_block_level: true
+                    ))
+                }
             }
             _ => {}
         }

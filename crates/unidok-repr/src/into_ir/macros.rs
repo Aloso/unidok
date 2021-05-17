@@ -196,17 +196,21 @@ impl<'a> IntoIR<'a> for Macro {
             }
             "FOOTNOTES" => {
                 if self.args.is_none() {
-                    let links = mem::take(&mut state.footnotes);
-                    let footnotes = links
-                        .into_iter()
-                        .flat_map(|link| {
-                            let num = state.next_footnote_def;
-                            state.next_footnote_def += 1;
+                    if state.footnotes.is_empty() {
+                        MacroIr::Footnotes(vec![])
+                    } else {
+                        let links = mem::take(&mut state.footnotes);
+                        let footnotes = links
+                            .into_iter()
+                            .flat_map(|link| {
+                                let num = state.next_footnote_def;
+                                state.next_footnote_def += 1;
 
-                            link.text.map(|t| FootnoteIr { num, text: t.into_ir(text, state) })
-                        })
-                        .collect();
-                    MacroIr::Footnotes(footnotes)
+                                link.text.map(|t| FootnoteIr { num, text: t.into_ir(text, state) })
+                            })
+                            .collect();
+                        MacroIr::Footnotes(footnotes)
+                    }
                 } else {
                     MacroIr::Invalid
                 }
