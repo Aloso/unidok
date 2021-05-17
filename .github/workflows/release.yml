@@ -1,4 +1,4 @@
-name: Build binaries for release
+name: Build release binaries
 
 # https://eugene-babichenko.github.io/blog/2020/05/09/github-actions-cross-platform-auto-releases/
 # https://mateuscosta.me/rust-releases-with-github-actions
@@ -6,7 +6,7 @@ name: Build binaries for release
 on:
   push:
     tags:
-      - 'v[0-9]+.*'
+      - 'v*'
 
 jobs:
   create_release:
@@ -41,6 +41,7 @@ jobs:
             ```
             You might have to add the `.cargo/bin` folder to your `PATH` afterwards.
             Please file issues if you run into any problems or have suggestions.
+
   release_assets:
     name: Release assets
     needs: create_release
