@@ -75,12 +75,7 @@ You can use Unidok for your personal blog, embed it in your business website, wr
 
 ### As a binary:
 
-[Install rustup](https://rustup.rs/), then run
-
-```shell
-rustup install beta
-cargo +beta install unidok
-```
+Get a pre-built binary from the [releases page](https://github.com/Aloso/unidok/releases).
 
 ******
 
