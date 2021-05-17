@@ -4,6 +4,7 @@ members = ["crates/*"]
 [package]
 name = "unidok"
 version = "0.1.0"
+description = "A powerful, readable, easy-to-learn markup language"
 authors = ["Ludwig Stecher <ludwig.stecher@gmx.de>"]
 edition = "2018"
 

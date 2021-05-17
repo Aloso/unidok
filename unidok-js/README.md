@@ -1,23 +1,10 @@
-# Unidok playground
+# unidok
 
-This a WASM app to write a unidok document and see the result immediately.
+A powerful, readable, easy-to-learn markup language
 
-To build it, you need `wasm-pack` installed. Then run
+This is a Node library for Unidok. It offers one function called `compile`, which accepts a Unidok document as a string and returns the corresponding HTML, again as a string.
 
-```
-wasm-pack build
-```
-
-## Usage
-
-To build it, you need `wasm-pack` installed.
-
-- Clone this repository
-- Change to this directory in your terminal
-- Run `wasm-pack build`
-- Change to the `www` subdirectory
-- Run `npm run start`
-- Open `localhost:8080` in your browser
+The library is written in Rust and compiled to WebAssembly.
 
 ## License
 

@@ -1,4 +1,4 @@
-import * as wasm from "unidok-playground"
+import * as unidok from "unidok"
 
 /**
  * @typedef {{
@@ -96,7 +96,7 @@ function openTab(button, navState) {
  * @param {HTMLElement} target
  */
 function convertToHtml(text, target) {
-    target.innerHTML = wasm.compile(text)
+    target.innerHTML = unidok.compile(text)
 
     const mathElems = target.getElementsByTagName('math')
     /** @type {HTMLElement[]} */
@@ -169,7 +169,7 @@ function initializePlayground(elem) {
             // don't block during keypress
             setTimeout(() => {
                 if (is_html) {
-                    preview.innerText = wasm.compile(value)
+                    preview.innerText = unidok.compile(value)
                 } else {
                     convertToHtml(value, preview)
                 }

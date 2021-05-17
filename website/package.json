@@ -1,10 +1,10 @@
 {
-  "name": "unidok-playground",
+  "name": "website",
   "version": "0.1.0",
-  "description": "unidok playground",
+  "description": "Website with playground for Unidok",
   "main": "index.js",
   "bin": {
-    "unidok-playground": ".bin/unidok-playground.js"
+    "website": ".bin/website.js"
   },
   "scripts": {
     "build": "webpack --config webpack.config.js",
@@ -25,9 +25,9 @@
   "bugs": {
     "url": "https://github.com/Aloso/unidok/issues"
   },
-  "homepage": "https://github.com/rustwasm/create-wasm-app#readme",
+  "homepage": "https://aloso.github.io/unidok",
   "dependencies": {
-    "unidok-playground": "file:../pkg"
+    "unidok": "file:../unidok-js/pkg"
   },
   "devDependencies": {
     "copy-webpack-plugin": "^5.0.0",
