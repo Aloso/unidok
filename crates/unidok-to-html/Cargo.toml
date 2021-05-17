@@ -1,7 +1,12 @@
 [package]
 name = "unidok-to-html"
+description = "Convert a parsed Unidok document to HTML"
 version = "0.1.0"
+authors = ["Ludwig Stecher <ludwig.stecher@gmx.de>"]
 edition = "2018"
+license = "Apache-2.0 OR MIT"
+documentation = "https://docs.rs/unidok-to-html"
+repository = "https://github.com/Aloso/unidok"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

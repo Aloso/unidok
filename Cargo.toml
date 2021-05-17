@@ -7,6 +7,12 @@ version = "0.1.0"
 description = "A powerful, readable, easy-to-learn markup language"
 authors = ["Ludwig Stecher <ludwig.stecher@gmx.de>"]
 edition = "2018"
+keywords = ["unidok", "markdown", "commonmark", "asciidoc"]
+license = "Apache-2.0 OR MIT"
+documentation = "https://docs.rs/unidok"
+homepage = "https://aloso.github.io/unidok"
+repository = "https://github.com/Aloso/unidok"
+readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
