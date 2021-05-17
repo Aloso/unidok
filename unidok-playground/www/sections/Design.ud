@@ -172,36 +172,9 @@ The language should be configurable both in the CLI and with a macro. The langua
 * The `lang` attribute when emitting a complete HTML page
 
 @NOTOC
-### Footnotes @NOTXT@(.status){Plannned}
-
-The syntax I think is most appropriate is this:
-
-```markdown
-Absurd claim. [This is some footnote text][^] [Another footnote][^]
-
------
-
-Footnotes:
-
-@FOOTNOTES{}
-```
-
-Which should be rendered like this:
-
-> Absurd claim. ^<a name="fn-1">[[1]](#1)</a>^ ^<a name="fn-2">[[2]](#2)</a>^
->
-> -----
->
-> Footnotes:
->
-> @('list-style:none inside; padding-left:0.5em')
-> * <a name="1">[1.](#fn-1)</a> This is some footnote text
-> * <a name="2">[2.](#fn-2)</a> Another footnote
-
-@NOTOC
 ### Math
 
-Math blocks require MathJax, so there should be a macro or an automatic way to include the MathJax script. However, it should be possible to self-host the script, so nobody has to use a CDN unless they want to.
+Allow using a self-hosted MathJax script instead of the one from the CDN.
 
 @NOTOC
 ### Tables
@@ -247,6 +220,40 @@ They look like this in GFM:
 * Auto-links
 * Forbid nested links?
 * URLs in angle brackets?
+
+@NOTOC
+### Footnote definitions and bibliography
+
+Footnotes look like this:
+
+@(.playground)
+```
+Absurd claim. [This is some footnote text][^] [Another footnote][^]
+
+@FOOTNOTES{}
+```
+
+This looks like a link referring to a link reference, only that the reference is the special token `^`. This could be extended similar to link definitions:
+
+```
+Absurd claim. [^foo] [^bar]
+
+@FOOTNOTES{}
+
+[^foo]: This is some footnote text
+[^bar]: Another footnote
+```
+
+This makes it possible to re-use the same footnote reference in multiple places (but the text is still only included once). Another useful idea are bibliography lists:
+
+```
+Absurd claim. [^^foo] [^^bar]
+
+[^^foo]: John Foo. _Absurd Claims_. 2007. ISBN-1234567
+[^^bar]: Max Bar. _Even more absurd claims_. 2008. ISBN-2345678
+
+@BIBLIOGRAPHY{}
+```
 
 @NOTOC
 ### Plugins
