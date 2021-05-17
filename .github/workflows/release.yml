@@ -35,12 +35,12 @@ jobs:
 
             ### Installation
             If you're running on Linux, macOS or Windows, you can use the binaries below.
+
             Alternatively, you can build `unidok` with Cargo, Rusts package manager. To install the Rust toolchain, see the [installation manual](https://www.rust-lang.org/tools/install). Then run
             ```shell
             $ cargo install unidok
             ```
-            You might have to add the `.cargo/bin` folder to your `PATH` afterwards.
-            Please file issues if you run into any problems or have suggestions.
+            You might have to add the `.cargo/bin` folder to your `PATH` afterwards. Please file issues if you run into any problems or have suggestions.
 
   release_assets:
     name: Release assets
@@ -63,11 +63,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: beta
+          override: true
+
       - name: Print information
         run: |
           rustup show active-toolchain
           rustc --version
           cargo tree
+
       - name: Set variables
         id: vars
         run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
