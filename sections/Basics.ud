@@ -71,4 +71,39 @@ You can use Unidok for your personal blog, embed it in your business website, wr
  |  %{1/4 x^2 + 3x = sqrt 15}
 </div>
 
-Unidok will be available as an executable, as a Rust library and as a Node package (via WASM).
+## Usage
+
+### As a binary:
+
+[Install rustup](https://rustup.rs/), then run
+
+```shell
+rustup install beta
+cargo +beta install unidok
+```
+
+******
+
+### As Rust libraries:
+
+[Install rustup](https://rustup.rs/), then run
+
+```shell
+rustup install beta
+```
+
+Then add the following dependencies to your `Cargo.toml`:
+
+@PASS(c li)
+```toml
+[unidok-parser](https://docs.rs/unidok-parser) = "0.1"
+[unidok-to-html](https://docs.rs/unidok-to-html) = "0.1"
+```
+
+******
+
+### As a Node.js library:
+
+```shell
+npm add unidok
+```
