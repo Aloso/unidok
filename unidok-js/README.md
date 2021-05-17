@@ -1,7 +1,9 @@
 # ![Logo](../doc/ud.svg)&nbsp; Unidok
 
-[![Test][Test-image]][Test-url] ![License][License-image]
+![Crates.io][Crates] ![npm][Npm] [![Test][Test-image]][Test-url] ![License][License-image]
 
+[Crates]: https://img.shields.io/crates/v/unidok
+[Npm]: https://img.shields.io/npm/v/unidok
 [Test-image]: https://github.com/Aloso/unidok/actions/workflows/test.yml/badge.svg
 [Test-url]: https://github.com/Aloso/unidok/actions/workflows/test.yml
 [License-image]: https://img.shields.io/badge/license-Apache%202%2FMIT-blue
@@ -24,8 +26,8 @@ This package wraps the Unidok library (written in Rust) as WebAssembly library. 
 
 Licensed under either of
 
-* Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
-* MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
+* Apache License, Version 2.0, ([LICENSE_APACHE](LICENSE_APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
+* MIT license ([LICENSE_MIT](LICENSE_MIT) or http://opensource.org/licenses/MIT)
 
 at your option.
 
