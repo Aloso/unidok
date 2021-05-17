@@ -1,10 +1,24 @@
-# unidok
+# ![Logo](../doc/ud.svg)&nbsp; Unidok
+
+[![Test][Test-image]][Test-url] ![License][License-image]
+
+[Test-image]: https://github.com/Aloso/unidok/actions/workflows/test.yml/badge.svg
+[Test-url]: https://github.com/Aloso/unidok/actions/workflows/test.yml
+[License-image]: https://img.shields.io/badge/license-Apache%202%2FMIT-blue
 
 A powerful, readable, easy-to-learn markup language
 
-This is a Node library for Unidok. It offers one function called `compile`, which accepts a Unidok document as a string and returns the corresponding HTML, again as a string.
+Unidok is a new Markup language, inspired by AsciiDoctor and Markdown. It is very easy to read and to learn while offering powerful features such as macros.
 
-The library is written in Rust and compiled to WebAssembly.
+<div align="center">
+
+|        |
+| ------ |
+| [Check out the website!](https://aloso.github.io/unidok/) |
+
+</div>
+
+This package wraps the Unidok library (written in Rust) as WebAssembly library. It offers a `compile` function which converts a string from Unidok to HTML.
 
 ## License
 

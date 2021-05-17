@@ -1,13 +1,21 @@
 # ![Logo](doc/ud.svg)&nbsp; Unidok
 
+[![Test][Test-image]][Test-url] ![License][License-image]
+
+[Test-image]: https://github.com/Aloso/unidok/actions/workflows/test.yml/badge.svg
+[Test-url]: https://github.com/Aloso/unidok/actions/workflows/test.yml
+[License-image]: https://img.shields.io/badge/license-Apache%202%2FMIT-blue
+
 A powerful, readable, easy-to-learn markup language
 
-This language is inspired by AsciiDoc, but has a syntax that resembles Markdown. It tries to be as simple as possible while offering powerful features such as macros.
+Unidok is a new Markup language, inspired by AsciiDoctor and Markdown. It is very easy to read and to learn while offering powerful features such as macros.
 
 <div align="center">
-  <hr>
-  <a href="https://aloso.github.io/unidok/">Check out the website!</a>
-  <hr>
+
+|        |
+| ------ |
+| [Check out the website!](https://aloso.github.io/unidok/) |
+
 </div>
 
 ## Installation
@@ -16,24 +24,15 @@ Installation currently requires that you have the Rust toolchain installed (Rust
 
 Clone the repository and run `cargo install`.
 
-## Usage
-
-Unidok doesn't yet have a proper command-line interface. You can pass a string to it, and it will print the corresponding HTML to stdout. That's it (for now).
-
-```shell
-> unidok '# Hello world'
-<h1>Hello world</h1>
-```
-
 ## Principles
 
 Unidok should look familiar if you're familiar with Markdown. It follows the CommonMark specification closely where it makes sense, but it also omits some Markdown features that I feel are unhelpful, and adds new features. Notable examples are:
 
-* It supports `^superscript^`, `#subscript#`, `~line-through~` text, tables, math formulas, and macros
+* Supports `^superscript^`, `#subscript#`, `~line-through~` text, tables, math formulas, and macros
 
-* It allows mixing HTML with other formatting types (e.g. `<kbd>**bold**</kbd>`)
+* Does not support indented code blocks, only fenced code blocks
 
-* It does not support indented code blocks, only fenced code blocks
+* Sane HTML parsing
 
 * It does not support _laziness_, i.e. in a list item or blockquote,
   all lines must be indented or preceded with `>` respectively, not just the first line
@@ -41,7 +40,7 @@ Unidok should look familiar if you're familiar with Markdown. It follows the Com
 
 ## Roadmap
 
-[See here](https://aloso.github.io/unidok/?design#upcoming-features).
+[See here](https://aloso.github.io/unidok/?roadmap).
 
 ## License
 
