@@ -137,6 +137,24 @@ When something is annotated with `@NOTXT`, it will be ignored when converting th
 ## A heading @NOTXT{_this isn't in the slug_}
 ```
 
+## Footnotes
+
+Footnotes are declared like this:
+
+@(.playground)
+```
+Some text [This is a footnote][^]
+```
+
+However, footnotes are only displayed when the `@FOOTNOTES` macro is encountered. It displays all the footnotes above it:
+
+@(.playground)
+```
+Some text [First footnote][^] [Second footnote][^]
+
+@FOOTNOTES{}
+```
+
 ## Parser macros
 
 ### `@PASS`

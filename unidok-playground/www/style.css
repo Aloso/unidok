@@ -476,6 +476,22 @@ pre code {
     line-height: 1.4em;
 }
 
+a.footnote {
+    text-underline-offset: 3px;
+}
+.footnotes-section {
+    font-size: 1.05em;
+    margin-bottom: 1em;
+}
+.footnotes-line {
+    margin-bottom: 0.8em;
+    border-top: none;
+    width: 80%;
+}
+.footnote-def {
+    margin: 0.25em 0;
+}
+
 h1 {
     font-size: 2.3em;
     border-bottom: 1px solid #fff4;

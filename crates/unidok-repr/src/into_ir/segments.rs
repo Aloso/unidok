@@ -64,8 +64,7 @@ impl<'a> IntoIR<'a> for Link {
                     href: Some(href),
                     text: collapse_text(segments).into_ir(text, state),
                     title,
-                    name: None,
-                    is_superscript: false,
+                    footnote: None,
                 }
             }
             LinkTarget::Reference(r) => {
@@ -81,8 +80,7 @@ impl<'a> IntoIR<'a> for Link {
                             href: Some(href.to_string()),
                             text: collapse_text(segments).into_ir(text, state),
                             title,
-                            name: None,
-                            is_superscript: false,
+                            footnote: None,
                         }
                     }
                     None => {
@@ -95,20 +93,11 @@ impl<'a> IntoIR<'a> for Link {
                         } else {
                             vec![SegmentIr::Text2(format!("[{}]", reference))]
                         };
-                        LinkIr {
-                            macros: vec![],
-                            href: None,
-                            text,
-                            title: None,
-                            name: None,
-                            is_superscript: false,
-                        }
+                        LinkIr { macros: vec![], href: None, text, title: None, footnote: None }
                     }
                 }
             }
             LinkTarget::Footnote => {
-                dbg!(&state);
-
                 state.footnotes.push(Link { text: self.text, target: self.target });
                 let n = state.next_footnote;
                 state.next_footnote += 1;
@@ -118,8 +107,7 @@ impl<'a> IntoIR<'a> for Link {
                     href: Some(format!("#{}", n)),
                     text: vec![SegmentIr::Text2(format!("[{}]", n))],
                     title: None,
-                    name: Some(format!("footnote-ref-{}", n)),
-                    is_superscript: true,
+                    footnote: Some(n),
                 }
             }
         }

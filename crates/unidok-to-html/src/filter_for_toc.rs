@@ -22,8 +22,7 @@ pub fn filter_for_toc<'a>(s: &[SegmentIr<'a>]) -> Vec<SegmentIr<'a>> {
                         href: href.clone(),
                         text: filter_for_toc(text),
                         title: title.clone(),
-                        name: None,
-                        is_superscript: false,
+                        footnote: None,
                     }))
                 } else {
                     None

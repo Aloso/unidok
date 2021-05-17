@@ -80,8 +80,9 @@ impl<'a> IntoNode<'a> for LinkIr<'a> {
                 if let Some(title) = self.title {
                     attrs.push(attr!(title = title));
                 }
-                if let Some(name) = self.name {
-                    attrs.push(attr!(name = name));
+                if let Some(n) = self.footnote {
+                    attrs.push(attr!(name = format!("footnote-ref-{}", n)));
+                    attrs.push(attr!(class = "footnote"));
                 }
 
                 let mut node = Node::Element(elem!(
@@ -89,7 +90,7 @@ impl<'a> IntoNode<'a> for LinkIr<'a> {
                 ));
                 apply_post_annotations(self.macros, &mut node, state);
 
-                if self.is_superscript {
+                if self.footnote.is_some() {
                     Node::Element(elem!(
                         <Sup>[node] is_block_level: false, contains_blocks: false
                     ))
