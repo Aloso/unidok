@@ -2,7 +2,6 @@
 @NOTOC
 #### Table of Contents
 
-
 @TOC{}
 
 @(.differences){
@@ -13,6 +12,7 @@
 }
 
 [issue-tracker]: https://github.com/Aloso/unidok/issues
+
 
 ## The empty macro, `@()`
 
@@ -39,6 +39,26 @@ The above is equivalent to using braces, since braces after a macro are converte
 @(title="hello world"){Hover me}
 ```
 
+
+## Footnotes
+
+Footnotes are declared like this:
+
+@(.playground)
+```
+Some text [This is a footnote][^]
+```
+
+However, footnotes are only displayed when the `@FOOTNOTES` macro is encountered. It displays all the footnotes above it:
+
+@(.playground)
+```
+Some text [First footnote][^] [Second footnote][^]
+
+@FOOTNOTES{}
+```
+
+
 ## Macros for lists
 
 ### `@LOOSE`
@@ -51,7 +71,6 @@ When applied to a list, the text in each list item is wrapped in a `<p>` element
 - This is a paragraph of text.
 - And here's another paragraph of text.
 ```
-
 
 ### `@BULLET`
 
@@ -84,6 +103,7 @@ When applied to a list, the it uses the specified bullet type. This uses the [li
 4. Sit
 5. Amet
 ```
+
 
 ## Macros for the table of contents
 
@@ -137,6 +157,7 @@ When something is annotated with `@NOTXT`, it will be ignored when converting th
 ## A heading @NOTXT{_this isn't in the slug_}
 ```
 
+
 ## Parser macros
 
 ### `@PASS`
@@ -174,6 +195,7 @@ You can specify which kinds of syntax is parsed in the block. For example, `@PAS
 ### `@NOPASS`
 
 `@NOPASS` disables all formatting in the block, so it behaves like inline code and code blocks.
+
 
 ## Math macros
 
