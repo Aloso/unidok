@@ -27,6 +27,12 @@
   },
   "homepage": "https://aloso.github.io/unidok",
   "dependencies": {
+    "@codemirror/commands": "^0.18.2",
+    "@codemirror/highlight": "^0.18.4",
+    "@codemirror/search": "^0.18.3",
+    "@codemirror/state": "^0.18.7",
+    "@codemirror/view": "^0.18.12",
+    "lezer-tree": "^0.13.2",
     "unidok": "file:../unidok-js/pkg"
   },
   "devDependencies": {

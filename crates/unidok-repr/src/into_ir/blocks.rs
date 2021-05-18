@@ -44,7 +44,7 @@ impl<'a> IntoIR<'a> for CodeBlockAst {
 
         CodeBlock {
             info: self.info.into_ir(text, state),
-            fence: self.fence,
+            fence: self.fence_type,
             lines,
             indent: self.indent,
         }

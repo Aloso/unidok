@@ -6,14 +6,14 @@ mod into_node;
 mod nice_debug;
 mod to_html;
 
-use unidok_parser::DocIr;
+use unidok_parser::Doc;
 use unidok_repr::ast::html::ElemName;
 use unidok_repr::ir::html::Attr;
 
 pub use crate::into_node::{IntoNode, IntoNodes};
 pub use crate::to_html::ToHtml;
 
-pub fn convert(ir: DocIr<'_>) -> Vec<Node<'_>> {
+pub fn convert(ir: Doc<'_>) -> Vec<Node<'_>> {
     ir.blocks.into_nodes(&ir.state)
 }
 

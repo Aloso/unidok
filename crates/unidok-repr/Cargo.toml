@@ -13,4 +13,8 @@ readme = "README.md"
 
 [dependencies]
 detached-str = { path = "../detached-str", version = "0.1" }
+serde = { version = "1.0", optional = true }
 slug = "0.1.4"
+
+[features]
+serde-spans = ['serde']

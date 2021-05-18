@@ -133,7 +133,7 @@ fn test_case(
 
     let handle = thread::spawn(move || {
         let start = Instant::now();
-        let res = unidok_parser::parse(&unidok);
+        let res = unidok_parser::parse(&unidok, false);
         let parsing_time = start.elapsed();
 
         let nodes = unidok_to_html::convert(res);

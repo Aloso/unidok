@@ -1,4 +1,34 @@
 import * as unidok from "unidok"
+import { drawSelection, EditorView, highlightActiveLine, keymap } from "@codemirror/view"
+import { EditorState } from "@codemirror/state"
+import { defaultKeymap } from "@codemirror/commands"
+import { highlightSelectionMatches } from "@codemirror/search"
+// import { highlightTree } from "@codemirror/highlight"
+// import { Tree, NodeType } from "lezer-tree"
+
+const _formattings = [
+    'InlineFormatting', 'Italic', 'Bold', 'Strikethrough', 'Superscript', 'Subscript', 'InlineCode',
+    'Heading', 'AtxHeading', 'SetextHeading1', 'SetextHeading2', 'AtxHeadingMarker', 'SetextHeadingMarker',
+    'Link', 'LinkText', 'LinkRef', 'LinkHref', 'LinkTitle', 'LinkRefDef',
+    'Image', 'ImageAltText', 'ImageHref', 'ImageTitle',
+    'Footnote',
+    'Blockquote', 'BlockquoteMarker',
+    'List', 'OrderedList', 'UnorderedList', 'ListMarker',
+    'ThematicBreak',
+    'CodeBlock', 'CodeFence', 'InfoString',
+    'Table', 'TableCell', 'TableCellMeta',
+    'Math', 'MathContent',
+    'Limiter',
+    'Comment',
+    'HtmlTag', 'HtmlTagName', 'HtmlAttrName', 'HtmlAttrValue',
+    'HtmlDoctype',
+    'HtmlCdata',
+    'HtmlComment',
+    'HtmlEntity',
+    'Macro', 'MacroName', 'MacroArg', 'MacroKey', 'MacroArgString', 'MacroArgList', 'CurlyBraces',
+    'Escaped'
+]
+
 
 /**
  * @typedef {{
@@ -78,12 +108,12 @@ function openTab(button, navState) {
         })
         .then(text => {
             navState.content.className = button.getAttribute('data-cls')
-            convertToHtml(text, navState.content)
+            convertToHtml(text, navState.content, true)
             finishedLoading = true
 
             const elems = document.getElementsByClassName('playground');
             for (const elem of elems) {
-                initializePlayground(elem)
+                initializePlayground(elem, () => { })
             }
         })
         .catch(e => {
@@ -99,10 +129,11 @@ function openTab(button, navState) {
  * @param {string} text
  * @param {HTMLElement} target
  * @param {boolean} dont_wait
+ * @param {boolean} retrieve_spans
+ * @returns {unidok.SyntaxSpan[]?}
  */
-function convertToHtml(text, target, dont_wait) {
-    const result = unidok.compile(text)
-    console.log(result)
+function convertToHtml(text, target, dont_wait, retrieve_spans) {
+    const result = unidok.compile(text, retrieve_spans)
 
     if (result.contains_math) {
         if (dont_wait) {
@@ -117,6 +148,8 @@ function convertToHtml(text, target, dont_wait) {
     } else {
         target.innerHTML = result.text
     }
+
+    return result.spans
 }
 
 /**
@@ -140,16 +173,41 @@ function updateHtmlWithMath(target) {
 
 /**
  * @param {HTMLElement} elem
+ * @param {(string) => void} onChange
  */
-function initializePlayground(elem) {
+function initializePlayground(elem, onChange) {
     const content = elem.textContent
         .replace(/^\n/, '')
         .replace(/\n[ \t]*$/, '')
 
-    const input = document.createElement('textarea')
-    input.className = 'input'
-    input.value = content
-    input.setAttribute('placeholder', 'Type here...')
+    const newElem = document.createElement('div')
+    newElem.className = 'playground initialized'
+
+    const inputOuter = document.createElement('div')
+    inputOuter.className = 'input'
+
+    const input = new EditorView({
+        state: EditorState.create({
+            doc: content,
+            extensions: [
+                EditorView.lineWrapping,
+                EditorState.allowMultipleSelections.of(true),
+                drawSelection(),
+                highlightActiveLine(),
+                highlightSelectionMatches({
+                    minSelectionLength: 3,
+                }),
+                EditorState.tabSize.of(4),
+                EditorView.updateListener.of((update) => {
+                    if (update.docChanged) {
+                        render(onChange)
+                    }
+                }),
+                keymap.of(defaultKeymap)
+            ]
+        }),
+        parent: inputOuter,
+    })
 
     const preview = document.createElement('div')
     preview.className = 'preview'
@@ -157,9 +215,6 @@ function initializePlayground(elem) {
     const htmlButton = document.createElement('button')
     htmlButton.innerHTML = 'Show HTML'
     htmlButton.className = 'show-html'
-
-    const newElem = document.createElement('div')
-    newElem.className = 'playground initialized'
 
     const style = elem.getAttribute('style')
     if (style != null) {
@@ -169,47 +224,52 @@ function initializePlayground(elem) {
     if (id != null) {
         newElem.id = id
     }
-    newElem.append(input, preview, htmlButton)
+    newElem.append(inputOuter, preview, htmlButton)
     elem.replaceWith(newElem)
 
     let last_render = 0
     let last_value = null
     let is_html = false
 
-    function render() {
-        const value = input.value
+    /**
+     * @param {(string) => void} onChange
+     */
+    function render(onChange) {
+        const values = input.state.doc
+        let value = ''
+        for (const v of values) {
+            value += v
+        }
+
         const now = performance.now()
         if (value === last_value) return
         if (now - last_render < 150) {
-            setTimeout(() => render(), 170)
+            setTimeout(() => render(onChange), 170)
             return
         }
 
         last_value = value
         last_render = now
 
+        let spans
         try {
-            // don't block during keypress
-            setTimeout(() => {
-                if (is_html) {
-                    let result = unidok.compile(value)
-                    preview.innerText = result.text
-                } else {
-                    convertToHtml(value, preview, true)
-                }
-            }, 20)
+            if (is_html) {
+                let result = unidok.compile(value)
+                preview.innerText = result.text
+                spans = result.spans
+            } else {
+                spans = convertToHtml(value, preview, false, true)
+            }
         } catch (e) {
             console.warn('Input:')
             console.log(value)
             console.error(e.message)
             preview.innerHTML = '<p style="color:#ff4444"><strong>Fatal error</strong></p>'
         }
-    }
-    render()
 
-    input.addEventListener('keypress', () => render())
-    input.addEventListener('input', () => render())
-    input.addEventListener('focus', () => render())
+        if (onChange != null) onChange(value)
+    }
+    render(onChange)
 
     htmlButton.addEventListener('click', () => {
         is_html = !is_html
@@ -233,7 +293,14 @@ function addBigPlayground() {
     document.body.append(elem)
     document.body.style.overflow = 'hidden'
 
-    initializePlayground(elem)
+    const oldValue = localStorage.getItem('big-playground-text')
+    if (oldValue != null) {
+        elem.textContent = oldValue
+    }
+
+    initializePlayground(elem, (value) => {
+        localStorage.setItem('big-playground-text', value)
+    })
 
     const closeBtn = document.createElement('button')
     closeBtn.innerHTML = 'Close playground'
@@ -242,20 +309,9 @@ function addBigPlayground() {
 
     setTimeout(() => {
         const newElem = document.getElementById('big-playground')
-        const ta = newElem.children[0]
-
-        const oldValue = localStorage.getItem('big-playground-text')
-        if (oldValue != null) {
-            ta.value = oldValue
-        }
-
-        ta.focus();
 
         newElem.addEventListener('keydown', e => {
             if (e.code === 'Escape') close()
-        })
-        ta.addEventListener('input', () => {
-            localStorage.setItem('big-playground-text', ta.value)
         })
         closeBtn.addEventListener('click', close)
 

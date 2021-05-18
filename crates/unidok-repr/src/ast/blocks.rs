@@ -3,6 +3,7 @@ use detached_str::StrSlice;
 use crate::ast::html::HtmlNodeAst;
 use crate::ast::macros::BlockMacro;
 use crate::ast::segments::SegmentAst;
+use crate::Span;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum BlockAst {
@@ -23,22 +24,25 @@ pub enum BlockAst {
 #[derive(Debug, Clone, PartialEq)]
 pub struct CodeBlockAst {
     pub info: StrSlice,
-    pub fence: Fence,
+    pub fence_type: FenceType,
     pub lines: Vec<BlockAst>,
     pub indent: u8,
+
+    pub opening_fence: Span,
+    pub closing_fence: Span,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Fence {
+pub enum FenceType {
     Backticks(u32),
     Tildes(u32),
 }
 
-impl Fence {
-    pub fn can_close(self, opening_fence: Fence) -> bool {
+impl FenceType {
+    pub fn can_close(self, opening_fence: FenceType) -> bool {
         match (opening_fence, self) {
-            (Fence::Backticks(a), Fence::Backticks(b)) => a <= b,
-            (Fence::Tildes(a), Fence::Tildes(b)) => a <= b,
+            (FenceType::Backticks(a), FenceType::Backticks(b)) => a <= b,
+            (FenceType::Tildes(a), FenceType::Tildes(b)) => a <= b,
             _ => false,
         }
     }

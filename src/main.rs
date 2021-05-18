@@ -96,7 +96,7 @@ fn main() -> anyhow::Result<()> {
     } else if let Some(args) = args.subcommand_matches("stdio") {
         let input = args.value_of("input").context("missing input")?;
 
-        let res = unidok_parser::parse(input);
+        let res = unidok_parser::parse(input, false);
         let nodes = unidok_to_html::convert(res);
         let html = unidok_to_html::to_string(&nodes);
         println!("{}", html);

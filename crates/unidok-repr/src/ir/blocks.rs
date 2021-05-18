@@ -1,4 +1,4 @@
-use crate::ast::blocks::{Bullet, CellAlignment, Fence, ThematicBreakKind};
+use crate::ast::blocks::{Bullet, CellAlignment, FenceType, ThematicBreakKind};
 use crate::ir::segments::Segment;
 
 use super::html::HtmlNode;
@@ -29,7 +29,7 @@ pub enum Block<'a> {
 #[derive(Debug, Clone, PartialEq)]
 pub struct CodeBlock<'a> {
     pub info: &'a str,
-    pub fence: Fence,
+    pub fence: FenceType,
     pub lines: Vec<Block<'a>>,
     pub indent: u8,
 }

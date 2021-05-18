@@ -7,3 +7,9 @@ pub use into_ir::IntoIR;
 
 mod to_plaintext;
 pub use to_plaintext::ToPlaintext;
+
+mod to_spans;
+pub use to_spans::ToSpans;
+
+mod spans;
+pub use spans::{Span, SyntaxKind, SyntaxSpan};

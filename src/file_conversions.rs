@@ -11,7 +11,7 @@ pub fn convert_file(input: &Path, output: &Path, verbosity: u8) -> anyhow::Resul
         .with_context(|| format!("File `{}` couldn't be read", input.display()))?;
 
     let start = Instant::now();
-    let res = unidok_parser::parse(&content);
+    let res = unidok_parser::parse(&content, false);
     let time1 = start.elapsed();
     let nodes = unidok_to_html::convert(res);
     let html = unidok_to_html::to_string(&nodes);
