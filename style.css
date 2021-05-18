@@ -199,7 +199,6 @@ pre {
     position: relative;
     display: flex;
     align-items: stretch;
-    min-height: 100px;
     max-height: 90vh;
     background-color: #171717;
     border: 1px solid #555;
@@ -250,17 +249,15 @@ pre {
 
 .input {
     width: 200px;
-    min-height: 100px;
+    min-height: 70px;
     flex-grow: 1;
     display: block;
     box-sizing: border-box;
     resize: none;
+    overflow: auto;
     background-color: transparent;
     color: white;
-    font: 17px 'JetBrains Mono', monospace;
-    font-variant-ligatures: none;
     font-weight: 350;
-    padding: 12px 15px;
     border: none;
     margin: 0;
     box-shadow: inset -1px 0 0 0 #555;
@@ -560,4 +557,44 @@ h1 *, h2 *, h3 *, h4 *, h5 *, h6 * {
     p, ul, ol, table {
         font-size: 18px;
     }
+}
+
+.input > .cm-editor {
+    height: 100%;
+}
+
+.ͼ2.cm-focused .cm-selectionBackground {
+    background-color: #1a4594;
+}
+.ͼ2 .cm-selectionBackground {
+    background-color: #424242;
+}
+
+.ͼ1 .cm-scroller {
+    font: 17px 'JetBrains Mono', monospace;
+    font-variant-ligatures: none;
+    line-height: 1.5;
+}
+
+.ͼ2 .cm-content {
+    padding: 12px 0;
+}
+
+.ͼ1 .cm-line {
+    padding: 0 10px 0 15px;
+}
+
+.ͼ1 .cm-cursor {
+    border-left-color: white;
+}
+
+.ͼ2 .cm-activeLine {
+    background-color: transparent;
+}
+.ͼ2.cm-focused .cm-activeLine {
+    background-color: #ffffff07;
+}
+
+.ͼ1 .cm-selectionMatch {
+    background-color: #63636359;
 }

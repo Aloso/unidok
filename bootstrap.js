@@ -55,6 +55,30 @@
 /******/ 		"../unidok-js/pkg/unidok_bg.wasm": function() {
 /******/ 			return {
 /******/ 				"./unidok_bg.js": {
+/******/ 					"__wbindgen_object_drop_ref": function(p0i32) {
+/******/ 						return installedModules["../unidok-js/pkg/unidok_bg.js"].exports["__wbindgen_object_drop_ref"](p0i32);
+/******/ 					},
+/******/ 					"__wbg_new_e38d545834ee2e5f": function() {
+/******/ 						return installedModules["../unidok-js/pkg/unidok_bg.js"].exports["__wbg_new_e38d545834ee2e5f"]();
+/******/ 					},
+/******/ 					"__wbindgen_number_new": function(p0f64) {
+/******/ 						return installedModules["../unidok-js/pkg/unidok_bg.js"].exports["__wbindgen_number_new"](p0f64);
+/******/ 					},
+/******/ 					"__wbg_set_327f76e14f96ef0e": function(p0i32,p1i32,p2i32) {
+/******/ 						return installedModules["../unidok-js/pkg/unidok_bg.js"].exports["__wbg_set_327f76e14f96ef0e"](p0i32,p1i32,p2i32);
+/******/ 					},
+/******/ 					"__wbindgen_string_new": function(p0i32,p1i32) {
+/******/ 						return installedModules["../unidok-js/pkg/unidok_bg.js"].exports["__wbindgen_string_new"](p0i32,p1i32);
+/******/ 					},
+/******/ 					"__wbindgen_object_clone_ref": function(p0i32) {
+/******/ 						return installedModules["../unidok-js/pkg/unidok_bg.js"].exports["__wbindgen_object_clone_ref"](p0i32);
+/******/ 					},
+/******/ 					"__wbg_new_515b65a8e7699d00": function() {
+/******/ 						return installedModules["../unidok-js/pkg/unidok_bg.js"].exports["__wbg_new_515b65a8e7699d00"]();
+/******/ 					},
+/******/ 					"__wbg_push_b7f68478f81d358b": function(p0i32,p1i32) {
+/******/ 						return installedModules["../unidok-js/pkg/unidok_bg.js"].exports["__wbg_push_b7f68478f81d358b"](p0i32,p1i32);
+/******/ 					},
 /******/ 					"__wbg_new_59cb74e423758ede": function() {
 /******/ 						return installedModules["../unidok-js/pkg/unidok_bg.js"].exports["__wbg_new_59cb74e423758ede"]();
 /******/ 					},
@@ -64,8 +88,11 @@
 /******/ 					"__wbg_error_4bb6c2a97407129a": function(p0i32,p1i32) {
 /******/ 						return installedModules["../unidok-js/pkg/unidok_bg.js"].exports["__wbg_error_4bb6c2a97407129a"](p0i32,p1i32);
 /******/ 					},
-/******/ 					"__wbindgen_object_drop_ref": function(p0i32) {
-/******/ 						return installedModules["../unidok-js/pkg/unidok_bg.js"].exports["__wbindgen_object_drop_ref"](p0i32);
+/******/ 					"__wbindgen_debug_string": function(p0i32,p1i32) {
+/******/ 						return installedModules["../unidok-js/pkg/unidok_bg.js"].exports["__wbindgen_debug_string"](p0i32,p1i32);
+/******/ 					},
+/******/ 					"__wbindgen_throw": function(p0i32,p1i32) {
+/******/ 						return installedModules["../unidok-js/pkg/unidok_bg.js"].exports["__wbindgen_throw"](p0i32,p1i32);
 /******/ 					}
 /******/ 				}
 /******/ 			};
@@ -158,7 +185,7 @@
 /******/
 /******/ 		// Fetch + compile chunk loading for webassembly
 /******/
-/******/ 		var wasmModules = {"0":["../unidok-js/pkg/unidok_bg.wasm"]}[chunkId] || [];
+/******/ 		var wasmModules = {"1":["../unidok-js/pkg/unidok_bg.wasm"]}[chunkId] || [];
 /******/
 /******/ 		wasmModules.forEach(function(wasmModuleId) {
 /******/ 			var installedWasmModuleData = installedWasmModules[wasmModuleId];
@@ -168,7 +195,7 @@
 /******/ 				promises.push(installedWasmModuleData);
 /******/ 			else {
 /******/ 				var importObject = wasmImportObjects[wasmModuleId]();
-/******/ 				var req = fetch(__webpack_require__.p + "" + {"../unidok-js/pkg/unidok_bg.wasm":"c4509910269674eadd7c"}[wasmModuleId] + ".module.wasm");
+/******/ 				var req = fetch(__webpack_require__.p + "" + {"../unidok-js/pkg/unidok_bg.wasm":"cb4bde82894c8d939051"}[wasmModuleId] + ".module.wasm");
 /******/ 				var promise;
 /******/ 				if(importObject instanceof Promise && typeof WebAssembly.compileStreaming === 'function') {
 /******/ 					promise = Promise.all([WebAssembly.compileStreaming(req), importObject]).then(function(items) {
@@ -269,7 +296,7 @@
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-eval("// A dependency graph that contains any wasm must all be imported\n// asynchronously. This `bootstrap.js` file does the single async import, so\n// that no one else needs to worry about it again.\n__webpack_require__.e(/*! import() */ 0).then(__webpack_require__.bind(null, /*! ./index.js */ \"./index.js\"))\n  .catch(e => console.error(\"Error importing `index.js`:\", e));\n\n\n//# sourceURL=webpack:///./bootstrap.js?");
+eval("// A dependency graph that contains any wasm must all be imported\n// asynchronously. This `bootstrap.js` file does the single async import, so\n// that no one else needs to worry about it again.\nPromise.all(/*! import() */[__webpack_require__.e(0), __webpack_require__.e(1)]).then(__webpack_require__.bind(null, /*! ./index.js */ \"./index.js\"))\n  .catch(e => console.error(\"Error importing `index.js`:\", e));\n\n\n//# sourceURL=webpack:///./bootstrap.js?");
 
 /***/ })
 
