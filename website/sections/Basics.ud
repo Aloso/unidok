@@ -84,7 +84,7 @@ Get a pre-built binary from the [releases page](https://github.com/Aloso/unidok/
 [Install rustup](https://rustup.rs/), then run
 
 ```shell
-rustup install beta
+rustup default beta
 ```
 
 Then add the following dependencies to your `Cargo.toml`:

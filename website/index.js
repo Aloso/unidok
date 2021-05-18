@@ -51,9 +51,12 @@ function openTab(button, navState) {
     navState.openButton = button
     navState.openButton.classList.add('open')
 
+    const title = `Unidok - ${button.innerText}`
+    document.title = title
+
     const search = '?' + button.getAttribute('data-cls')
     if (search !== window.location.search) {
-        history.replaceState({}, `Unidok - ${button.innerText}`, search)
+        history.replaceState({}, title, search)
     }
 
     let finishedLoading = false
@@ -93,26 +96,46 @@ function openTab(button, navState) {
 }
 
 /**
+ * @param {string} text
+ * @param {HTMLElement} target
+ * @param {boolean} dont_wait
+ */
+function convertToHtml(text, target, dont_wait) {
+    const result = unidok.compile(text)
+    console.log(result)
+
+    if (result.contains_math) {
+        if (dont_wait) {
+            target.innerHTML = result.text
+            updateHtmlWithMath(target)
+        } else {
+            setTimeout(() => {
+                target.innerHTML = result.text
+                updateHtmlWithMath(target)
+            }, 20)
+        }
+    } else {
+        target.innerHTML = result.text
+    }
+}
+
+/**
  * @param {HTMLElement} target
  */
-function convertToHtml(text, target) {
-    target.innerHTML = unidok.compile(text)
-
+function updateHtmlWithMath(target) {
     const mathElems = target.getElementsByTagName('math')
     /** @type {HTMLElement[]} */
     const mathElemsCopy = []
     for (const elem of mathElems) {
         mathElemsCopy.push(elem)
     }
-    if (mathElemsCopy.length > 0) {
-        for (const elem of mathElemsCopy) {
-            const converted = MathJax.mathml2chtml(elem.outerHTML)
-            elem.replaceWith(converted)
-        }
-
-        MathJax.startup.document.clear()
-        MathJax.startup.document.updateDocument()
+    for (const elem of mathElemsCopy) {
+        const converted = MathJax.mathml2chtml(elem.outerHTML)
+        elem.replaceWith(converted)
     }
+
+    MathJax.startup.document.clear()
+    MathJax.startup.document.updateDocument()
 }
 
 /**
@@ -169,9 +192,10 @@ function initializePlayground(elem) {
             // don't block during keypress
             setTimeout(() => {
                 if (is_html) {
-                    preview.innerText = unidok.compile(value)
+                    let result = unidok.compile(value)
+                    preview.innerText = result.text
                 } else {
-                    convertToHtml(value, preview)
+                    convertToHtml(value, preview, true)
                 }
             }, 20)
         } catch (e) {
