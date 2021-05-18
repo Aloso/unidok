@@ -1,5 +1,5 @@
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct ParsingMode(u16);
+pub(crate) struct ParsingMode(u16);
 
 impl ParsingMode {
     /// inline, i
@@ -59,7 +59,7 @@ impl ParsingMode {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
-pub struct PmParam(u16);
+pub(crate) struct PmParam(u16);
 
 #[test]
 fn test_parsing_modes() {

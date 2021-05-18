@@ -1,4 +1,4 @@
-use unidok_repr::ast::blocks::{Block, Heading, HeadingKind, Paragraph};
+use unidok_repr::ast::blocks::{BlockAst, HeadingAst, HeadingKind, ParagraphAst};
 
 use crate::blocks::*;
 use crate::inlines::Segments;
@@ -47,7 +47,7 @@ impl ParseBlock<'_> {
 }
 
 impl Parse for ParseBlock<'_> {
-    type Output = Block;
+    type Output = BlockAst;
 
     fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let ind = self.ind;
@@ -57,56 +57,56 @@ impl Parse for ParseBlock<'_> {
         if mode.is(ParsingMode::COMMENTS) {
             if let Some(comment) = input.parse(ParseComment) {
                 self.consume_empty_lines(input);
-                return Some(Block::Comment(comment));
+                return Some(BlockAst::Comment(comment));
             }
         }
 
         if mode.is(ParsingMode::THEMATIC_BREAKS) {
             if let Some(tb) = input.parse(ParseThematicBreak { ind }) {
                 self.consume_empty_lines(input);
-                return Some(Block::ThematicBreak(tb));
+                return Some(BlockAst::ThematicBreak(tb));
             }
         }
 
         if mode.is(ParsingMode::CODE_BLOCKS) {
             if let Some(block) = input.parse(ParseCodeBlock { ind, mode: self.mode }) {
                 self.consume_empty_lines(input);
-                return Some(Block::CodeBlock(block));
+                return Some(BlockAst::CodeBlock(block));
             }
         }
 
         if mode.is(ParsingMode::TABLES) {
             if let Some(table) = input.parse(ParseTable { ind }) {
                 self.consume_empty_lines(input);
-                return Some(Block::Table(table));
+                return Some(BlockAst::Table(table));
             }
         }
 
         if mode.is(ParsingMode::HEADINGS) {
             if let Some(heading) = input.parse(ParseHeading { ind, no_toc: self.no_toc }) {
                 self.consume_empty_lines(input);
-                return Some(Block::Heading(heading));
+                return Some(BlockAst::Heading(heading));
             }
         }
 
         if mode.is(ParsingMode::LISTS) {
             if let Some(list) = input.parse(ParseList { ind }) {
                 self.consume_empty_lines(input);
-                return Some(Block::List(list));
+                return Some(BlockAst::List(list));
             }
         }
 
         if mode.is(ParsingMode::QUOTES) {
             if let Some(quote) = input.parse(ParseQuote { ind }) {
                 self.consume_empty_lines(input);
-                return Some(Block::Quote(quote));
+                return Some(BlockAst::Quote(quote));
             }
         }
 
         if mode.is(ParsingMode::LINKS_IMAGES) {
             if let Some(lrd) = input.parse(ParseLinkRefDef { ind }) {
                 self.consume_empty_lines(input);
-                return Some(Block::LinkRefDef(lrd));
+                return Some(BlockAst::LinkRefDef(lrd));
             }
         }
 
@@ -114,7 +114,7 @@ impl Parse for ParseBlock<'_> {
             let parser = ParseBlockMacro::new(self.context, ind, self.mode, self.no_toc);
             if let Some(mac) = input.parse(parser) {
                 self.consume_empty_lines(input);
-                return Some(Block::BlockMacro(mac));
+                return Some(BlockAst::BlockMacro(mac));
             }
         }
 
@@ -123,14 +123,14 @@ impl Parse for ParseBlock<'_> {
 
         match segments {
             Segments::Empty if self.context == Context::CodeBlock && !input.is_empty() => {
-                Some(Block::Paragraph(Paragraph { segments: vec![] }))
+                Some(BlockAst::Paragraph(ParagraphAst { segments: vec![] }))
             }
             Segments::Empty => None,
             Segments::Some { segments, underline: None } => {
-                Some(Block::Paragraph(Paragraph { segments }))
+                Some(BlockAst::Paragraph(ParagraphAst { segments }))
             }
             Segments::Some { segments, underline: Some(u) } if mode.is(ParsingMode::HEADINGS) => {
-                Some(Block::Heading(Heading {
+                Some(BlockAst::Heading(HeadingAst {
                     level: u.level(),
                     kind: HeadingKind::Setext,
                     segments,
@@ -152,7 +152,7 @@ pub(crate) struct ParseBlocks<'a> {
 }
 
 impl Parse for ParseBlocks<'_> {
-    type Output = Vec<Block>;
+    type Output = Vec<BlockAst>;
 
     fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         loop {

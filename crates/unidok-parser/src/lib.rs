@@ -2,10 +2,10 @@
 #[macro_use]
 mod test_macros;
 
-pub mod blocks;
-pub mod html;
-pub mod inlines;
-pub mod macros;
+mod blocks;
+mod html;
+mod inlines;
+mod macros;
 
 mod input;
 mod parse;
@@ -17,13 +17,12 @@ use crate::input::Input;
 use crate::parse::{Parse, ParseInfallible};
 use crate::utils::Indents;
 
-pub use detached_str::{Str, StrSlice, StrSliceIndex};
-use unidok_repr::ir::blocks::AnnBlockIr;
+use unidok_repr::ir::blocks::AnnBlock;
 use unidok_repr::ir::IrState;
 use unidok_repr::IntoIR;
 
 pub struct DocIr<'a> {
-    pub blocks: Vec<AnnBlockIr<'a>>,
+    pub blocks: Vec<AnnBlock<'a>>,
     pub state: IrState<'a>,
 }
 

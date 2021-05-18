@@ -1,14 +1,15 @@
-use unidok_repr::ast::html::HtmlAttr;
+use detached_str::StrSlice;
+use unidok_repr::ast::html::AttrAst;
 
 use crate::utils::{ParseWs, QuotedString, Until};
-use crate::{Indents, Input, Parse, StrSlice};
+use crate::{Indents, Input, Parse};
 
 pub(crate) struct ParseAttribute<'a> {
     ind: Indents<'a>,
 }
 
 impl Parse for ParseAttribute<'_> {
-    type Output = HtmlAttr;
+    type Output = AttrAst;
 
     fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
@@ -29,7 +30,7 @@ impl Parse for ParseAttribute<'_> {
         };
 
         input.apply();
-        Some(HtmlAttr { key, value })
+        Some(AttrAst { key, value })
     }
 }
 
@@ -38,7 +39,7 @@ pub(crate) struct ParseAttributes<'a> {
 }
 
 impl Parse for ParseAttributes<'_> {
-    type Output = Vec<HtmlAttr>;
+    type Output = Vec<AttrAst>;
 
     fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut attrs = vec![];

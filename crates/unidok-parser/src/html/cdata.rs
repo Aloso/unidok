@@ -1,4 +1,4 @@
-use unidok_repr::ast::html::CDataSection;
+use unidok_repr::ast::html::CDataSectionAst;
 
 use crate::utils::Until;
 use crate::Parse;
@@ -6,7 +6,7 @@ use crate::Parse;
 pub(crate) struct ParseCDataSection;
 
 impl Parse for ParseCDataSection {
-    type Output = CDataSection;
+    type Output = CDataSectionAst;
 
     fn parse(&mut self, input: &mut crate::input::Input) -> Option<Self::Output> {
         let mut input = input.start();
@@ -16,6 +16,6 @@ impl Parse for ParseCDataSection {
         input.try_parse("]]>");
 
         input.apply();
-        Some(CDataSection { text })
+        Some(CDataSectionAst { text })
     }
 }

@@ -1,4 +1,4 @@
-use unidok_repr::ast::html::HtmlNode;
+use unidok_repr::ast::html::HtmlNodeAst;
 
 use crate::{Indents, Input, Parse};
 
@@ -12,17 +12,17 @@ pub(crate) struct ParseHtmlNode<'a> {
 }
 
 impl Parse for ParseHtmlNode<'_> {
-    type Output = HtmlNode;
+    type Output = HtmlNodeAst;
 
     fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         Some(if let Some(elem) = input.parse(ParseHtmlElem { ind: self.ind }) {
-            HtmlNode::Element(elem)
+            HtmlNodeAst::Element(elem)
         } else if let Some(comment) = input.parse(ParseHtmlComment { ind: self.ind }) {
-            HtmlNode::Comment(comment)
+            HtmlNodeAst::Comment(comment)
         } else if let Some(doctype) = input.parse(ParseDoctype) {
-            HtmlNode::Doctype(doctype)
+            HtmlNodeAst::Doctype(doctype)
         } else if let Some(cdata) = input.parse(ParseCDataSection) {
-            HtmlNode::CData(cdata)
+            HtmlNodeAst::CData(cdata)
         } else {
             return None;
         })

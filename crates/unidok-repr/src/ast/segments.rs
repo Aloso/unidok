@@ -1,25 +1,25 @@
 use detached_str::StrSlice;
 
-use crate::ast::html::{HtmlEntity, HtmlNode};
-use crate::ast::macros::InlineMacro;
+use crate::ast::html::{HtmlEntity, HtmlNodeAst};
+use crate::ast::macros::InlineMacroAst;
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum Segment {
+pub enum SegmentAst {
     LineBreak,
     Text(StrSlice),
     Text2(&'static str),
     Text3(String),
     Escaped(Escaped),
     Limiter,
-    Braces(Braces),
-    Math(Math),
-    Link(Link),
-    Image(Image),
-    InlineMacro(InlineMacro),
-    InlineHtml(HtmlNode),
+    Braces(BracesAst),
+    Math(MathAst),
+    Link(LinkAst),
+    Image(ImageAst),
+    InlineMacro(InlineMacroAst),
+    InlineHtml(HtmlNodeAst),
     HtmlEntity(HtmlEntity),
-    Format(InlineFormat),
-    Code(Code),
+    Format(InlineFormatAst),
+    Code(CodeAst),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -28,24 +28,24 @@ pub struct Escaped {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Braces {
-    pub segments: Vec<Segment>,
+pub struct BracesAst {
+    pub segments: Vec<SegmentAst>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Math {
+pub struct MathAst {
     pub text: String,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Link {
-    pub text: Option<Vec<Segment>>,
+pub struct LinkAst {
+    pub text: Option<Vec<SegmentAst>>,
     pub target: LinkTarget,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Image {
-    pub alt: Option<Vec<Segment>>,
+pub struct ImageAst {
+    pub alt: Option<Vec<SegmentAst>>,
     pub target: LinkTarget,
 }
 
@@ -57,9 +57,9 @@ pub enum LinkTarget {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct InlineFormat {
+pub struct InlineFormatAst {
     pub formatting: Formatting,
-    pub segments: Vec<Segment>,
+    pub segments: Vec<SegmentAst>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -72,6 +72,6 @@ pub enum Formatting {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Code {
-    pub segments: Vec<Segment>,
+pub struct CodeAst {
+    pub segments: Vec<SegmentAst>,
 }

@@ -1,8 +1,9 @@
+use detached_str::StrSlice;
 use unidok_repr::ast::macros::MacroArgs;
 
 use crate::parsing_mode::ParsingMode;
 use crate::utils::{ParseLineBreak, ParseLineEnd, ParseSpaces};
-use crate::{Indents, Input, Parse, StrSlice};
+use crate::{Indents, Input, Parse};
 
 pub(super) fn get_parsing_mode(
     name: &str,

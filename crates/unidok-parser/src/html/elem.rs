@@ -1,5 +1,5 @@
-use unidok_repr::ast::html::{ElemClose, ElemContent, ElemName, HtmlElem};
-use unidok_repr::ast::segments::Segment;
+use unidok_repr::ast::html::{ElemClose, ElemContentAst, ElemName, HtmlElemAst};
+use unidok_repr::ast::segments::SegmentAst;
 
 use crate::blocks::{Context, ParseBlock};
 use crate::inlines::Segments;
@@ -21,7 +21,7 @@ impl ParseHtmlElem<'_> {
 }
 
 impl Parse for ParseHtmlElem<'_> {
-    type Output = HtmlElem;
+    type Output = HtmlElemAst;
 
     fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
@@ -34,11 +34,11 @@ impl Parse for ParseHtmlElem<'_> {
 
         if input.parse("/>").is_some() {
             input.apply();
-            Some(HtmlElem { name, attrs, content: None, close: ElemClose::SelfClosing })
+            Some(HtmlElemAst { name, attrs, content: None, close: ElemClose::SelfClosing })
         } else if name.is_self_closing() {
             input.parse('>')?;
             input.apply();
-            Some(HtmlElem { name, attrs, close: ElemClose::AutoSelfClosing, content: None })
+            Some(HtmlElemAst { name, attrs, close: ElemClose::AutoSelfClosing, content: None })
         } else {
             input.parse('>')?;
 
@@ -71,14 +71,14 @@ impl Parse for ParseHtmlElem<'_> {
                 }
                 input2.apply();
                 input.try_parse(ParseClosingTag { elem: name });
-                ElemContent::Verbatim(content)
+                ElemContentAst::Verbatim(content)
             } else if name.must_contain_blocks()
                 || (name.can_contain_blocks() && input.parse(ParseLineBreak(self.ind)).is_some())
             {
                 let blocks =
                     input.parse(ParseBlock::new_multi(Context::BlockHtml(name), self.ind))?;
                 input.try_parse(ParseClosingTag { elem: name });
-                ElemContent::Blocks(blocks)
+                ElemContentAst::Blocks(blocks)
             } else {
                 let nl = if input.can_parse(ParseLineEnd) {
                     input.parse(ParseLineBreak(self.ind))?;
@@ -96,16 +96,16 @@ impl Parse for ParseHtmlElem<'_> {
                     .into_segments_no_underline_zero()?;
                 input.try_parse(ParseClosingTag { elem: name });
 
-                if nl && matches!(segments.last(), Some(Segment::LineBreak)) {
+                if nl && matches!(segments.last(), Some(SegmentAst::LineBreak)) {
                     segments.pop();
                 }
 
-                ElemContent::Inline(segments)
+                ElemContentAst::Inline(segments)
             };
             let content = Some(content);
 
             input.apply();
-            Some(HtmlElem { name, attrs, content, close: ElemClose::Normal })
+            Some(HtmlElemAst { name, attrs, content, close: ElemClose::Normal })
         }
     }
 }

@@ -1,5 +1,6 @@
-use crate::input::Input;
-use crate::{Parse, ParseInfallible, StrSlice};
+use detached_str::StrSlice;
+
+use crate::{Input, Parse, ParseInfallible};
 
 /// Parses until the given pattern (a `&str`, `char` or a closure accepting a
 /// `char`) matches.
@@ -26,7 +27,7 @@ use crate::{Parse, ParseInfallible, StrSlice};
 /// assert!(input.parse(Until('!')).is_some());
 /// assert!(input.parse(Until('#')).is_none());
 /// ```
-pub struct Until<T>(pub T);
+pub(crate) struct Until<T>(pub T);
 
 impl<F: Fn(char) -> bool> ParseInfallible for Until<F> {
     type Output = StrSlice;

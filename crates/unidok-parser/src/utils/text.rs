@@ -1,11 +1,12 @@
-use crate::input::Input;
+use detached_str::StrSlice;
+
 use crate::utils::ParseLineBreak;
-use crate::{Parse, StrSlice};
+use crate::{Input, Parse};
 
 use super::Indents;
 
 /// Parses ASCII text case-insensitively
-pub struct AsciiCI<T>(pub T);
+pub(crate) struct AsciiCI<T>(pub T);
 
 impl<'a> Parse for AsciiCI<&'a str> {
     type Output = StrSlice;
@@ -22,12 +23,12 @@ impl<'a> Parse for AsciiCI<&'a str> {
     }
 }
 
-pub struct QuoteMark;
+pub(crate) struct QuoteMark;
 
-pub struct ClosingQuoteMark(pub QuoteMarkType);
+pub(crate) struct ClosingQuoteMark(pub QuoteMarkType);
 
 #[derive(PartialEq)]
-pub enum QuoteMarkType {
+pub(crate) enum QuoteMarkType {
     Single,
     Double,
 }
@@ -62,7 +63,7 @@ impl Parse for ClosingQuoteMark {
     }
 }
 
-pub struct QuotedString<'a>(pub Indents<'a>);
+pub(crate) struct QuotedString<'a>(pub Indents<'a>);
 
 impl Parse for QuotedString<'_> {
     type Output = String;
@@ -104,7 +105,7 @@ impl Parse for QuotedString<'_> {
     }
 }
 
-pub struct QuotedStringWithEscapes<'a>(pub Indents<'a>);
+pub(crate) struct QuotedStringWithEscapes<'a>(pub Indents<'a>);
 
 impl Parse for QuotedStringWithEscapes<'_> {
     type Output = String;

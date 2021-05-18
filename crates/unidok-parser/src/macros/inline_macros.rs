@@ -1,6 +1,6 @@
-use unidok_repr::ast::html::HtmlNode;
-use unidok_repr::ast::macros::InlineMacro;
-use unidok_repr::ast::segments::Segment;
+use unidok_repr::ast::html::HtmlNodeAst;
+use unidok_repr::ast::macros::InlineMacroAst;
+use unidok_repr::ast::segments::SegmentAst;
 
 use crate::html::elem::ParseHtmlElem;
 use crate::inlines::braces::ParseBraces;
@@ -20,7 +20,7 @@ pub(crate) struct ParseInlineMacro<'a> {
 }
 
 impl Parse for ParseInlineMacro<'_> {
-    type Output = InlineMacro;
+    type Output = InlineMacroAst;
 
     fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
@@ -37,25 +37,25 @@ impl Parse for ParseInlineMacro<'_> {
         let mode = get_parsing_mode(&name_str, &args, &input)?.or(self.mode);
 
         let segment = if let Some(braces) = input.parse(ParseBraces { ind: self.ind }) {
-            Segment::Braces(braces)
+            SegmentAst::Braces(braces)
         } else if let Some(code) = input.parse(ParseCode { ind: self.ind, mode }) {
-            Segment::Code(code)
+            SegmentAst::Code(code)
         } else if let Some(mac) = input.parse(ParseInlineMacro { ind: self.ind, mode }) {
-            Segment::InlineMacro(mac)
+            SegmentAst::InlineMacro(mac)
         } else if let Some(img) = input.parse(ParseImage { ind: self.ind }) {
-            Segment::Image(img)
+            SegmentAst::Image(img)
         } else if let Some(link) = input.parse(ParseLink { ind: self.ind }) {
-            Segment::Link(link)
+            SegmentAst::Link(link)
         } else if let Some(math) = input.parse(ParseMath { ind: self.ind }) {
-            Segment::Math(math)
+            SegmentAst::Math(math)
         } else if let Some(elem) = input.parse(ParseHtmlElem { ind: self.ind }) {
-            Segment::InlineHtml(HtmlNode::Element(elem))
+            SegmentAst::InlineHtml(HtmlNodeAst::Element(elem))
         } else {
             return None;
         };
         let segment = Box::new(segment);
 
         input.apply();
-        Some(InlineMacro { name, args, segment })
+        Some(InlineMacroAst { name, args, segment })
     }
 }

@@ -1,4 +1,4 @@
-use unidok_repr::ast::blocks::{ThematicBreak, ThematicBreakKind};
+use unidok_repr::ast::blocks::{ThematicBreakAst, ThematicBreakKind};
 
 use crate::utils::{ParseLineEnd, ParseSpaces, While};
 use crate::{Indents, Input, Parse};
@@ -9,7 +9,7 @@ pub(crate) struct ParseThematicBreak<'a> {
 }
 
 impl Parse for ParseThematicBreak<'_> {
-    type Output = ThematicBreak;
+    type Output = ThematicBreakAst;
 
     fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
@@ -31,7 +31,7 @@ impl Parse for ParseThematicBreak<'_> {
         input.parse(ParseLineEnd)?;
 
         input.apply();
-        Some(ThematicBreak { len, kind })
+        Some(ThematicBreakAst { len, kind })
     }
 }
 
@@ -43,11 +43,11 @@ fn test_hr() {
     let mut input = Input::new("  *******   \n    ---\n**\n___");
     let parser = ParseThematicBreak::default();
 
-    assert_eq!(input.parse(parser), Some(ThematicBreak { len: 7, kind: Stars }));
+    assert_eq!(input.parse(parser), Some(ThematicBreakAst { len: 7, kind: Stars }));
     input.parse(ParseLineBreak::default()).unwrap();
-    assert_eq!(input.parse(parser), Some(ThematicBreak { len: 3, kind: Dashes }));
+    assert_eq!(input.parse(parser), Some(ThematicBreakAst { len: 3, kind: Dashes }));
     assert_eq!(input.parse(parser), None);
     input.bump(3);
     input.parse(ParseLineBreak::default()).unwrap();
-    assert_eq!(input.parse(parser), Some(ThematicBreak { len: 3, kind: Underscores }));
+    assert_eq!(input.parse(parser), Some(ThematicBreakAst { len: 3, kind: Underscores }));
 }

@@ -1,4 +1,4 @@
-use unidok_repr::ast::blocks::{Bullet, List};
+use unidok_repr::ast::blocks::{Bullet, ListAst};
 
 use crate::utils::{ParseLineBreak, ParseLineEnd, ParseNSpaces, ParseSpacesU8, While};
 use crate::{Context, Indents, Parse};
@@ -10,7 +10,7 @@ pub(crate) struct ParseList<'a> {
 }
 
 impl Parse for ParseList<'_> {
-    type Output = List;
+    type Output = ListAst;
 
     fn parse(&mut self, input: &mut crate::Input) -> Option<Self::Output> {
         let mut input = input.start();
@@ -40,7 +40,7 @@ impl Parse for ParseList<'_> {
         }
 
         input.apply();
-        Some(List { indent_spaces, bullet, items })
+        Some(ListAst { indent_spaces, bullet, items })
     }
 }
 

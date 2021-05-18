@@ -5,29 +5,29 @@ use detached_str::StrSlice;
 pub use elem_name::ElemName;
 pub use entity::HtmlEntity;
 
-use crate::ast::blocks::Block;
-use crate::ast::segments::Segment;
+use crate::ast::blocks::BlockAst;
+use crate::ast::segments::SegmentAst;
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum HtmlNode {
-    Element(HtmlElem),
-    CData(CDataSection),
-    Comment(HtmlComment),
-    Doctype(Doctype),
+pub enum HtmlNodeAst {
+    Element(HtmlElemAst),
+    CData(CDataSectionAst),
+    Comment(HtmlCommentAst),
+    Doctype(DoctypeAst),
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct HtmlElem {
+pub struct HtmlElemAst {
     pub name: ElemName,
-    pub attrs: Vec<HtmlAttr>,
-    pub content: Option<ElemContent>,
+    pub attrs: Vec<AttrAst>,
+    pub content: Option<ElemContentAst>,
     pub close: ElemClose,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum ElemContent {
-    Blocks(Vec<Block>),
-    Inline(Vec<Segment>),
+pub enum ElemContentAst {
+    Blocks(Vec<BlockAst>),
+    Inline(Vec<SegmentAst>),
     Verbatim(String),
 }
 
@@ -52,22 +52,22 @@ pub enum ElemClose {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct CDataSection {
+pub struct CDataSectionAst {
     pub text: StrSlice,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct HtmlComment {
+pub struct HtmlCommentAst {
     pub text: String,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Doctype {
+pub struct DoctypeAst {
     pub text: StrSlice,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct HtmlAttr {
+pub struct AttrAst {
     pub key: StrSlice,
     pub value: Option<String>,
 }

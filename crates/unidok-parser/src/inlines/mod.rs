@@ -8,4 +8,4 @@ pub(crate) mod links;
 pub(crate) mod math;
 pub(crate) mod segments;
 
-pub use segments::Segments;
+pub(crate) use segments::Segments;

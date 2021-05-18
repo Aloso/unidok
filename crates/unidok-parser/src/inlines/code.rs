@@ -1,6 +1,6 @@
 use std::convert::TryInto;
 
-use unidok_repr::ast::segments::{Code, Segment};
+use unidok_repr::ast::segments::{CodeAst, SegmentAst};
 
 use crate::parsing_mode::ParsingMode;
 use crate::utils::{ParseLineBreak, ParseLineEnd, While};
@@ -15,7 +15,7 @@ pub(crate) struct ParseCode<'a> {
 }
 
 impl Parse for ParseCode<'_> {
-    type Output = Code;
+    type Output = CodeAst;
 
     fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
@@ -31,7 +31,7 @@ impl Parse for ParseCode<'_> {
             loop {
                 let i = input.rest().find(find_special)?;
                 if i > 0 {
-                    segments.push(Segment::Text(input.bump(i)));
+                    segments.push(SegmentAst::Text(input.bump(i)));
                 }
 
                 match input.peek_char().unwrap() {
@@ -40,12 +40,12 @@ impl Parse for ParseCode<'_> {
                             break;
                         } else {
                             let backticks = input.parse_i(While('`'));
-                            segments.push(Segment::Text(backticks));
+                            segments.push(SegmentAst::Text(backticks));
                         }
                     }
                     '\n' | '\r' => {
                         input.parse(ParseLineBreak(self.ind))?;
-                        segments.push(Segment::Text2(" "));
+                        segments.push(SegmentAst::Text2(" "));
                         if input.can_parse(ParseLineEnd) {
                             return None;
                         }
@@ -68,7 +68,7 @@ impl Parse for ParseCode<'_> {
         }
 
         input.apply();
-        Some(Code { segments })
+        Some(CodeAst { segments })
     }
 }
 

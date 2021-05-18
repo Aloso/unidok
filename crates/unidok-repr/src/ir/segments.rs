@@ -1,63 +1,63 @@
 use crate::ast::html::HtmlEntity;
 use crate::ast::segments::Formatting;
-use crate::ir::html::HtmlNodeIr;
+use crate::ir::html::HtmlNode;
 
-use super::macros::MacroIr;
+use super::macros::Macro;
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum SegmentIr<'a> {
+pub enum Segment<'a> {
     LineBreak,
     Text(&'a str),
     Text2(String),
     EscapedText(&'a str),
     Limiter,
-    Braces(BracesIr<'a>),
-    Math(MathIr<'a>),
-    Link(LinkIr<'a>),
-    Image(ImageIr<'a>),
-    InlineHtml(HtmlNodeIr<'a>),
+    Braces(Braces<'a>),
+    Math(Math<'a>),
+    Link(Link<'a>),
+    Image(Image<'a>),
+    InlineHtml(HtmlNode<'a>),
     HtmlEntity(HtmlEntity),
-    Format(InlineFormatIr<'a>),
-    Code(CodeIr<'a>),
+    Format(InlineFormat<'a>),
+    Code(Code<'a>),
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct BracesIr<'a> {
-    pub macros: Vec<MacroIr<'a>>,
-    pub segments: Vec<SegmentIr<'a>>,
+pub struct Braces<'a> {
+    pub macros: Vec<Macro<'a>>,
+    pub segments: Vec<Segment<'a>>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct MathIr<'a> {
-    pub macros: Vec<MacroIr<'a>>,
+pub struct Math<'a> {
+    pub macros: Vec<Macro<'a>>,
     pub text: String,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct LinkIr<'a> {
-    pub macros: Vec<MacroIr<'a>>,
+pub struct Link<'a> {
+    pub macros: Vec<Macro<'a>>,
     pub href: Option<String>,
-    pub text: Vec<SegmentIr<'a>>,
+    pub text: Vec<Segment<'a>>,
     pub title: Option<String>,
     pub footnote: Option<u32>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct ImageIr<'a> {
-    pub macros: Vec<MacroIr<'a>>,
+pub struct Image<'a> {
+    pub macros: Vec<Macro<'a>>,
     pub href: Option<String>,
-    pub alt: Vec<SegmentIr<'a>>,
+    pub alt: Vec<Segment<'a>>,
     pub title: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct InlineFormatIr<'a> {
+pub struct InlineFormat<'a> {
     pub formatting: Formatting,
-    pub segments: Vec<SegmentIr<'a>>,
+    pub segments: Vec<Segment<'a>>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct CodeIr<'a> {
-    pub macros: Vec<MacroIr<'a>>,
-    pub segments: Vec<SegmentIr<'a>>,
+pub struct Code<'a> {
+    pub macros: Vec<Macro<'a>>,
+    pub segments: Vec<Segment<'a>>,
 }

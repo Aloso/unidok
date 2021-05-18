@@ -1,4 +1,4 @@
-use unidok_repr::ast::segments::Math;
+use unidok_repr::ast::segments::MathAst;
 
 use crate::utils::ParseLineBreak;
 use crate::{Indents, Input, Parse};
@@ -9,7 +9,7 @@ pub(crate) struct ParseMath<'a> {
 }
 
 impl Parse for ParseMath<'_> {
-    type Output = Math;
+    type Output = MathAst;
 
     fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
@@ -19,7 +19,7 @@ impl Parse for ParseMath<'_> {
         input.parse('}')?;
 
         input.apply();
-        Some(Math { text })
+        Some(MathAst { text })
     }
 }
 
@@ -96,8 +96,11 @@ fn closing(brace: char) -> char {
 fn test_math() {
     let mut input = Input::new(r#"%{A}%{f() + g(h(%{}))}%{\}\(()}%{ \A\B + \(A\B\) }"#);
 
-    assert_eq!(input.parse(ParseMath::default()), Some(Math { text: "A".into() }));
-    assert_eq!(input.parse(ParseMath::default()), Some(Math { text: "f() + g(h(%{}))".into() }));
-    assert_eq!(input.parse(ParseMath::default()), Some(Math { text: "}(()".into() }));
-    assert_eq!(input.parse(ParseMath::default()), Some(Math { text: r#" \A\B + (A\B) "#.into() }));
+    assert_eq!(input.parse(ParseMath::default()), Some(MathAst { text: "A".into() }));
+    assert_eq!(input.parse(ParseMath::default()), Some(MathAst { text: "f() + g(h(%{}))".into() }));
+    assert_eq!(input.parse(ParseMath::default()), Some(MathAst { text: "}(()".into() }));
+    assert_eq!(
+        input.parse(ParseMath::default()),
+        Some(MathAst { text: r#" \A\B + (A\B) "#.into() })
+    );
 }

@@ -1,8 +1,9 @@
 use std::ops::{Deref, DerefMut, Index};
 
+use detached_str::{Str, StrSlice};
 use unidok_repr::ast::AstState;
 
-use crate::{Parse, ParseInfallible, Str, StrSlice};
+use crate::{Parse, ParseInfallible};
 
 #[derive(Debug, Clone)]
 pub struct Input {

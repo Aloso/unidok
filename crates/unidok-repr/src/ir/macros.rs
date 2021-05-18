@@ -1,7 +1,7 @@
-use super::segments::SegmentIr;
+use super::segments::Segment;
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum MacroIr<'a> {
+pub enum Macro<'a> {
     /// `@()`
     HtmlAttrs(Vec<Attr<'a>>),
     /// `@LOOSE`
@@ -15,16 +15,16 @@ pub enum MacroIr<'a> {
     /// `@NOTXT`
     NoText,
     /// `@FOOTNOTES{}`
-    Footnotes(Vec<FootnoteIr<'a>>),
+    Footnotes(Vec<Footnote<'a>>),
     /// `@MATH_SCRIPT{}`
     MathScript,
 
     Invalid,
 }
 
-impl MacroIr<'_> {
+impl Macro<'_> {
     pub fn is_for_list(&self) -> bool {
-        matches!(self, MacroIr::Loose | MacroIr::ListStyle(_))
+        matches!(self, Macro::Loose | Macro::ListStyle(_))
     }
 }
 
@@ -41,7 +41,7 @@ pub enum AttrValue<'a> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct FootnoteIr<'a> {
+pub struct Footnote<'a> {
     pub num: u32,
-    pub text: Vec<SegmentIr<'a>>,
+    pub text: Vec<Segment<'a>>,
 }

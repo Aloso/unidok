@@ -1,13 +1,13 @@
-use unidok_repr::ir::html::HtmlNodeIr;
-use unidok_repr::ir::macros::MacroIr;
-use unidok_repr::ir::segments::{BracesIr, CodeIr, ImageIr, InlineFormatIr, LinkIr, SegmentIr};
+use unidok_repr::ir::html::HtmlNode;
+use unidok_repr::ir::macros::Macro;
+use unidok_repr::ir::segments::{Braces, Code, Image, InlineFormat, Link, Segment};
 
-pub fn filter_for_toc<'a>(s: &[SegmentIr<'a>]) -> Vec<SegmentIr<'a>> {
+pub fn filter_for_toc<'a>(s: &[Segment<'a>]) -> Vec<Segment<'a>> {
     s.iter()
         .filter_map(|s| match s {
-            SegmentIr::Braces(BracesIr { macros, segments }) => {
+            Segment::Braces(Braces { macros, segments }) => {
                 if is_allowed_toc(macros) {
-                    Some(SegmentIr::Braces(BracesIr {
+                    Some(Segment::Braces(Braces {
                         macros: macros.clone(),
                         segments: filter_for_toc(&segments),
                     }))
@@ -15,9 +15,9 @@ pub fn filter_for_toc<'a>(s: &[SegmentIr<'a>]) -> Vec<SegmentIr<'a>> {
                     None
                 }
             }
-            SegmentIr::Link(LinkIr { macros, href, text, title, .. }) => {
+            Segment::Link(Link { macros, href, text, title, .. }) => {
                 if is_allowed_toc(macros) {
-                    Some(SegmentIr::Link(LinkIr {
+                    Some(Segment::Link(Link {
                         macros: macros.clone(),
                         href: href.clone(),
                         text: filter_for_toc(text),
@@ -28,9 +28,9 @@ pub fn filter_for_toc<'a>(s: &[SegmentIr<'a>]) -> Vec<SegmentIr<'a>> {
                     None
                 }
             }
-            SegmentIr::Image(ImageIr { macros, href, alt, title }) => {
+            Segment::Image(Image { macros, href, alt, title }) => {
                 if is_allowed_toc(macros) {
-                    Some(SegmentIr::Image(ImageIr {
+                    Some(Segment::Image(Image {
                         macros: macros.clone(),
                         href: href.clone(),
                         alt: filter_for_toc(alt),
@@ -40,23 +40,23 @@ pub fn filter_for_toc<'a>(s: &[SegmentIr<'a>]) -> Vec<SegmentIr<'a>> {
                     None
                 }
             }
-            SegmentIr::Math(m) => {
+            Segment::Math(m) => {
                 if is_allowed_toc(&m.macros) {
-                    Some(SegmentIr::Math(m.clone()))
+                    Some(Segment::Math(m.clone()))
                 } else {
                     None
                 }
             }
-            SegmentIr::InlineHtml(HtmlNodeIr::Element(e)) => {
+            Segment::InlineHtml(HtmlNode::Element(e)) => {
                 if is_allowed_toc(&e.macros) {
-                    Some(SegmentIr::InlineHtml(HtmlNodeIr::Element(e.clone())))
+                    Some(Segment::InlineHtml(HtmlNode::Element(e.clone())))
                 } else {
                     None
                 }
             }
-            SegmentIr::Code(c) => {
+            Segment::Code(c) => {
                 if is_allowed_toc(&c.macros) {
-                    Some(SegmentIr::Code(CodeIr {
+                    Some(Segment::Code(Code {
                         macros: c.macros.clone(),
                         segments: filter_for_toc(&c.segments),
                     }))
@@ -65,7 +65,7 @@ pub fn filter_for_toc<'a>(s: &[SegmentIr<'a>]) -> Vec<SegmentIr<'a>> {
                 }
             }
 
-            SegmentIr::Format(f) => Some(SegmentIr::Format(InlineFormatIr {
+            Segment::Format(f) => Some(Segment::Format(InlineFormat {
                 formatting: f.formatting,
                 segments: filter_for_toc(&f.segments),
             })),
@@ -75,6 +75,6 @@ pub fn filter_for_toc<'a>(s: &[SegmentIr<'a>]) -> Vec<SegmentIr<'a>> {
         .collect()
 }
 
-fn is_allowed_toc(m: &[MacroIr<'_>]) -> bool {
-    m.iter().all(|m| !matches!(m, MacroIr::NoToc))
+fn is_allowed_toc(m: &[Macro<'_>]) -> bool {
+    m.iter().all(|m| !matches!(m, Macro::NoToc))
 }

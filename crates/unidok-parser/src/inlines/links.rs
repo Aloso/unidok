@@ -1,6 +1,6 @@
 use std::mem::replace;
 
-use unidok_repr::ast::segments::{Link, LinkTarget};
+use unidok_repr::ast::segments::{LinkAst, LinkTarget};
 
 use super::segments::Segments;
 use crate::parsing_mode::ParsingMode;
@@ -12,13 +12,13 @@ pub(crate) struct ParseLink<'a> {
 }
 
 impl Parse for ParseLink<'_> {
-    type Output = Link;
+    type Output = LinkAst;
 
     fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         if let Some(link) = input.parse(ParseFullLink { ind: self.ind }) {
             Some(link)
         } else {
-            input.parse(ParseLinkTargetReference).map(|target| Link { text: None, target })
+            input.parse(ParseLinkTargetReference).map(|target| LinkAst { text: None, target })
         }
     }
 }
@@ -28,7 +28,7 @@ pub(super) struct ParseFullLink<'a> {
 }
 
 impl Parse for ParseFullLink<'_> {
-    type Output = Link;
+    type Output = LinkAst;
 
     fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
@@ -44,7 +44,7 @@ impl Parse for ParseFullLink<'_> {
         })?;
 
         input.apply();
-        Some(Link { text: Some(text), target })
+        Some(LinkAst { text: Some(text), target })
     }
 }
 

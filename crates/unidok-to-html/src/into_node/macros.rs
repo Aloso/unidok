@@ -2,8 +2,8 @@ use std::cmp::Ordering;
 use std::mem::replace;
 
 use unidok_repr::ast::html::ElemName;
-use unidok_repr::ir::blocks::HeadingIr;
-use unidok_repr::ir::macros::{FootnoteIr, MacroIr};
+use unidok_repr::ir::blocks::Heading;
+use unidok_repr::ir::macros::{Footnote, Macro};
 use unidok_repr::ir::{macros, IrState};
 use unidok_repr::try_reduce::{Reduced1, TryReduce};
 
@@ -13,17 +13,17 @@ use crate::{Attr, Element, IntoNodes, Node};
 use super::segment::add_attributes;
 
 pub(crate) fn apply_post_annotations<'a>(
-    macros: Vec<MacroIr<'a>>,
+    macros: Vec<Macro<'a>>,
     node: &mut Node<'a>,
     state: &IrState<'a>,
 ) {
     for r#macro in macros {
         match r#macro {
-            MacroIr::HtmlAttrs(attrs) => {
+            Macro::HtmlAttrs(attrs) => {
                 let taken = replace(node, Node::Text(""));
                 *node = add_attributes_to_node(taken, attrs);
             }
-            MacroIr::Toc => {
+            Macro::Toc => {
                 let first_is_level_1 = state.headings.first().into_iter().any(|h| h.level == 1);
                 let rem_has_level_1 = state.headings.iter().skip(1).any(|h| h.level == 1);
 
@@ -40,7 +40,7 @@ pub(crate) fn apply_post_annotations<'a>(
                     is_block_level: true, contains_blocks: true);
                 *node = Node::Element(toc);
             }
-            MacroIr::MathScript if state.contains_math => {
+            Macro::MathScript if state.contains_math => {
                 let s1 = elem!(<Script src="https://polyfill.io/v3/polyfill.min.js?features=es6">[]
                     is_block_level: true, contains_blocks: false);
 
@@ -50,8 +50,8 @@ pub(crate) fn apply_post_annotations<'a>(
 
                 *node = Node::Fragment(vec![Node::Element(s1), Node::Element(s2)]);
             }
-            MacroIr::MathScript => *node = Node::Fragment(vec![]),
-            MacroIr::Footnotes(footnotes) => {
+            Macro::MathScript => *node = Node::Fragment(vec![]),
+            Macro::Footnotes(footnotes) => {
                 if footnotes.is_empty() {
                     *node = Node::Fragment(vec![]);
                 } else {
@@ -60,7 +60,7 @@ pub(crate) fn apply_post_annotations<'a>(
                     children.push(Node::Element(elem!(
                         <Hr class="footnotes-line" /> contains_blocks: false, is_block_level: true
                     )));
-                    for FootnoteIr { num, text } in footnotes {
+                    for Footnote { num, text } in footnotes {
                         children.push(Node::Element(elem!(
                         <Div class="footnote-def">[
                             Node::Element(elem!(
@@ -86,7 +86,7 @@ pub(crate) fn apply_post_annotations<'a>(
 
 fn toc_list<'a>(
     level: u8,
-    headings: &'_ [HeadingIr<'a>],
+    headings: &'_ [Heading<'a>],
     state: &'_ IrState<'a>,
 ) -> (Vec<Node<'a>>, usize) {
     let mut result = Vec::new();

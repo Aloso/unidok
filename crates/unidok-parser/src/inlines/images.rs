@@ -1,4 +1,4 @@
-use unidok_repr::ast::segments::Image;
+use unidok_repr::ast::segments::ImageAst;
 
 use super::links::{ParseLinkTargetReference, ParseLinkTargetUrl};
 use super::Segments;
@@ -10,7 +10,7 @@ pub(crate) struct ParseImage<'a> {
 }
 
 impl Parse for ParseImage<'_> {
-    type Output = Image;
+    type Output = ImageAst;
 
     fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         if let Some(img) = input.parse(ParseFullImage { ind: self.ind }) {
@@ -20,7 +20,7 @@ impl Parse for ParseImage<'_> {
             input.parse('!')?;
             let target = input.parse(ParseLinkTargetReference)?;
             input.apply();
-            Some(Image { alt: None, target })
+            Some(ImageAst { alt: None, target })
         }
     }
 }
@@ -30,7 +30,7 @@ pub(crate) struct ParseFullImage<'a> {
 }
 
 impl Parse for ParseFullImage<'_> {
-    type Output = Image;
+    type Output = ImageAst;
 
     fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
@@ -45,6 +45,6 @@ impl Parse for ParseFullImage<'_> {
             input.parse(ParseLinkTargetUrl).or_else(|| input.parse(ParseLinkTargetReference))?;
 
         input.apply();
-        Some(Image { alt: Some(alt), target })
+        Some(ImageAst { alt: Some(alt), target })
     }
 }

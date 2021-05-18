@@ -4,21 +4,21 @@ use detached_str::StrSlice;
 
 use crate::ast::macros::*;
 use crate::ast::AstState;
-use crate::ir::blocks::{AnnBlockIr, BlockIr};
-use crate::ir::html::HtmlNodeIr;
-use crate::ir::macros::{Attr, AttrValue, FootnoteIr, MacroIr};
-use crate::ir::segments::SegmentIr;
+use crate::ir::blocks::{AnnBlock, Block};
+use crate::ir::html::HtmlNode;
+use crate::ir::macros::{Attr, AttrValue, Footnote, Macro};
+use crate::ir::segments::Segment;
 use crate::IntoIR;
 
 impl<'a> IntoIR<'a> for BlockMacro {
-    type IR = AnnBlockIr<'a>;
+    type IR = AnnBlock<'a>;
 
     fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
         let mut block = self.content.into_ir(text, state);
-        let r#macro = Macro { name: self.name, args: self.args }.into_ir(text, state);
+        let r#macro = MacroAst { name: self.name, args: self.args }.into_ir(text, state);
 
         if r#macro.is_for_list() {
-            if let AnnBlockIr { block: BlockIr::List(list), .. } = &mut block {
+            if let AnnBlock { block: Block::List(list), .. } = &mut block {
                 list.macros.push(r#macro);
             }
         } else {
@@ -29,19 +29,19 @@ impl<'a> IntoIR<'a> for BlockMacro {
     }
 }
 
-impl<'a> IntoIR<'a> for InlineMacro {
-    type IR = SegmentIr<'a>;
+impl<'a> IntoIR<'a> for InlineMacroAst {
+    type IR = Segment<'a>;
 
     fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
         let mut segment = (*self.segment).into_ir(text, state);
-        let r#macro = Macro { name: self.name, args: self.args };
+        let r#macro = MacroAst { name: self.name, args: self.args };
         match &mut segment {
-            SegmentIr::Braces(b) => b.macros.push(r#macro.into_ir(text, state)),
-            SegmentIr::Math(b) => b.macros.push(r#macro.into_ir(text, state)),
-            SegmentIr::Link(b) => b.macros.push(r#macro.into_ir(text, state)),
-            SegmentIr::Image(b) => b.macros.push(r#macro.into_ir(text, state)),
-            SegmentIr::Code(b) => b.macros.push(r#macro.into_ir(text, state)),
-            SegmentIr::InlineHtml(HtmlNodeIr::Element(b)) => {
+            Segment::Braces(b) => b.macros.push(r#macro.into_ir(text, state)),
+            Segment::Math(b) => b.macros.push(r#macro.into_ir(text, state)),
+            Segment::Link(b) => b.macros.push(r#macro.into_ir(text, state)),
+            Segment::Image(b) => b.macros.push(r#macro.into_ir(text, state)),
+            Segment::Code(b) => b.macros.push(r#macro.into_ir(text, state)),
+            Segment::InlineHtml(HtmlNode::Element(b)) => {
                 b.macros.push(r#macro.into_ir(text, state))
             }
 
@@ -52,32 +52,32 @@ impl<'a> IntoIR<'a> for InlineMacro {
 }
 
 impl<'a> IntoIR<'a> for BlockMacroContent {
-    type IR = AnnBlockIr<'a>;
+    type IR = AnnBlock<'a>;
 
     fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
         match self {
             BlockMacroContent::Prefixed(p) => (*p).into_ir(text, state),
             BlockMacroContent::Braces(b) => {
-                AnnBlockIr { macros: vec![], block: BlockIr::Braces(b.into_ir(text, state)) }
+                AnnBlock { macros: vec![], block: Block::Braces(b.into_ir(text, state)) }
             }
         }
     }
 }
 
-struct Macro {
+struct MacroAst {
     name: StrSlice,
     args: Option<MacroArgs>,
 }
 
-impl<'a> IntoIR<'a> for Macro {
-    type IR = MacroIr<'a>;
+impl<'a> IntoIR<'a> for MacroAst {
+    type IR = Macro<'a>;
 
     fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
         match self.name.to_str(text) {
             "" => {
                 if let Some(MacroArgs::TokenTrees(tts)) = self.args {
                     if tts.is_empty() {
-                        return MacroIr::Invalid;
+                        return Macro::Invalid;
                     }
                     let mut result = Vec::new();
 
@@ -112,47 +112,47 @@ impl<'a> IntoIR<'a> for Macro {
                                 let key = key.to_str(text);
                                 result.push(Attr { key, value: Some(AttrValue::QuotedWord(word)) })
                             }
-                            _ => return MacroIr::Invalid,
+                            _ => return Macro::Invalid,
                         }
                     }
 
-                    MacroIr::HtmlAttrs(result)
+                    Macro::HtmlAttrs(result)
                 } else {
-                    MacroIr::Invalid
+                    Macro::Invalid
                 }
             }
             "TOC" => {
                 if self.args.is_none() {
-                    MacroIr::Toc
+                    Macro::Toc
                 } else {
-                    MacroIr::Invalid
+                    Macro::Invalid
                 }
             }
             "NOTOC" => {
                 if self.args.is_none() {
-                    MacroIr::NoToc
+                    Macro::NoToc
                 } else {
-                    MacroIr::Invalid
+                    Macro::Invalid
                 }
             }
             "NOTXT" => {
                 if self.args.is_none() {
-                    MacroIr::NoText
+                    Macro::NoText
                 } else {
-                    MacroIr::Invalid
+                    Macro::Invalid
                 }
             }
             "LOOSE" => {
                 if self.args.is_none() {
-                    MacroIr::Loose
+                    Macro::Loose
                 } else {
-                    MacroIr::Invalid
+                    Macro::Invalid
                 }
             }
             "BULLET" => {
                 if let Some(MacroArgs::TokenTrees(tts)) = self.args {
                     if tts.is_empty() {
-                        return MacroIr::Invalid;
+                        return Macro::Invalid;
                     }
                     let mut style = String::new();
 
@@ -172,32 +172,32 @@ impl<'a> IntoIR<'a> for Macro {
                                     }));
                                     style.push_str("\" ");
                                 }
-                                _ => return MacroIr::Invalid,
+                                _ => return Macro::Invalid,
                             }
                         } else {
-                            return MacroIr::Invalid;
+                            return Macro::Invalid;
                         }
                     }
                     if style.ends_with(' ') {
                         style.pop();
                     }
 
-                    MacroIr::ListStyle(style)
+                    Macro::ListStyle(style)
                 } else {
-                    MacroIr::Invalid
+                    Macro::Invalid
                 }
             }
             "MATH_SCRIPT" => {
                 if self.args.is_none() {
-                    MacroIr::MathScript
+                    Macro::MathScript
                 } else {
-                    MacroIr::Invalid
+                    Macro::Invalid
                 }
             }
             "FOOTNOTES" => {
                 if self.args.is_none() {
                     if state.footnotes.is_empty() {
-                        MacroIr::Footnotes(vec![])
+                        Macro::Footnotes(vec![])
                     } else {
                         let links = mem::take(&mut state.footnotes);
                         let footnotes = links
@@ -206,16 +206,16 @@ impl<'a> IntoIR<'a> for Macro {
                                 let num = state.next_footnote_def;
                                 state.next_footnote_def += 1;
 
-                                link.text.map(|t| FootnoteIr { num, text: t.into_ir(text, state) })
+                                link.text.map(|t| Footnote { num, text: t.into_ir(text, state) })
                             })
                             .collect();
-                        MacroIr::Footnotes(footnotes)
+                        Macro::Footnotes(footnotes)
                     }
                 } else {
-                    MacroIr::Invalid
+                    Macro::Invalid
                 }
             }
-            _ => MacroIr::Invalid,
+            _ => Macro::Invalid,
         }
     }
 }

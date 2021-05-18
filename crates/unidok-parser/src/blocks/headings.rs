@@ -1,4 +1,4 @@
-use unidok_repr::ast::blocks::{Heading, HeadingKind};
+use unidok_repr::ast::blocks::{HeadingAst, HeadingKind};
 
 use crate::inlines::Segments;
 use crate::parsing_mode::ParsingMode;
@@ -11,7 +11,7 @@ pub(crate) struct ParseHeading<'a> {
 }
 
 impl Parse for ParseHeading<'_> {
-    type Output = Heading;
+    type Output = HeadingAst;
 
     fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
@@ -22,7 +22,7 @@ impl Parse for ParseHeading<'_> {
             .parse(Segments::parser(self.ind, Context::Heading, ParsingMode::new_all()))?
             .into_segments_no_underline_zero()?;
 
-        let heading = Heading { level, segments, kind: HeadingKind::Atx };
+        let heading = HeadingAst { level, segments, kind: HeadingKind::Atx };
         if !self.no_toc {
             input.state_mut().headings.push(heading.clone());
         }
@@ -61,13 +61,13 @@ impl Parse for ParseHashes {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub enum Underline {
+pub(crate) enum Underline {
     Double,
     Single,
 }
 
 impl Underline {
-    pub(crate) fn parser(ind: Indents<'_>) -> ParseUnderline<'_> {
+    pub fn parser(ind: Indents<'_>) -> ParseUnderline<'_> {
         ParseUnderline { ind }
     }
 

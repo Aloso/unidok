@@ -1,4 +1,4 @@
-use unidok_repr::ast::blocks::{CellAlignment, CellMeta, Table, TableCell, TableRow};
+use unidok_repr::ast::blocks::{CellAlignment, CellMetaAst, TableAst, TableCellAst, TableRowAst};
 
 use crate::inlines::Segments;
 use crate::parsing_mode::ParsingMode;
@@ -10,7 +10,7 @@ pub(crate) struct ParseTable<'a> {
 }
 
 impl Parse for ParseTable<'_> {
-    type Output = Table;
+    type Output = TableAst;
 
     fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
@@ -45,7 +45,7 @@ impl Parse for ParseTable<'_> {
         }
 
         input.apply();
-        Some(Table { rows })
+        Some(TableAst { rows })
     }
 
     fn can_parse(&mut self, input: &mut Input) -> bool {
@@ -59,7 +59,7 @@ struct ParseTableRow<'a> {
 }
 
 impl Parse for ParseTableRow<'_> {
-    type Output = TableRow;
+    type Output = TableRowAst;
 
     fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
@@ -78,7 +78,7 @@ impl Parse for ParseTableRow<'_> {
                     .into_segments_no_underline()?
             };
 
-            contents.push(TableCell { meta, segments });
+            contents.push(TableCellAst { meta, segments });
 
             if input.parse(ParseLineEnd).is_some() {
                 let mut input2 = input.start();
@@ -99,14 +99,14 @@ impl Parse for ParseTableRow<'_> {
         }
 
         input.apply();
-        Some(TableRow { is_header_row, cells: contents })
+        Some(TableRowAst { is_header_row, cells: contents })
     }
 }
 
 pub(crate) struct ParseCellMeta;
 
 impl ParseInfallible for ParseCellMeta {
-    type Output = CellMeta;
+    type Output = CellMetaAst;
 
     fn parse_infallible(&self, input: &mut Input) -> Self::Output {
         let mut input = input.start();
@@ -118,11 +118,11 @@ impl ParseInfallible for ParseCellMeta {
 
         match input.peek_char() {
             Some(' ' | '\t' | '\n' | '\r') | None => {}
-            _ => return CellMeta::default(),
+            _ => return CellMetaAst::default(),
         }
 
         input.apply();
-        CellMeta { is_header_cell, alignment, vertical_alignment, rowspan, colspan }
+        CellMetaAst { is_header_cell, alignment, vertical_alignment, rowspan, colspan }
     }
 }
 

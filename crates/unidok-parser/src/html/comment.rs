@@ -1,4 +1,4 @@
-use unidok_repr::ast::html::HtmlComment;
+use unidok_repr::ast::html::HtmlCommentAst;
 
 use crate::utils::{ParseLineBreak, Until};
 use crate::{Indents, Input, Parse};
@@ -8,7 +8,7 @@ pub(crate) struct ParseHtmlComment<'a> {
 }
 
 impl Parse for ParseHtmlComment<'_> {
-    type Output = HtmlComment;
+    type Output = HtmlCommentAst;
 
     fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
@@ -42,6 +42,6 @@ impl Parse for ParseHtmlComment<'_> {
         }
 
         input.apply();
-        Some(HtmlComment { text })
+        Some(HtmlCommentAst { text })
     }
 }

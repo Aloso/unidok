@@ -1,9 +1,10 @@
-use crate::input::Input;
-use crate::{ParseInfallible, StrSlice};
+use detached_str::StrSlice;
+
+use crate::{Input, ParseInfallible};
 
 /// Parses while the given pattern matches. The first occurrence that doesn't
 /// match isn't included. This parser never fails.
-pub struct While<T>(pub T);
+pub(crate) struct While<T>(pub T);
 
 impl<F: Fn(char) -> bool> ParseInfallible for While<F> {
     type Output = StrSlice;

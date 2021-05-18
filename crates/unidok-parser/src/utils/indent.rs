@@ -43,7 +43,7 @@ impl Parse for ParseQuoteMarker {
 /// - Quote indentation (The `>` character must be repeated in every line at the
 ///   correct indentation level)
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Default)]
-pub struct Indents<'a> {
+pub(crate) struct Indents<'a> {
     root: INode<'a>,
 }
 

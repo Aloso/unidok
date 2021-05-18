@@ -7,28 +7,28 @@ use super::{Indents, While};
 
 /// Returns whether this is a space or tab.
 #[inline]
-pub fn is_ws(c: char) -> bool {
+pub(crate) fn is_ws(c: char) -> bool {
     matches!(c, ' ' | '\t')
 }
 
 /// Parses 0-255 spaces or tabs. One tab counts as 4 spaces. This parser never
 /// fails.
-pub struct ParseSpacesU8;
+pub(crate) struct ParseSpacesU8;
 
 /// Parses 0 or more spaces or tabs. This parser never fails.
-pub struct ParseSpaces;
+pub(crate) struct ParseSpaces;
 
 /// Parses 1 whitespace character.
-pub struct ParseOneWS;
+pub(crate) struct ParseOneWS;
 
 /// Parses at least _n_ spaces. It can also parse tabs, where 1 tab corresponds
 /// to 4 spaces. It _tries_ to parse _exactly_ n spaces, but this is not always
 /// possible in the presence of tabs.
-pub struct ParseNSpaces(pub u8);
+pub(crate) struct ParseNSpaces(pub u8);
 
 /// Parses at most _n_ spaces. It can also parse tabs, where 1 tab corresponds
 /// to 4 spaces.
-pub struct ParseAtMostNSpaces(pub u8);
+pub(crate) struct ParseAtMostNSpaces(pub u8);
 
 impl Parse for ParseOneWS {
     type Output = ();
@@ -139,7 +139,7 @@ impl Parse for ParseAtMostNSpaces {
     }
 }
 
-pub struct ParseWs<'a>(pub Indents<'a>);
+pub(crate) struct ParseWs<'a>(pub Indents<'a>);
 
 impl ParseInfallible for ParseWs<'_> {
     type Output = ();
@@ -157,7 +157,7 @@ impl ParseInfallible for ParseWs<'_> {
     }
 }
 
-pub struct ParseWsNoBlankLinkes<'a>(pub Indents<'a>);
+pub(crate) struct ParseWsNoBlankLinkes<'a>(pub Indents<'a>);
 
 impl Parse for ParseWsNoBlankLinkes<'_> {
     type Output = ();

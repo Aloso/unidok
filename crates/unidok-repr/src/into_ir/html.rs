@@ -5,20 +5,20 @@ use crate::IntoIR;
 
 use super::utils::collapse_text;
 
-impl<'a> IntoIR<'a> for HtmlNode {
-    type IR = HtmlNodeIr<'a>;
+impl<'a> IntoIR<'a> for HtmlNodeAst {
+    type IR = HtmlNode<'a>;
 
     fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
         match self {
-            HtmlNode::Element(e) => HtmlNodeIr::Element(e.into_ir(text, state)),
-            HtmlNode::CData(c) => HtmlNodeIr::CData(c.into_ir(text, state)),
-            HtmlNode::Comment(c) => HtmlNodeIr::Comment(c.text),
-            HtmlNode::Doctype(d) => HtmlNodeIr::Doctype(d.into_ir(text, state)),
+            HtmlNodeAst::Element(e) => HtmlNode::Element(e.into_ir(text, state)),
+            HtmlNodeAst::CData(c) => HtmlNode::CData(c.into_ir(text, state)),
+            HtmlNodeAst::Comment(c) => HtmlNode::Comment(c.text),
+            HtmlNodeAst::Doctype(d) => HtmlNode::Doctype(d.into_ir(text, state)),
         }
     }
 }
 
-impl<'a> IntoIR<'a> for Doctype {
+impl<'a> IntoIR<'a> for DoctypeAst {
     type IR = &'a str;
 
     fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
@@ -26,7 +26,7 @@ impl<'a> IntoIR<'a> for Doctype {
     }
 }
 
-impl<'a> IntoIR<'a> for CDataSection {
+impl<'a> IntoIR<'a> for CDataSectionAst {
     type IR = &'a str;
 
     fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
@@ -34,11 +34,11 @@ impl<'a> IntoIR<'a> for CDataSection {
     }
 }
 
-impl<'a> IntoIR<'a> for HtmlElem {
-    type IR = HtmlElemIr<'a>;
+impl<'a> IntoIR<'a> for HtmlElemAst {
+    type IR = HtmlElem<'a>;
 
     fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
-        HtmlElemIr {
+        HtmlElem {
             macros: vec![],
             name: self.name,
             attrs: self.attrs.into_ir(text, state),
@@ -48,22 +48,22 @@ impl<'a> IntoIR<'a> for HtmlElem {
     }
 }
 
-impl<'a> IntoIR<'a> for HtmlAttr {
-    type IR = AttrIr<'a>;
+impl<'a> IntoIR<'a> for AttrAst {
+    type IR = Attr<'a>;
 
     fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
-        AttrIr { key: self.key.into_ir(text, state), value: self.value }
+        Attr { key: self.key.into_ir(text, state), value: self.value }
     }
 }
 
-impl<'a> IntoIR<'a> for ElemContent {
-    type IR = ElemContentIr<'a>;
+impl<'a> IntoIR<'a> for ElemContentAst {
+    type IR = ElemContent<'a>;
 
     fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
         match self {
-            ElemContent::Blocks(b) => ElemContentIr::Blocks(b.into_ir(text, state)),
-            ElemContent::Inline(i) => ElemContentIr::Inline(collapse_text(i).into_ir(text, state)),
-            ElemContent::Verbatim(v) => ElemContentIr::Verbatim(v),
+            ElemContentAst::Blocks(b) => ElemContent::Blocks(b.into_ir(text, state)),
+            ElemContentAst::Inline(i) => ElemContent::Inline(collapse_text(i).into_ir(text, state)),
+            ElemContentAst::Verbatim(v) => ElemContent::Verbatim(v),
         }
     }
 }

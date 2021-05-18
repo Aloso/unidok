@@ -8,6 +8,7 @@ mod to_html;
 
 use unidok_parser::DocIr;
 use unidok_repr::ast::html::ElemName;
+use unidok_repr::ir::html::Attr;
 
 pub use crate::into_node::{IntoNode, IntoNodes};
 pub use crate::to_html::ToHtml;
@@ -63,10 +64,4 @@ pub struct Element<'a> {
     pub content: Option<Vec<Node<'a>>>,
     pub is_block_level: bool,
     pub contains_blocks: bool,
-}
-
-#[derive(Debug)]
-pub struct Attr<'a> {
-    pub key: &'a str,
-    pub value: Option<String>,
 }

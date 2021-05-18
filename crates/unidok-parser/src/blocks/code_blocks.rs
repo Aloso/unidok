@@ -1,10 +1,11 @@
 use std::convert::TryInto;
 
-use unidok_repr::ast::blocks::{CodeBlock, Fence};
+use detached_str::StrSlice;
+use unidok_repr::ast::blocks::{CodeBlockAst, Fence};
 
 use crate::parsing_mode::ParsingMode;
 use crate::utils::{ParseLineBreak, ParseSpacesU8, ParseWsAndLineEnd, Until, While};
-use crate::{Indents, Input, Parse, StrSlice};
+use crate::{Indents, Input, Parse};
 
 use super::{Context, ParseBlock};
 
@@ -14,7 +15,7 @@ pub(crate) struct ParseCodeBlock<'a> {
 }
 
 impl Parse for ParseCodeBlock<'_> {
-    type Output = CodeBlock;
+    type Output = CodeBlockAst;
 
     fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
@@ -48,7 +49,7 @@ impl Parse for ParseCodeBlock<'_> {
         }
 
         input.apply();
-        Some(CodeBlock { info, fence, lines, indent })
+        Some(CodeBlockAst { info, fence, lines, indent })
     }
 }
 

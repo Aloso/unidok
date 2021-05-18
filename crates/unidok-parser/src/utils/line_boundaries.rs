@@ -5,11 +5,11 @@ use super::ParseSpaces;
 
 /// This parser matches if the next character is a line break. The line break is
 /// not consumed.
-pub struct ParseLineEnd;
+pub(crate) struct ParseLineEnd;
 
 /// This parser matches if the next character (skipping spaces and tabs) is a
 /// line break. Only the spaces and tabs are consumed.
-pub struct ParseWsAndLineEnd;
+pub(crate) struct ParseWsAndLineEnd;
 
 impl Parse for ParseLineEnd {
     type Output = ();

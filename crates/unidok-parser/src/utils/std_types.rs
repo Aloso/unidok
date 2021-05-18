@@ -1,4 +1,6 @@
-use crate::{Input, Parse, StrSlice};
+use detached_str::StrSlice;
+
+use crate::{Input, Parse};
 
 impl Parse for char {
     type Output = StrSlice;

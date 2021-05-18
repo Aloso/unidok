@@ -1,4 +1,4 @@
-use unidok_repr::ast::blocks::Quote;
+use unidok_repr::ast::blocks::QuoteAst;
 
 use crate::utils::{ParseQuoteMarker, ParseSpacesU8};
 use crate::{Context, Indents, Input, Parse};
@@ -10,7 +10,7 @@ pub(crate) struct ParseQuote<'a> {
 }
 
 impl Parse for ParseQuote<'_> {
-    type Output = Quote;
+    type Output = QuoteAst;
 
     fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
@@ -23,7 +23,7 @@ impl Parse for ParseQuote<'_> {
         let content = input.parse(ParseBlock::new_multi(Context::Global, ind))?;
 
         input.apply();
-        Some(Quote { content })
+        Some(QuoteAst { content })
     }
 
     fn can_parse(&mut self, input: &mut Input) -> bool {

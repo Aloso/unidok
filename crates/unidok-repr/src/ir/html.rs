@@ -1,35 +1,35 @@
 use crate::ast::html::{ElemClose, ElemName};
-use crate::ir::blocks::AnnBlockIr;
-use crate::ir::segments::SegmentIr;
+use crate::ir::blocks::AnnBlock;
+use crate::ir::segments::Segment;
 
-use super::macros::MacroIr;
+use super::macros::Macro;
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum HtmlNodeIr<'a> {
-    Element(HtmlElemIr<'a>),
+pub enum HtmlNode<'a> {
+    Element(HtmlElem<'a>),
     CData(&'a str),
     Comment(String),
     Doctype(&'a str),
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct HtmlElemIr<'a> {
-    pub macros: Vec<MacroIr<'a>>,
+pub struct HtmlElem<'a> {
+    pub macros: Vec<Macro<'a>>,
     pub name: ElemName,
-    pub attrs: Vec<AttrIr<'a>>,
-    pub content: Option<ElemContentIr<'a>>,
+    pub attrs: Vec<Attr<'a>>,
+    pub content: Option<ElemContent<'a>>,
     pub close: ElemClose,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct AttrIr<'a> {
+pub struct Attr<'a> {
     pub key: &'a str,
     pub value: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum ElemContentIr<'a> {
-    Blocks(Vec<AnnBlockIr<'a>>),
-    Inline(Vec<SegmentIr<'a>>),
+pub enum ElemContent<'a> {
+    Blocks(Vec<AnnBlock<'a>>),
+    Inline(Vec<Segment<'a>>),
     Verbatim(String),
 }

@@ -1,12 +1,12 @@
+use detached_str::StrSlice;
 use unidok_repr::ast::macros::MacroArgs;
 
-use crate::input::Input;
 use crate::utils::{Indents, ParseLineBreak, ParseOneWS, Until};
-use crate::{Parse, ParseInfallible, StrSlice};
+use crate::{Input, Parse, ParseInfallible};
 
 use super::token_trees::ParseTokenTrees;
 
-pub struct ParseMacroArgs<'a> {
+pub(crate) struct ParseMacroArgs<'a> {
     pub name: &'a str,
     pub ind: Indents<'a>,
 }

@@ -1,7 +1,8 @@
 use std::convert::TryFrom;
 
-use unidok_repr::ast::html::{HtmlEntity, HtmlNode};
-use unidok_repr::ast::macros::InlineMacro;
+use detached_str::StrSlice;
+use unidok_repr::ast::html::{HtmlEntity, HtmlNodeAst};
+use unidok_repr::ast::macros::InlineMacroAst;
 use unidok_repr::ast::segments::*;
 
 use super::code::ParseCode;
@@ -22,15 +23,15 @@ use crate::macros::utils::ParseClosingBrace;
 use crate::macros::ParseInlineMacro;
 use crate::parsing_mode::ParsingMode;
 use crate::utils::{is_ws, ParseLineBreak, While};
-use crate::{Indents, Input, Parse, StrSlice};
+use crate::{Indents, Input, Parse};
 
-pub fn strip_space_start(segment: &mut Segment, input: &Input) -> bool {
+pub fn strip_space_start(segment: &mut SegmentAst, input: &Input) -> bool {
     match segment {
-        Segment::Text(s) if s.to_str(input.text()).starts_with(' ') => {
+        SegmentAst::Text(s) if s.to_str(input.text()).starts_with(' ') => {
             *s = s.get(1..);
             true
         }
-        Segment::Text2(s) if s.starts_with(' ') => {
+        SegmentAst::Text2(s) if s.starts_with(' ') => {
             *s = &s[1..];
             true
         }
@@ -38,13 +39,13 @@ pub fn strip_space_start(segment: &mut Segment, input: &Input) -> bool {
     }
 }
 
-pub fn strip_space_end(segment: &mut Segment, input: &Input) -> bool {
+pub fn strip_space_end(segment: &mut SegmentAst, input: &Input) -> bool {
     match segment {
-        Segment::Text(s) if s.to_str(input.text()).ends_with(' ') => {
+        SegmentAst::Text(s) if s.to_str(input.text()).ends_with(' ') => {
             *s = s.get(..s.len() - 1);
             true
         }
-        Segment::Text2(s) if s.ends_with(' ') => {
+        SegmentAst::Text2(s) if s.ends_with(' ') => {
             *s = &s[..s.len() - 1];
             true
         }
@@ -53,9 +54,9 @@ pub fn strip_space_end(segment: &mut Segment, input: &Input) -> bool {
 }
 
 #[derive(Debug)]
-pub enum Segments {
+pub(crate) enum Segments {
     Empty,
-    Some { segments: Vec<Segment>, underline: Option<Underline> },
+    Some { segments: Vec<SegmentAst>, underline: Option<Underline> },
 }
 
 impl Segments {
@@ -67,14 +68,14 @@ impl Segments {
         ParseSegments { ind, context, mode }
     }
 
-    pub fn into_segments_no_underline(self) -> Option<Vec<Segment>> {
+    pub fn into_segments_no_underline(self) -> Option<Vec<SegmentAst>> {
         match self {
             Segments::Some { segments, underline: None } => Some(segments),
             _ => None,
         }
     }
 
-    pub fn into_segments_no_underline_zero(self) -> Option<Vec<Segment>> {
+    pub fn into_segments_no_underline_zero(self) -> Option<Vec<SegmentAst>> {
         match self {
             Segments::Some { segments, underline: None } => Some(segments),
             _ => Some(vec![]),
@@ -115,12 +116,12 @@ enum Item {
         /// number of characters in the delimiter (mod 3)
         count: u8,
     },
-    Code(Code),
-    Math(Math),
-    Link(Link),
-    Image(Image),
-    Macro(InlineMacro),
-    Html(HtmlNode),
+    Code(CodeAst),
+    Math(MathAst),
+    Link(LinkAst),
+    Image(ImageAst),
+    Macro(InlineMacroAst),
+    Html(HtmlNodeAst),
     HtmlEntity(HtmlEntity),
     Escaped(Escaped),
     LineBreak,
@@ -139,7 +140,7 @@ impl Item {
             Item::Code(_)
                 | Item::Escaped(_)
                 | Item::FormatDelim { .. }
-                | Item::Link(Link { text: None, .. })
+                | Item::Link(LinkAst { text: None, .. })
         )
     }
 }
@@ -166,12 +167,12 @@ enum StackItem {
         /// number of characters in the delimiter (mod 3)
         count: u8,
     },
-    Code(Code),
-    Math(Math),
-    Link(Link),
-    Image(Image),
-    Macro(InlineMacro),
-    Html(HtmlNode),
+    Code(CodeAst),
+    Math(MathAst),
+    Link(LinkAst),
+    Image(ImageAst),
+    Macro(InlineMacroAst),
+    Html(HtmlNodeAst),
     HtmlEntity(HtmlEntity),
     Escaped(Escaped),
     LineBreak,
@@ -225,13 +226,13 @@ fn parse_paragraph_items(items: Vec<Item>) -> Vec<StackItem> {
     stack
 }
 
-fn stack_to_segments(stack: Vec<StackItem>) -> Vec<Segment> {
+fn stack_to_segments(stack: Vec<StackItem>) -> Vec<SegmentAst> {
     let mut result = Vec::with_capacity(stack.len());
 
     for it in stack {
         result.push(match it {
-            StackItem::Text(t) => Segment::Text(t),
-            StackItem::Text2(t) => Segment::Text2(t),
+            StackItem::Text(t) => SegmentAst::Text(t),
+            StackItem::Text2(t) => SegmentAst::Text2(t),
             StackItem::Formatted { delim, content } => {
                 let is_same_delim = matches!(
                     *content.as_slice(),
@@ -242,38 +243,39 @@ fn stack_to_segments(stack: Vec<StackItem>) -> Vec<Segment> {
 
                 if is_same_delim && segments.len() == 1 {
                     match segments.pop().unwrap() {
-                        Segment::Format(InlineFormat {
+                        SegmentAst::Format(InlineFormatAst {
                             formatting: Formatting::Italic,
                             segments,
-                        }) => {
-                            Segment::Format(InlineFormat { formatting: Formatting::Bold, segments })
-                        }
-                        Segment::Format(f) if f.formatting != Formatting::Bold => {
-                            Segment::Format(f)
+                        }) => SegmentAst::Format(InlineFormatAst {
+                            formatting: Formatting::Bold,
+                            segments,
+                        }),
+                        SegmentAst::Format(f) if f.formatting != Formatting::Bold => {
+                            SegmentAst::Format(f)
                         }
                         segment => {
                             segments.push(segment);
-                            Segment::Format(InlineFormat {
+                            SegmentAst::Format(InlineFormatAst {
                                 formatting: delim.to_format(),
                                 segments,
                             })
                         }
                     }
                 } else {
-                    Segment::Format(InlineFormat { formatting: delim.to_format(), segments })
+                    SegmentAst::Format(InlineFormatAst { formatting: delim.to_format(), segments })
                 }
             }
-            StackItem::Code(c) => Segment::Code(c),
-            StackItem::Math(m) => Segment::Math(m),
-            StackItem::Link(l) => Segment::Link(l),
-            StackItem::Image(i) => Segment::Image(i),
-            StackItem::Macro(m) => Segment::InlineMacro(m),
-            StackItem::Html(h) => Segment::InlineHtml(h),
-            StackItem::HtmlEntity(e) => Segment::HtmlEntity(e),
-            StackItem::Escaped(e) => Segment::Escaped(e),
-            StackItem::LineBreak => Segment::LineBreak,
-            StackItem::Limiter => Segment::Limiter,
-            StackItem::FormatDelim { delim, .. } => Segment::Text2(delim.to_str()),
+            StackItem::Code(c) => SegmentAst::Code(c),
+            StackItem::Math(m) => SegmentAst::Math(m),
+            StackItem::Link(l) => SegmentAst::Link(l),
+            StackItem::Image(i) => SegmentAst::Image(i),
+            StackItem::Macro(m) => SegmentAst::InlineMacro(m),
+            StackItem::Html(h) => SegmentAst::InlineHtml(h),
+            StackItem::HtmlEntity(e) => SegmentAst::HtmlEntity(e),
+            StackItem::Escaped(e) => SegmentAst::Escaped(e),
+            StackItem::LineBreak => SegmentAst::LineBreak,
+            StackItem::Limiter => SegmentAst::Limiter,
+            StackItem::FormatDelim { delim, .. } => SegmentAst::Text2(delim.to_str()),
         })
     }
 

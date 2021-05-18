@@ -1,4 +1,4 @@
-use unidok_repr::ast::html::Doctype;
+use unidok_repr::ast::html::DoctypeAst;
 
 use crate::utils::{AsciiCI, ClosingQuoteMark, ParseOneWS, ParseSpaces, QuoteMark};
 use crate::Parse;
@@ -6,7 +6,7 @@ use crate::Parse;
 pub(crate) struct ParseDoctype;
 
 impl Parse for ParseDoctype {
-    type Output = Doctype;
+    type Output = DoctypeAst;
 
     fn parse(&mut self, input: &mut crate::input::Input) -> Option<Self::Output> {
         let mut input = input.start();
@@ -20,7 +20,7 @@ impl Parse for ParseDoctype {
         input.parse_i(ParseSpaces);
         input.parse('>')?;
 
-        Some(Doctype { text: input.apply() })
+        Some(DoctypeAst { text: input.apply() })
     }
 }
 

@@ -3,7 +3,7 @@ use std::mem::take;
 use unidok_repr::ast::blocks::{Bullet, CellAlignment};
 use unidok_repr::ast::html::ElemName;
 use unidok_repr::ir::blocks::*;
-use unidok_repr::ir::macros::MacroIr;
+use unidok_repr::ir::macros::Macro;
 use unidok_repr::ir::IrState;
 use unidok_repr::try_reduce::{Reduced1, TryReduce};
 
@@ -11,7 +11,7 @@ use super::helpers::into_nodes_trimmed;
 use super::macros::apply_post_annotations;
 use crate::{Attr, Element, IntoNode, IntoNodes, Node};
 
-impl<'a> IntoNode<'a> for AnnBlockIr<'a> {
+impl<'a> IntoNode<'a> for AnnBlock<'a> {
     fn into_node(self, state: &IrState<'a>) -> Node<'a> {
         let mut node = self.block.into_node(state);
         apply_post_annotations(self.macros, &mut node, state);
@@ -19,28 +19,28 @@ impl<'a> IntoNode<'a> for AnnBlockIr<'a> {
     }
 }
 
-impl<'a> IntoNode<'a> for BlockIr<'a> {
+impl<'a> IntoNode<'a> for Block<'a> {
     fn into_node(self, state: &IrState<'a>) -> Node<'a> {
         match self {
-            BlockIr::CodeBlock(c) => c.into_node(state),
-            BlockIr::Paragraph(p) => p.into_node(state),
-            BlockIr::Heading(h) => h.into_node(state),
-            BlockIr::ThematicBreak(t) => t.into_node(state),
-            BlockIr::Table(t) => t.into_node(state),
-            BlockIr::BlockHtml(h) => h.into_node(state),
-            BlockIr::List(l) => l.into_node(state),
-            BlockIr::Quote(q) => q.into_node(state),
-            BlockIr::Braces(m) => Node::Fragment(m.into_nodes(state)),
-            BlockIr::Empty => Node::Fragment(vec![]),
+            Block::CodeBlock(c) => c.into_node(state),
+            Block::Paragraph(p) => p.into_node(state),
+            Block::Heading(h) => h.into_node(state),
+            Block::ThematicBreak(t) => t.into_node(state),
+            Block::Table(t) => t.into_node(state),
+            Block::BlockHtml(h) => h.into_node(state),
+            Block::List(l) => l.into_node(state),
+            Block::Quote(q) => q.into_node(state),
+            Block::Braces(m) => Node::Fragment(m.into_nodes(state)),
+            Block::Empty => Node::Fragment(vec![]),
         }
     }
 }
 
-fn into_nodes_tight<'a>(blocks: Vec<AnnBlockIr<'a>>, state: &IrState<'a>) -> Vec<Node<'a>> {
+fn into_nodes_tight<'a>(blocks: Vec<AnnBlock<'a>>, state: &IrState<'a>) -> Vec<Node<'a>> {
     let mut result = Vec::new();
 
     for block in blocks {
-        if let BlockIr::Paragraph(p) = block.block {
+        if let Block::Paragraph(p) = block.block {
             let segments = into_nodes_trimmed(p.segments, state);
             if !segments.is_empty() {
                 let mut node = Node::Fragment(segments);
@@ -66,7 +66,7 @@ fn into_nodes_tight<'a>(blocks: Vec<AnnBlockIr<'a>>, state: &IrState<'a>) -> Vec
     result
 }
 
-impl<'a> IntoNode<'a> for CodeBlockIr<'a> {
+impl<'a> IntoNode<'a> for CodeBlock<'a> {
     fn into_node(self, state: &IrState<'a>) -> Node<'a> {
         let info = self.info.trim_start();
         let attrs = if !info.is_empty() {
@@ -82,7 +82,7 @@ impl<'a> IntoNode<'a> for CodeBlockIr<'a> {
             self.lines
                 .into_iter()
                 .map(|block| match block {
-                    BlockIr::Paragraph(p) => {
+                    Block::Paragraph(p) => {
                         let mut nodes = p.segments.into_nodes(state);
                         nodes.push(Node::Text("\n"));
                         Node::Fragment(nodes)
@@ -100,7 +100,7 @@ impl<'a> IntoNode<'a> for CodeBlockIr<'a> {
     }
 }
 
-impl<'a> IntoNode<'a> for ParagraphIr<'a> {
+impl<'a> IntoNode<'a> for Paragraph<'a> {
     fn into_node(self, state: &IrState<'a>) -> Node<'a> {
         let segments = into_nodes_trimmed(self.segments, state);
 
@@ -175,7 +175,7 @@ fn should_make_block_multi(node: &Node) -> bool {
     }
 }
 
-impl<'a> IntoNode<'a> for HeadingIr<'a> {
+impl<'a> IntoNode<'a> for Heading<'a> {
     fn into_node(self, state: &IrState<'a>) -> Node<'a> {
         let name = match self.level {
             1 => ElemName::H1,
@@ -199,13 +199,13 @@ impl<'a> IntoNode<'a> for HeadingIr<'a> {
     }
 }
 
-impl<'a> IntoNode<'a> for ThematicBreakIr {
+impl<'a> IntoNode<'a> for ThematicBreak {
     fn into_node(self, _: &IrState) -> Node<'a> {
         Node::Element(elem!(<Hr /> is_block_level: true, contains_blocks: false))
     }
 }
 
-impl<'a> IntoNode<'a> for TableIr<'a> {
+impl<'a> IntoNode<'a> for Table<'a> {
     fn into_node(self, state: &IrState<'a>) -> Node<'a> {
         let rows = self
             .rows
@@ -230,7 +230,7 @@ impl<'a> IntoNode<'a> for TableIr<'a> {
     }
 }
 
-impl<'a> IntoNode<'a> for ListIr<'a> {
+impl<'a> IntoNode<'a> for List<'a> {
     fn into_node(self, state: &IrState<'a>) -> Node<'a> {
         let (name, start) = match self.bullet {
             Bullet::Dash | Bullet::Plus | Bullet::Star => (ElemName::Ul, 1),
@@ -242,8 +242,8 @@ impl<'a> IntoNode<'a> for ListIr<'a> {
 
         for r#macro in self.macros {
             match r#macro {
-                MacroIr::Loose => loose = true,
-                MacroIr::ListStyle(s) => list_style = Some(s),
+                Macro::Loose => loose = true,
+                Macro::ListStyle(s) => list_style = Some(s),
                 r#macro => {
                     panic!("Unexpected macro {:?}", r#macro)
                 }
@@ -279,7 +279,7 @@ impl<'a> IntoNode<'a> for ListIr<'a> {
     }
 }
 
-impl<'a> IntoNode<'a> for QuoteIr<'a> {
+impl<'a> IntoNode<'a> for Quote<'a> {
     fn into_node(self, state: &IrState<'a>) -> Node<'a> {
         Node::Element(elem!(
             <Blockquote>{ self.content.into_nodes(state) } is_block_level: true, contains_blocks: true
@@ -289,7 +289,7 @@ impl<'a> IntoNode<'a> for QuoteIr<'a> {
 
 fn create_table_cell<'a>(
     is_header_row: bool,
-    cell: TableCellIr<'a>,
+    cell: TableCell<'a>,
     state: &IrState<'a>,
 ) -> Node<'a> {
     let name = if is_header_row || cell.meta.is_header_cell { ElemName::Th } else { ElemName::Td };

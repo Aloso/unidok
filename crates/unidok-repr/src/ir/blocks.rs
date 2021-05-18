@@ -1,76 +1,76 @@
 use crate::ast::blocks::{Bullet, CellAlignment, Fence, ThematicBreakKind};
-use crate::ir::segments::SegmentIr;
+use crate::ir::segments::Segment;
 
-use super::html::HtmlNodeIr;
-use super::macros::MacroIr;
+use super::html::HtmlNode;
+use super::macros::Macro;
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct AnnBlockIr<'a> {
-    pub macros: Vec<MacroIr<'a>>,
-    pub block: BlockIr<'a>,
+pub struct AnnBlock<'a> {
+    pub macros: Vec<Macro<'a>>,
+    pub block: Block<'a>,
 }
 
 /// A block. This can be a container (list or blockquote) or a leaf block (code
 /// block, comment, heading, table, thematic break, block macro or paragraph).
 #[derive(Debug, Clone, PartialEq)]
-pub enum BlockIr<'a> {
-    CodeBlock(CodeBlockIr<'a>),
-    Paragraph(ParagraphIr<'a>),
-    Heading(HeadingIr<'a>),
-    Table(TableIr<'a>),
-    ThematicBreak(ThematicBreakIr),
-    List(ListIr<'a>),
-    Quote(QuoteIr<'a>),
-    BlockHtml(HtmlNodeIr<'a>),
-    Braces(Vec<AnnBlockIr<'a>>),
+pub enum Block<'a> {
+    CodeBlock(CodeBlock<'a>),
+    Paragraph(Paragraph<'a>),
+    Heading(Heading<'a>),
+    Table(Table<'a>),
+    ThematicBreak(ThematicBreak),
+    List(List<'a>),
+    Quote(Quote<'a>),
+    BlockHtml(HtmlNode<'a>),
+    Braces(Vec<AnnBlock<'a>>),
     Empty,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct CodeBlockIr<'a> {
+pub struct CodeBlock<'a> {
     pub info: &'a str,
     pub fence: Fence,
-    pub lines: Vec<BlockIr<'a>>,
+    pub lines: Vec<Block<'a>>,
     pub indent: u8,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct ParagraphIr<'a> {
-    pub segments: Vec<SegmentIr<'a>>,
+pub struct Paragraph<'a> {
+    pub segments: Vec<Segment<'a>>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct HeadingIr<'a> {
+pub struct Heading<'a> {
     pub level: u8,
-    pub segments: Vec<SegmentIr<'a>>,
+    pub segments: Vec<Segment<'a>>,
     pub slug: String,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct ThematicBreakIr {
+pub struct ThematicBreak {
     pub len: usize,
     pub kind: ThematicBreakKind,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct TableIr<'a> {
-    pub rows: Vec<TableRowIr<'a>>,
+pub struct Table<'a> {
+    pub rows: Vec<TableRow<'a>>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct TableRowIr<'a> {
+pub struct TableRow<'a> {
     pub is_header_row: bool,
-    pub cells: Vec<TableCellIr<'a>>,
+    pub cells: Vec<TableCell<'a>>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct TableCellIr<'a> {
-    pub meta: CellMetaIr,
-    pub segments: Vec<SegmentIr<'a>>,
+pub struct TableCell<'a> {
+    pub meta: CellMeta,
+    pub segments: Vec<Segment<'a>>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct CellMetaIr {
+pub struct CellMeta {
     pub is_header_cell: bool,
     pub alignment: CellAlignment,
     pub vertical_alignment: CellAlignment,
@@ -79,13 +79,13 @@ pub struct CellMetaIr {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct ListIr<'a> {
-    pub macros: Vec<MacroIr<'a>>,
+pub struct List<'a> {
+    pub macros: Vec<Macro<'a>>,
     pub bullet: Bullet,
-    pub items: Vec<Vec<AnnBlockIr<'a>>>,
+    pub items: Vec<Vec<AnnBlock<'a>>>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct QuoteIr<'a> {
-    pub content: Vec<AnnBlockIr<'a>>,
+pub struct Quote<'a> {
+    pub content: Vec<AnnBlock<'a>>,
 }

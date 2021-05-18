@@ -1,4 +1,4 @@
-use unidok_repr::ast::segments::Braces;
+use unidok_repr::ast::segments::BracesAst;
 
 use super::Segments;
 use crate::parsing_mode::ParsingMode;
@@ -10,7 +10,7 @@ pub(crate) struct ParseBraces<'a> {
 }
 
 impl Parse for ParseBraces<'_> {
-    type Output = Braces;
+    type Output = BracesAst;
 
     fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
@@ -22,6 +22,6 @@ impl Parse for ParseBraces<'_> {
         input.parse('}')?;
 
         input.apply();
-        Some(Braces { segments })
+        Some(BracesAst { segments })
     }
 }

@@ -9,27 +9,27 @@ use unidok_repr::ToPlaintext;
 use crate::into_node::macros::apply_post_annotations;
 use crate::{Attr, Element, IntoNode, IntoNodes, Node};
 
-impl<'a> IntoNode<'a> for SegmentIr<'a> {
+impl<'a> IntoNode<'a> for Segment<'a> {
     fn into_node(self, state: &IrState<'a>) -> Node<'a> {
         match self {
-            SegmentIr::Text(t) => Node::Text(t),
-            SegmentIr::Text2(t) => Node::Text2(t),
-            SegmentIr::EscapedText(t) => Node::Text(t),
-            SegmentIr::LineBreak => Node::Text("\n"),
-            SegmentIr::Limiter => Node::Fragment(vec![]),
-            SegmentIr::HtmlEntity(e) => Node::Entity(e.0),
-            SegmentIr::Braces(b) => b.into_node(state),
-            SegmentIr::Link(l) => l.into_node(state),
-            SegmentIr::Image(i) => i.into_node(state),
-            SegmentIr::InlineHtml(h) => h.into_node(state),
-            SegmentIr::Format(f) => f.into_node(state),
-            SegmentIr::Code(c) => c.into_node(state),
-            SegmentIr::Math(m) => m.into_node(state),
+            Segment::Text(t) => Node::Text(t),
+            Segment::Text2(t) => Node::Text2(t),
+            Segment::EscapedText(t) => Node::Text(t),
+            Segment::LineBreak => Node::Text("\n"),
+            Segment::Limiter => Node::Fragment(vec![]),
+            Segment::HtmlEntity(e) => Node::Entity(e.0),
+            Segment::Braces(b) => b.into_node(state),
+            Segment::Link(l) => l.into_node(state),
+            Segment::Image(i) => i.into_node(state),
+            Segment::InlineHtml(h) => h.into_node(state),
+            Segment::Format(f) => f.into_node(state),
+            Segment::Code(c) => c.into_node(state),
+            Segment::Math(m) => m.into_node(state),
         }
     }
 }
 
-impl<'a> IntoNode<'a> for BracesIr<'a> {
+impl<'a> IntoNode<'a> for Braces<'a> {
     fn into_node(self, state: &IrState<'a>) -> Node<'a> {
         let mut node = Node::Element(elem!(
             <Span>{ self.segments.into_nodes(state) } is_block_level: false, contains_blocks: false
@@ -72,7 +72,7 @@ fn remove_redundant_spans(node: Node<'_>) -> Node<'_> {
     }
 }
 
-impl<'a> IntoNode<'a> for LinkIr<'a> {
+impl<'a> IntoNode<'a> for Link<'a> {
     fn into_node(self, state: &IrState<'a>) -> Node<'a> {
         match self.href {
             Some(href) => {
@@ -103,7 +103,7 @@ impl<'a> IntoNode<'a> for LinkIr<'a> {
     }
 }
 
-impl<'a> IntoNode<'a> for ImageIr<'a> {
+impl<'a> IntoNode<'a> for Image<'a> {
     fn into_node(self, state: &IrState<'a>) -> Node<'a> {
         match self.href {
             Some(href) => {
@@ -123,7 +123,7 @@ impl<'a> IntoNode<'a> for ImageIr<'a> {
     }
 }
 
-impl<'a> IntoNode<'a> for InlineFormatIr<'a> {
+impl<'a> IntoNode<'a> for InlineFormat<'a> {
     fn into_node(self, state: &IrState<'a>) -> Node<'a> {
         let name = match self.formatting {
             Formatting::Bold => ElemName::Strong,
@@ -139,7 +139,7 @@ impl<'a> IntoNode<'a> for InlineFormatIr<'a> {
     }
 }
 
-impl<'a> IntoNode<'a> for CodeIr<'a> {
+impl<'a> IntoNode<'a> for Code<'a> {
     fn into_node(self, state: &IrState<'a>) -> Node<'a> {
         let mut node = Node::Element(elem!(
             <Code>{ self.segments.into_nodes(state) } is_block_level: false, contains_blocks: false
@@ -195,7 +195,7 @@ fn add_attribute_kv<'a>(
     attrs.push(Attr { key, value: Some(value.to_string()) });
 }
 
-impl<'a> IntoNode<'a> for MathIr<'a> {
+impl<'a> IntoNode<'a> for Math<'a> {
     fn into_node(self, _: &IrState) -> Node<'a> {
         let formatted = asciimath_rs::parse(self.text).to_mathml();
 

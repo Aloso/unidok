@@ -1,15 +1,15 @@
 use crate::ast::AstState;
-use crate::ir::blocks::HeadingIr;
+use crate::ir::blocks::Heading;
 use crate::IntoIR;
 
-use super::segments::LinkIr;
+use super::segments::Link;
 
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct IrState<'a> {
-    pub headings: Vec<HeadingIr<'a>>,
+    pub headings: Vec<Heading<'a>>,
     pub contains_math: bool,
 
-    pub footnotes: Vec<LinkIr<'a>>,
+    pub footnotes: Vec<Link<'a>>,
     pub footnote_index: usize,
     pub footnote_number: u32,
 }

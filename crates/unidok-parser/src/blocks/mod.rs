@@ -21,7 +21,7 @@ pub(crate) use thematic_breaks::ParseThematicBreak;
 use unidok_repr::ast::html::ElemName;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub enum Context {
+pub(crate) enum Context {
     InlineBraces,
     BlockBraces,
     Table,
@@ -32,17 +32,4 @@ pub enum Context {
     InlineHtml(ElemName),
     BlockHtml(ElemName),
     Global,
-}
-
-impl Context {
-    pub fn can_contain_block_macro(self) -> bool {
-        !matches!(self, Context::InlineBraces | Context::LinkOrImg | Context::Code(_))
-    }
-
-    pub fn get_parent(self) -> Option<ElemName> {
-        match self {
-            Context::InlineHtml(e) => Some(e),
-            _ => None,
-        }
-    }
 }

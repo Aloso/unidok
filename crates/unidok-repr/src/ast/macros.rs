@@ -1,7 +1,7 @@
 use detached_str::StrSlice;
 
-use crate::ast::blocks::Block;
-use crate::ast::segments::{Braces, Segment};
+use crate::ast::blocks::BlockAst;
+use crate::ast::segments::{BracesAst, SegmentAst};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct BlockMacro {
@@ -11,16 +11,16 @@ pub struct BlockMacro {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct InlineMacro {
+pub struct InlineMacroAst {
     pub name: StrSlice,
     pub args: Option<MacroArgs>,
-    pub segment: Box<Segment>,
+    pub segment: Box<SegmentAst>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum BlockMacroContent {
-    Prefixed(Box<Block>),
-    Braces(Vec<Block>),
+    Prefixed(Box<BlockAst>),
+    Braces(Vec<BlockAst>),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -60,7 +60,7 @@ pub enum TokenTreeAtom {
     Word(StrSlice),
     QuotedWord(String),
     Tuple(Vec<TokenTree>), // [foo=bar, baz="", quux]
-    Braces(Braces),
+    Braces(BracesAst),
 }
 
 impl TokenTreeAtom {

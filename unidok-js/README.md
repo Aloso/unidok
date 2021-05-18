@@ -13,11 +13,11 @@ A powerful, readable, easy-to-learn markup language
 Unidok is a new Markup language, inspired by AsciiDoctor and Markdown. It is very easy to read and to learn while offering powerful features such as macros.
 
 <div align="center">
+<table><tr><td>
 
-|        |
-| ------ |
-| [Check out the website!](https://aloso.github.io/unidok/) |
+[Check out the website!](https://aloso.github.io/unidok/)
 
+</td></tr></table>
 </div>
 
 This package wraps the Unidok library (written in Rust) as WebAssembly library. It offers a `compile` function which converts a string from Unidok to HTML.
