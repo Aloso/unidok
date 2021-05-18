@@ -17,7 +17,7 @@ pub fn convert(ir: DocIr<'_>) -> Vec<Node<'_>> {
     ir.blocks.into_nodes(&ir.state)
 }
 
-pub fn to_html(nodes: &[Node<'_>]) -> String {
+pub fn to_string(nodes: &[Node<'_>]) -> String {
     let mut buf = String::new();
     nodes.to_html(&mut buf, false);
     buf

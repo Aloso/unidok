@@ -14,5 +14,5 @@ pub fn compile(input: &str) -> String {
 
     let res = unidok_parser::parse(input);
     let nodes = unidok_to_html::convert(res);
-    unidok_to_html::to_html(&nodes)
+    unidok_to_html::to_string(&nodes)
 }

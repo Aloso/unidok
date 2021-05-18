@@ -137,7 +137,7 @@ fn test_case(
         let parsing_time = start.elapsed();
 
         let nodes = unidok_to_html::convert(res);
-        let html = unidok_to_html::to_html(&nodes);
+        let html = unidok_to_html::to_string(&nodes);
         let rendering_time = start.elapsed() - parsing_time;
 
         finished.store(true, Ordering::Release);

@@ -14,7 +14,7 @@ pub fn convert_file(input: &Path, output: &Path, verbosity: u8) -> anyhow::Resul
     let res = unidok_parser::parse(&content);
     let time1 = start.elapsed();
     let nodes = unidok_to_html::convert(res);
-    let html = unidok_to_html::to_html(&nodes);
+    let html = unidok_to_html::to_string(&nodes);
     let time2 = start.elapsed();
 
     if let Some(parent) = output.parent() {
