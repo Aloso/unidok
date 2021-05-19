@@ -2,6 +2,7 @@ use std::mem::take;
 
 use unidok_repr::ast::blocks::{Bullet, CellAlignment};
 use unidok_repr::ast::html::ElemName;
+use unidok_repr::config::HeadingAnchor;
 use unidok_repr::ir::blocks::*;
 use unidok_repr::ir::macros::Macro;
 use unidok_repr::ir::IrState;
@@ -188,10 +189,20 @@ impl<'a> IntoNode<'a> for Heading<'a> {
         };
 
         let slug = self.slug;
-        let attrs =
-            if slug.is_empty() { vec![] } else { vec![Attr { key: "id", value: Some(slug) }] };
 
-        let content = into_nodes_trimmed(self.segments, state);
+        let mut content = into_nodes_trimmed(self.segments, state);
+        if let HeadingAnchor::Start | HeadingAnchor::End = state.config.heading_anchor {
+            let elem = Node::Element(elem!(
+                <A class="anchor" href={format!("#{}", slug)}>[] is_block_level: false, contains_blocks: false
+            ));
+            if state.config.heading_anchor == HeadingAnchor::Start {
+                content.insert(0, elem);
+            } else {
+                content.push(elem);
+            }
+        }
+
+        let attrs = if slug.is_empty() { vec![] } else { vec![attr!(id = slug)] };
 
         Node::Element(elem!(
             <{name} {attrs}>{ content } is_block_level: true, contains_blocks: false

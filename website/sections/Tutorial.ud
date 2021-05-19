@@ -1,3 +1,8 @@
+@CONFIG(
+  heading_anchor = before
+)
+
+
 This tutorial should give you a deeper understanding of Unidok and of how it differs from Markdown. You can modify the code snippets and see the result <span class="media-big">on the right</span><span class="media-small">below</span>.
 
 @NOTOC

@@ -79,4 +79,12 @@ impl TokenTreeAtom {
             None
         }
     }
+
+    pub fn as_str<'a>(&'a self, text: &'a str) -> Option<&'a str> {
+        match self {
+            TokenTreeAtom::Word(w) => Some(w.to_str(text)),
+            TokenTreeAtom::QuotedWord(w) => Some(w),
+            _ => None,
+        }
+    }
 }

@@ -1,4 +1,5 @@
 pub mod ast;
+pub mod config;
 pub mod ir;
 pub mod try_reduce;
 

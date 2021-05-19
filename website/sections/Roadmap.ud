@@ -1,3 +1,8 @@
+@CONFIG(
+  heading_anchor = before
+)
+
+
 Here's a list of features I would like to have. They're in no particular order. Items marked as _planned_ will probably be implemented next.
 
 For other items, there's no guarantee that they will be implemented, but you can open an [issue] and explain why you need a particular feature, and I'll work on resolving the issue. The feature doesn't need to be from the below list.

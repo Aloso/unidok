@@ -4,6 +4,7 @@ use detached_str::StrSlice;
 
 use crate::ast::macros::*;
 use crate::ast::AstState;
+use crate::config::HeadingAnchor;
 use crate::ir::blocks::{AnnBlock, Block};
 use crate::ir::html::HtmlNode;
 use crate::ir::macros::{Attr, AttrValue, Footnote, Macro};
@@ -218,6 +219,32 @@ impl<'a> IntoIR<'a> for MacroAst {
                             .collect();
                         Macro::Footnotes(footnotes)
                     }
+                } else {
+                    Macro::Invalid
+                }
+            }
+            "CONFIG" => {
+                if let Some(MacroArgs::TokenTrees(args)) = self.args {
+                    for arg in args {
+                        if let TokenTree::KV(key, value) = arg {
+                            let key = key.to_str(text);
+                            if key == "heading_anchor" {
+                                match value.as_str(text) {
+                                    Some("start" | "before") => {
+                                        state.config.heading_anchor = HeadingAnchor::Start
+                                    }
+                                    Some("end" | "after") => {
+                                        state.config.heading_anchor = HeadingAnchor::End
+                                    }
+                                    Some("none" | "no" | "false") => {
+                                        state.config.heading_anchor = HeadingAnchor::None
+                                    }
+                                    _ => {}
+                                }
+                            }
+                        }
+                    }
+                    Macro::Config
                 } else {
                     Macro::Invalid
                 }

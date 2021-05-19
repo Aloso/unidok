@@ -1,4 +1,5 @@
 use crate::ast::AstState;
+use crate::config::Config;
 use crate::ir::blocks::Heading;
 use crate::IntoIR;
 
@@ -12,6 +13,8 @@ pub struct IrState<'a> {
     pub footnotes: Vec<Link<'a>>,
     pub footnote_index: usize,
     pub footnote_number: u32,
+
+    pub config: Config,
 }
 
 impl<'a> IrState<'a> {
@@ -19,6 +22,14 @@ impl<'a> IrState<'a> {
         let headings = state.headings.clone().into_ir(text, &mut state);
         let footnotes = state.footnotes.clone().into_ir(text, &mut state);
         let contains_math = state.contains_math;
-        IrState { headings, contains_math, footnotes, footnote_index: 0, footnote_number: 1 }
+
+        IrState {
+            headings,
+            contains_math,
+            footnotes,
+            footnote_index: 0,
+            footnote_number: 1,
+            config: state.config,
+        }
     }
 }

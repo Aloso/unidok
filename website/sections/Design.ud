@@ -1,3 +1,8 @@
+@CONFIG(
+  heading_anchor = before
+)
+
+
 Unidok is still very much in flux. I will add more features, but I might also change existing syntax that will break backwards compatibility. To be able to make good, informed decisions, I value input from the community. I hope that Unidok will one day have a formalized RFC process, but for now, you can propose new features or changes by filing an [issue].
 
 [issue]: https://github.com/Aloso/unidok/issues

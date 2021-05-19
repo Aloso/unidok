@@ -20,6 +20,8 @@ pub enum Macro<'a> {
     MathScript,
     /// `@BLANK`
     Blank,
+    /// `@CONFIG(){}`
+    Config,
 
     Invalid,
 }
