@@ -206,7 +206,7 @@ export function addBigPlayground() {
 
         function close() {
             newElem.remove()
-            closeBtn.remove()
+            toolbar.remove()
             document.body.style.overflow = ''
         }
     })

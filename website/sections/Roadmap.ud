@@ -174,7 +174,6 @@ There could be a way to specify custom text replacements, e.g.:
     * Important when using webpack, jekyll or a similar system where assets move while building the site
     * Convenient if URLs can be abbreviated, e.g. `wiki:en/*` -> `https://en.wikipedia.org/wiki/*`
 * Don't wrap text in a paragraph (`@PURE`)
-* Open link in new tabl (`@BLANK`)
 * Load plugin (`@LOAD`)
 * Details that can be opened with summary (`@DETAILS`)
 * Image caption (`@CAPTION`)
