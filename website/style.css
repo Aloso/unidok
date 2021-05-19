@@ -543,7 +543,6 @@ h1 *, h2 *, h3 *, h4 *, h5 *, h6 * {
         font-size: 15px;
         box-shadow: inset 0 -1px 0 0 #555;
         width: auto;
-        min-height: 150px;
     }
     .preview, .preview.html {
         width: auto;

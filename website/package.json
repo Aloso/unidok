@@ -7,8 +7,8 @@
     "website": ".bin/website.js"
   },
   "scripts": {
-    "build": "webpack --config webpack.config.js",
-    "start": "webpack-dev-server"
+    "build": "webpack --config webpack.config.js --env.production",
+    "start": "webpack-dev-server --open"
   },
   "repository": {
     "type": "git",
@@ -28,16 +28,17 @@
   "homepage": "https://aloso.github.io/unidok",
   "dependencies": {
     "@codemirror/commands": "^0.18.2",
-    "@codemirror/highlight": "^0.18.4",
     "@codemirror/search": "^0.18.3",
     "@codemirror/state": "^0.18.7",
     "@codemirror/view": "^0.18.12",
-    "lezer-tree": "^0.13.2",
     "unidok": "file:../unidok-js/pkg"
   },
   "devDependencies": {
+    "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^5.0.0",
     "hello-wasm-pack": "^0.1.0",
+    "ts-loader": "^8.3.0",
+    "typescript": "^4.2.4",
     "webpack": "^4.29.3",
     "webpack-cli": "^3.1.0",
     "webpack-dev-server": "^3.1.5"
