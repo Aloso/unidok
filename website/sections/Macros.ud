@@ -236,3 +236,29 @@ Example:
 ```
 @BLANK[Click here](https://en.wikipedia.org)
 ```
+
+
+## Configuration
+
+Unidok can be configured with the `@CONFIG` macro:
+
+### `heading_anchor`
+
+Configures if headings should contain an anchor to itself.
+
+Possible values:
+* `none` - no anchor is added
+* `start` - an anchor is added before the heading's content
+* `end` - an anchor is added after the heading's content
+
+Note that the anchor is empty, but it can be made visible with CSS using a `::before` or `::after` [pseudo-element](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements).
+
+@(.playground)
+```
+@CONFIG(heading_anchor=start)
+
+- Hover this title:
+  ## Test
+```
+
+_Note that heading anchors on this website only  appear when the cursor is hovering over the heading._
