@@ -18,6 +18,8 @@ pub enum Macro<'a> {
     Footnotes(Vec<Footnote<'a>>),
     /// `@MATH_SCRIPT{}`
     MathScript,
+    /// `@BLANK`
+    Blank,
 
     Invalid,
 }

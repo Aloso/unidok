@@ -51,6 +51,12 @@ pub(crate) fn apply_post_annotations<'a>(
                 *node = Node::Fragment(vec![Node::Element(s1), Node::Element(s2)]);
             }
             Macro::MathScript => *node = Node::Fragment(vec![]),
+            Macro::Blank => {
+                if let Node::Element(e @ Element { name: ElemName::A, .. }) = node {
+                    e.attrs.push(attr!(target = "_blank"));
+                    e.attrs.push(attr!(rel = "noopener noreferrer"));
+                }
+            }
             Macro::Footnotes(footnotes) => {
                 if footnotes.is_empty() {
                     *node = Node::Fragment(vec![]);

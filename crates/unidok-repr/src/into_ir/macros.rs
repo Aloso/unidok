@@ -194,6 +194,13 @@ impl<'a> IntoIR<'a> for MacroAst {
                     Macro::Invalid
                 }
             }
+            "BLANK" => {
+                if self.args.is_none() {
+                    Macro::Blank
+                } else {
+                    Macro::Invalid
+                }
+            }
             "FOOTNOTES" => {
                 if self.args.is_none() {
                     if state.footnotes.is_empty() {
