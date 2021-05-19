@@ -261,4 +261,4 @@ Note that the anchor is empty, but it can be made visible with CSS using a `::be
   ## Test
 ```
 
-_Note that heading anchors on this website only  appear when the cursor is hovering over the heading._
+@(.media-big){_Note that heading anchors on this website only  appear when the cursor is hovering over the heading._}
