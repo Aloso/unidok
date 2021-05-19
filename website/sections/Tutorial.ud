@@ -549,6 +549,18 @@ Some characters are automatically substituted. For example, quotes, apostrophes,
 }
 
 
+## Math
+
+Math blocks are enclosed in `%{}` and use [AsciiMath](https://asciimath.org) syntax:
+
+@(.playground)
+```
+%{sum_(i=1)^n i^3=((n(n+1))/2)^2}
+```
+
+For math formulas to be displayed properly, the MathJax script must be included. This can be done conveniently with the [`@MATH_SCRIPT{}`](?macros#math-script) macro.
+
+
 ## Deep dive: Binding power
 
 Since inline formatting can be nested, it presents a problem: How do we know if a formatting delimiter (e.g. `*`) should close a formatting range or open a new one? In Markdown, a formatting delimiter can be _left-flanking_ and/or _right-flanking_. This system has also been adopted (and slightly extended) in Unidok.

@@ -39,7 +39,7 @@ You can use Unidok for your personal blog, embed it in your business website, wr
 ||2 <pre>`[Link](https://a.com)`</pre>
  |  [Link](https://a.com)
 ||2 <pre>`![Image](https://a.com)`</pre>
- |  ![Logo](https://raw.githubusercontent.com/Aloso/unidok/main/doc/ud.svg)
+ |  ![Logo](ud.svg)
 ||2 <pre>`> Blockquote`</pre>
  |  <blockquote style="margin: 0.2em 0">Blockquote</blockquote>
 ||  <pre>@PASS`* List<br>* List<br>* List`</pre>

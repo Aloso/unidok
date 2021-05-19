@@ -183,9 +183,18 @@ export function addBigPlayground() {
     playground.render()
 
     const closeBtn = document.createElement('button')
-    closeBtn.innerHTML = 'Close playground'
+    closeBtn.innerHTML = '✖'
+    closeBtn.title = 'Close playground (Escape)'
     closeBtn.id = 'close-big-playground'
-    document.body.append(closeBtn)
+
+    const title = document.createElement('span')
+    title.id = 'big-playground-title'
+    title.innerHTML = 'Unidoc playground'
+
+    const toolbar = document.createElement('div')
+    toolbar.id = 'big-playground-toolbar'
+    toolbar.append(title, closeBtn)
+    document.body.append(toolbar)
 
     setTimeout(() => {
         const newElem = document.getElementById('big-playground') ?? error('newElem is null')
@@ -229,14 +238,29 @@ export function convertToHtml(
 }
 
 function updateHtmlWithMath(target: HTMLElement) {
-    const mathElems = target.getElementsByTagName('math')
-    for (const elem of Array.from(mathElems)) {
-        const converted = (window as any).MathJax.mathml2chtml(elem.outerHTML)
-        elem.replaceWith(converted)
-    }
+    if ('MathJax' in window) {
+        const mathJax = (window as any).MathJax as MathJax
 
-    (window as any).MathJax.startup.document.clear();
-    (window as any).MathJax.startup.document.updateDocument()
+        const mathElems = target.getElementsByTagName('math')
+        for (const elem of Array.from(mathElems)) {
+            const converted = mathJax.mathml2chtml(elem.outerHTML)
+            elem.replaceWith(converted)
+        }
+
+        mathJax.startup.document.clear();
+        mathJax.startup.document.updateDocument()
+    }
+}
+
+interface MathJax {
+    startup: {
+        document: {
+            updateDocument(): any,
+            clear(): any
+        }
+    }
+    mathml2chtml(mathml: string): string
+    mathml2chtmlPromise(mathml: string): Promise<string>
 }
 
 export function error(msg: string): never {
