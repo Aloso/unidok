@@ -14,7 +14,7 @@
 [issue-tracker]: https://github.com/Aloso/unidok/issues
 
 
-## The empty macro, `@()`
+## The unnamed macro, `@()`
 
 The macro with no name is used to add HTML attributes to elements. For example, the following adds a CSS class, id, or `title` attribute to a code block:
 
@@ -215,4 +215,20 @@ Example:
 @MATH_SCRIPT{}
 
 %{(1/4)^(-1)=4}
+```
+
+
+## Link macros
+
+### `@BLANK`
+
+When the `@BLANK` macro is applied to a link, clicking on the link opens a new tab.
+
+This is achieved by adding the `target="_blank"` attribute to the link. Furthermore, the `rel="noopener noreferrer"` attribute is added to prevent a vulnerability in outdated browsers.
+
+Example:
+
+@(.playground)
+```
+@BLANK[Click here](https://en.wikipedia.org)
 ```
