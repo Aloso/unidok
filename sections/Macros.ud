@@ -1,3 +1,7 @@
+@CONFIG(
+  heading_anchor = before
+)
+
 
 @NOTOC
 #### Table of Contents

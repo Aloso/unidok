@@ -514,6 +514,42 @@ h1, h2, h3, h4, h5, h6 {
     margin: 0.7em 0;
 }
 
+.anchor {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    line-height: 1.95em;
+    vertical-align: top;
+    font-size: 67%;
+    font-weight: normal;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s;
+    text-decoration: none;
+}
+
+.anchor::before {
+    content: '🔗';
+    box-sizing: border-box;
+    width: 1.5em;
+    margin-left: -1.5em;
+    display: inline-block;
+    filter: brightness(2);
+    opacity: 0.45;
+    padding-right: 6px;
+}
+
+h1:hover .anchor,
+h2:hover .anchor,
+h3:hover .anchor,
+h4:hover .anchor,
+h5:hover .anchor,
+h6:hover .anchor {
+    opacity: 1;
+    pointer-events: initial;
+    text-decoration: none;
+}
+
 hr {
     border: 1px solid #fff5;
     margin: 1.5em 0;
@@ -525,6 +561,15 @@ p, ul, ol, table {
 
 h1 *, h2 *, h3 *, h4 *, h5 *, h6 * {
     font-weight: bold;
+}
+
+@media (pointer: coarse) {
+    .anchor {
+        opacity: 1;
+        pointer-events: initial;
+        line-height: 2.5em;
+        font-size: 55%;
+    }
 }
 
 @media (max-width: 650px) {
