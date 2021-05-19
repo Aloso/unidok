@@ -1,7 +1,7 @@
-import { Playground, addBigPlayground, convertToHtml } from "./playground"
+import { Playground, addBigPlayground, convertToHtml, error } from "./playground"
 
 class NavState {
-    private openButton: HTMLElement
+    private openButton: HTMLElement | null = null
     private rand = Math.floor(+new Date() / 60_000)
 
     constructor(
@@ -46,7 +46,7 @@ class NavState {
                 }
             })
             .then(text => {
-                this.content.className = button.getAttribute('data-cls')
+                this.content.className = button.getAttribute('data-cls') ?? ''
                 convertToHtml(text, this.content, true, false)
                 finishedLoading = true
 
@@ -68,13 +68,13 @@ class NavState {
 }
 
 export function main() {
-    document.getElementById('open-playground')
-        .addEventListener('click', addBigPlayground)
+    const openPlayground = document.getElementById('open-playground') ?? error('#open-playground is null')
+    openPlayground.addEventListener('click', addBigPlayground)
 
-    const content = document.getElementById('content')
+    const content = document.getElementById('content') ?? error('#content is null')
     const contentLoading = content.innerHTML
 
-    const nav = document.getElementById('main-nav')
+    const nav = document.getElementById('main-nav') ?? error('#main-nav is null')
     const buttons = []
     const navState = new NavState(content, contentLoading)
 

@@ -6,7 +6,7 @@ import { highlightSelectionMatches } from "@codemirror/search"
 
 export class Playground {
     private lastRenderTime = 0
-    private lastRenderValue: string = null
+    private lastRenderValue: string | null = null
     private isHtml = false
     private changeListeners: (() => void)[] = []
     private renderListeners: (() => void)[] = []
@@ -20,16 +20,16 @@ export class Playground {
     public value: string
 
     constructor(pre: HTMLElement) {
-        this.value = pre.textContent
+        this.value = (pre.textContent ?? '')
             .replace(/^\n/, '')
             .replace(/\n[ \t]*$/, '')
 
         this.input = document.createElement('div')
         this.input.className = 'input'
 
-        this.initToggleButton()
-        this.initInput()
-        this.initPreview()
+        this.toggleButton = this.initToggleButton()
+        this.editorView = this.initEditorView()
+        this.preview = this.initPreview()
 
         const newElem = document.createElement('div')
         newElem.className = 'playground initialized'
@@ -38,7 +38,7 @@ export class Playground {
         pre.replaceWith(newElem)
     }
 
-    initInput() {
+    initEditorView(): EditorView {
         const updateListener = (update: ViewUpdate) => {
             if (update.docChanged) {
                 this.value = this.getValue()
@@ -62,7 +62,7 @@ export class Playground {
             }
         })
 
-        this.editorView = new EditorView({
+        return new EditorView({
             state: EditorState.create({
                 doc: this.value,
                 extensions: [
@@ -80,19 +80,18 @@ export class Playground {
         })
     }
 
-    initPreview() {
+    initPreview(): HTMLElement {
         const preview = document.createElement('div')
         preview.className = 'preview'
-        this.preview = preview
+        return preview
     }
 
-    initToggleButton() {
+    initToggleButton(): HTMLButtonElement {
         const toggleButton = document.createElement('button')
-        this.toggleButton = toggleButton
-
         toggleButton.innerHTML = 'Show HTML'
         toggleButton.className = 'show-html'
         toggleButton.addEventListener('click', () => this.toggleHtml())
+        return toggleButton
     }
 
     getValue(): string {
@@ -189,7 +188,7 @@ export function addBigPlayground() {
     document.body.append(closeBtn)
 
     setTimeout(() => {
-        const newElem = document.getElementById('big-playground')
+        const newElem = document.getElementById('big-playground') ?? error('newElem is null')
 
         newElem.addEventListener('keydown', e => {
             if (e.code === 'Escape') close()
@@ -209,7 +208,7 @@ export function convertToHtml(
     target: HTMLElement,
     dont_wait?: boolean,
     retrieve_spans?: boolean
-): unidok.SyntaxSpan[] {
+): unidok.SyntaxSpan[] | void {
     const result = unidok.compile(text, retrieve_spans)
 
     if (result.contains_math) {
@@ -238,6 +237,10 @@ function updateHtmlWithMath(target: HTMLElement) {
 
     (window as any).MathJax.startup.document.clear();
     (window as any).MathJax.startup.document.updateDocument()
+}
+
+export function error(msg: string): never {
+    throw new Error(msg)
 }
 
 const _formattings = [
