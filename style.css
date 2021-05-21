@@ -483,6 +483,13 @@ pre code {
     border-left: 5px solid green;
 }
 
+.hl {
+    color: #5f97ff;
+}
+.hl2 {
+    color: #ff9838;
+}
+
 .status {
     padding: 1px 11px;
     border-radius: 50px;
@@ -616,6 +623,10 @@ h1 *, h2 *, h3 *, h4 *, h5 *, h6 * {
 
     .show-html {
         display: none;
+    }
+
+    #big-playground .show-html {
+        display: initial;
     }
 
     p, ul, ol, table {
