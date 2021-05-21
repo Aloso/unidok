@@ -1,12 +1,14 @@
 # ![Logo](../doc/ud.svg)&nbsp; Unidok
 
-![Crates.io][Crates] ![npm][Npm] [![Test][Test-image]][Test-url] ![License][License-image]
+[![Crates.io]][Crates-url] [![Npm]][Npm-url] [![Test]][Test-url] ![License: Apache-2/MIT][License]
 
-[Crates]: https://img.shields.io/crates/v/unidok
+[Crates.io]: https://img.shields.io/crates/v/unidok
+[Crates-url]: https://crates.io/crates/unidok
 [Npm]: https://img.shields.io/npm/v/unidok
-[Test-image]: https://github.com/Aloso/unidok/actions/workflows/test.yml/badge.svg
+[Npm-url]: https://npmjs.com/package/unidok
+[Test]: https://github.com/Aloso/unidok/actions/workflows/test.yml/badge.svg
 [Test-url]: https://github.com/Aloso/unidok/actions/workflows/test.yml
-[License-image]: https://img.shields.io/badge/license-Apache%202%2FMIT-blue
+[License]: https://img.shields.io/badge/license-Apache%202%2FMIT-blue
 
 A powerful, readable, easy-to-learn markup language
 
@@ -14,9 +16,7 @@ Unidok is a new Markup language, inspired by AsciiDoctor and Markdown. It is ver
 
 <div align="center">
 <table><tr><td>
-
-[Check out the website!](https://aloso.github.io/unidok/)
-
+<a href="https://aloso.github.io/unidok/">Check out the website!</a>
 </td></tr></table>
 </div>
 

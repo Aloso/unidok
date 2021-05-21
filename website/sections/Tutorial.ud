@@ -183,6 +183,21 @@ Note that a list marker must always be followed by a space, and subsequent lines
   A paragraph interrupted by
   4. A list item
   ```
+
+  Lists are always tight regardless whether or not there are
+  blank lines between the list items. To make a list loose,
+  you need to add the `@LOOSE` macro:
+
+  @(.playground)
+  ```
+  - A tight list can
+
+  - contain blank lines
+
+  @LOOSE
+  - This is
+  - a loose list
+  ```
 }
 
 
@@ -581,28 +596,31 @@ This is best shown with a few examples:
 
 @NOTOC
 ### Left-flanking delimiters
+@PASS(c @)
 ```
-**T
--**T
- **"T"
-$** T
+@(.hl){**}T
+-@(.hl){**}T
+ @(.hl){**}"T"
+@(.hl2){$}@(.hl){**} T
 ```
 
 @NOTOC
 ### Right-flanking delimiters
+@PASS(c @)
 ```
-T**
-T**.
-"T"**
-T **$
+T@(.hl){**}
+T@(.hl){**}.
+"T"@(.hl){**}
+T @(.hl){**}@(.hl2){$}
 ```
 
 @NOTOC
 ### Left- and right-flanking delimiters
+@PASS(c @)
 ```
-T**T
-"**.
-$**$
+T@(.hl){**}T
+"@(.hl){**}.
+@(.hl2){$}@(.hl){**}@(.hl2){$}
 ```
 
 When a delimiter is both left- and right-flanking, the parser still has to make a decision. When a matching left-flanking delimiter exists, that delimiter is chosen (even if other, non-matching delimiters are in between):
