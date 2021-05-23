@@ -557,12 +557,16 @@ Since HTML elements are considered _inline_ only if there's text in the same lin
 
 ## Substitutions
 
-Some characters are automatically substituted. For example, quotes, apostrophes, 3 dots, (R), (C) and (TM).
+Some characters are automatically substituted: Quotes, apostrophes, 3 dots or two consecutive dashes:
 
-@(.differences){
-  This is not yet implemented.
-}
+@(.playground)
+```
+"This is a quote". 'This also works.'
 
+Here's an ellipsis... And this--is an em dash.
+```
+
+The quote style isn't yet configurable, unfortunately.
 
 ## Math
 
