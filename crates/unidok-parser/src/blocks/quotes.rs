@@ -1,6 +1,7 @@
 use aho_corasick::AhoCorasick;
 use unidok_repr::ast::blocks::QuoteAst;
 
+use crate::parsing_mode::ParsingMode;
 use crate::utils::{ParseQuoteMarker, ParseSpacesU8};
 use crate::{Context, Indents, Input, Parse};
 
@@ -8,6 +9,7 @@ use super::ParseBlock;
 
 pub(crate) struct ParseQuote<'a> {
     pub ind: Indents<'a>,
+    pub mode: Option<ParsingMode>,
     pub ac: &'a AhoCorasick,
 }
 
@@ -22,7 +24,8 @@ impl Parse for ParseQuote<'_> {
         input.parse(ParseQuoteMarker)?;
         let ind = ind.push_quote();
 
-        let content = input.parse(ParseBlock::new_multi(Context::Global, ind, self.ac))?;
+        let content =
+            input.parse(ParseBlock::new_multi(Context::Global, ind, self.mode, self.ac))?;
 
         input.apply();
         Some(QuoteAst { content })

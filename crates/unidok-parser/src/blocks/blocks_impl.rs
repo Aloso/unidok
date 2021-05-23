@@ -33,13 +33,14 @@ impl<'a> ParseBlock<'a> {
     pub(crate) fn new_multi(
         context: Context,
         ind: Indents<'a>,
+        mode: Option<ParsingMode>,
         ac: &'a AhoCorasick,
     ) -> ParseBlocks<'a> {
-        ParseBlocks { context, ind, ac }
+        ParseBlocks { context, ind, mode, ac }
     }
 
     pub(crate) fn new_global(patterns: &'a AhoCorasick) -> ParseBlocks<'a> {
-        ParseBlocks { context: Context::Global, ind: Indents::new(), ac: patterns }
+        ParseBlocks { context: Context::Global, ind: Indents::new(), mode: None, ac: patterns }
     }
 
     pub(crate) fn get_global_patterns() -> AhoCorasick {
@@ -103,14 +104,14 @@ impl Parse for ParseBlock<'_> {
         }
 
         if mode.is(ParsingMode::LISTS) {
-            if let Some(list) = input.parse(ParseList { ind, ac: self.ac }) {
+            if let Some(list) = input.parse(ParseList { ind, mode: self.mode, ac: self.ac }) {
                 self.consume_empty_lines(input);
                 return Some(BlockAst::List(list));
             }
         }
 
         if mode.is(ParsingMode::QUOTES) {
-            if let Some(quote) = input.parse(ParseQuote { ind, ac: self.ac }) {
+            if let Some(quote) = input.parse(ParseQuote { ind, mode: self.mode, ac: self.ac }) {
                 self.consume_empty_lines(input);
                 return Some(BlockAst::Quote(quote));
             }
@@ -162,6 +163,7 @@ impl Parse for ParseBlock<'_> {
 pub(crate) struct ParseBlocks<'a> {
     context: Context,
     ind: Indents<'a>,
+    mode: Option<ParsingMode>,
     ac: &'a AhoCorasick,
 }
 
@@ -181,7 +183,7 @@ impl Parse for ParseBlocks<'_> {
         let parser = ParseBlock {
             context: self.context,
             ind: self.ind,
-            mode: None,
+            mode: self.mode,
             no_toc: false,
             ac: self.ac,
         };

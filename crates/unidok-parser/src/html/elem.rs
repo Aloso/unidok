@@ -13,6 +13,7 @@ use super::elem_name::ParseElemName;
 
 pub(crate) struct ParseHtmlElem<'a> {
     pub ind: Indents<'a>,
+    pub mode: Option<ParsingMode>,
     pub ac: &'a AhoCorasick,
 }
 
@@ -80,6 +81,7 @@ impl Parse for ParseHtmlElem<'_> {
                 let blocks = input.parse(ParseBlock::new_multi(
                     Context::BlockHtml(name),
                     self.ind,
+                    self.mode,
                     self.ac,
                 ))?;
                 input.try_parse(ParseClosingTag { elem: name });
@@ -96,7 +98,7 @@ impl Parse for ParseHtmlElem<'_> {
                     .parse(Segments::parser(
                         self.ind,
                         Context::InlineHtml(name),
-                        ParsingMode::new_all(),
+                        self.mode.unwrap_or_else(ParsingMode::new_all),
                         self.ac,
                     ))?
                     .into_segments_no_underline_zero()?;

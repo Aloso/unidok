@@ -8,6 +8,7 @@ use crate::{Context, Indents, Input, Parse};
 
 pub(crate) struct ParseImage<'a> {
     pub ind: Indents<'a>,
+    pub mode: Option<ParsingMode>,
     pub ac: &'a AhoCorasick,
 }
 
@@ -15,7 +16,9 @@ impl Parse for ParseImage<'_> {
     type Output = ImageAst;
 
     fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
-        if let Some(img) = input.parse(ParseFullImage { ind: self.ind, ac: self.ac }) {
+        if let Some(img) =
+            input.parse(ParseFullImage { ind: self.ind, ac: self.ac, mode: self.mode })
+        {
             Some(img)
         } else {
             let mut input = input.start();
@@ -29,6 +32,7 @@ impl Parse for ParseImage<'_> {
 
 pub(crate) struct ParseFullImage<'a> {
     ind: Indents<'a>,
+    mode: Option<ParsingMode>,
     ac: &'a AhoCorasick,
 }
 
@@ -40,7 +44,12 @@ impl Parse for ParseFullImage<'_> {
 
         input.parse("![")?;
         let alt = input
-            .parse(Segments::parser(self.ind, Context::LinkOrImg, ParsingMode::new_all(), self.ac))?
+            .parse(Segments::parser(
+                self.ind,
+                Context::LinkOrImg,
+                self.mode.unwrap_or_else(ParsingMode::new_all),
+                self.ac,
+            ))?
             .into_segments_no_underline_zero()?;
         input.parse(']')?;
 

@@ -34,7 +34,7 @@ You can use Unidok for your personal blog, embed it in your business website, wr
  |  <pre>@PASS`Heading 1<br>=========`</pre>
  |  <h1 style="margin: 0.2em 0">Heading 1</h1>
 ||  <pre>`## Heading 2`</pre>
- |  <pre>@PASS`Heading 2<br>---------`</pre>
+ |  <pre>@PASS(<)`Heading 2<br>---------`</pre>
  |  <h2 style="margin: 0.2em 0">Heading 2</h2>
 ||2 <pre>`[Link](https://a.com)`</pre>
  |  [Link](https://a.com)
@@ -56,7 +56,7 @@ You can use Unidok for your personal blog, embed it in your business website, wr
       <li>List</li>
       <li>List</li>
     </ol>
-||2 <pre>@PASS`Horizontal ruler:<br><br>---`</pre>
+||2 <pre>@PASS(<)`Horizontal ruler:<br><br>---`</pre>
  |  Horizontal ruler:<hr style="margin-bottom: 0.4em">
 ||2 <pre>@PASS` \```<br>\<code block\><br>\``` `</pre>
  |  <pre class="toget"><code>\<code block\></code></pre>

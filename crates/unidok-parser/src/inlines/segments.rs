@@ -489,7 +489,9 @@ impl ParseSegments<'_> {
             }
             patterns::EXCL_MARK => {
                 if self.mode.is(ParsingMode::LINKS_IMAGES) {
-                    if let Some(img) = input.parse(ParseImage { ind, ac: self.ac }) {
+                    if let Some(img) =
+                        input.parse(ParseImage { ind, ac: self.ac, mode: Some(self.mode) })
+                    {
                         items.push(Item::Image(img));
                         return Some(false);
                     }
@@ -539,7 +541,9 @@ impl ParseSegments<'_> {
             }
             patterns::OPEN_ANGLE => {
                 if self.mode.is(ParsingMode::HTML) {
-                    if let Some(html) = input.parse(ParseHtmlNode { ind, ac: self.ac }) {
+                    if let Some(html) =
+                        input.parse(ParseHtmlNode { ind, mode: Some(self.mode), ac: self.ac })
+                    {
                         items.push(Item::Html(html));
                         return Some(false);
                     }
@@ -568,7 +572,9 @@ impl ParseSegments<'_> {
 
             patterns::OPEN_BRACKET => {
                 if self.mode.is(ParsingMode::LINKS_IMAGES) {
-                    if let Some(link) = input.parse(ParseLink { ind, ac: self.ac }) {
+                    if let Some(link) =
+                        input.parse(ParseLink { ind, ac: self.ac, mode: Some(self.mode) })
+                    {
                         items.push(Item::Link(link));
                         return Some(false);
                     }
@@ -690,16 +696,15 @@ impl ParseSegments<'_> {
         use ParsingMode as P;
 
         let ind = self.ind;
+        let ac = self.ac;
 
-        self.mode.is(P::CODE_BLOCKS)
-            && input.can_parse(ParseCodeBlock { ind, mode: None, ac: self.ac })
+        self.mode.is(P::CODE_BLOCKS) && input.can_parse(ParseCodeBlock { ind, mode: None, ac })
             || self.mode.is(P::COMMENTS) && input.can_parse(ParseComment)
-            || self.mode.is(P::HEADINGS)
-                && input.can_parse(ParseHeading { ind, no_toc: true, ac: self.ac })
-            || self.mode.is(P::TABLES) && input.can_parse(ParseTable { ind, ac: self.ac })
-            || self.mode.is(P::LISTS) && input.can_parse(ParseList { ind, ac: self.ac })
+            || self.mode.is(P::HEADINGS) && input.can_parse(ParseHeading { ind, no_toc: true, ac })
+            || self.mode.is(P::TABLES) && input.can_parse(ParseTable { ind, ac })
+            || self.mode.is(P::LISTS) && input.can_parse(ParseList { ind, ac, mode: None })
             || self.mode.is(P::THEMATIC_BREAKS) && input.can_parse(ParseThematicBreak { ind })
-            || self.mode.is(P::QUOTES) && input.can_parse(ParseQuote { ind, ac: self.ac })
+            || self.mode.is(P::QUOTES) && input.can_parse(ParseQuote { ind, ac, mode: None })
             || self.mode.is(P::LINKS_IMAGES) && input.can_parse(ParseLinkRefDef { ind })
     }
 }

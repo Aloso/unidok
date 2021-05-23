@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) struct ParsingMode(u16);
 
@@ -44,10 +46,10 @@ impl ParsingMode {
         self
     }
 
-    // pub fn unset(mut self, PmParam(n): PmParam) -> Self {
-    //     self.0 &= n ^ !0;
-    //     self
-    // }
+    pub fn unset(mut self, PmParam(n): PmParam) -> Self {
+        self.0 &= n ^ !0;
+        self
+    }
 
     pub fn is(&self, PmParam(n): PmParam) -> bool {
         (self.0 & n) != 0
@@ -56,10 +58,37 @@ impl ParsingMode {
     pub fn is_nothing(&self) -> bool {
         self.0 == 0
     }
+
+    pub fn parse_param(word: &str) -> Option<PmParam> {
+        word.parse().ok()
+    }
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) struct PmParam(u16);
+
+impl FromStr for PmParam {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(match s {
+            "inline" | "i" => ParsingMode::INLINE,
+            "codeblock" | "c" => ParsingMode::CODE_BLOCKS,
+            "heading" | "h" => ParsingMode::HEADINGS,
+            "tbreak" | "b" => ParsingMode::THEMATIC_BREAKS,
+            "subst" | "s" => ParsingMode::SUBSTITUTIONS,
+            "list" | "l" => ParsingMode::LISTS,
+            "limiter" | "$" => ParsingMode::LIMITER,
+            "macro" | "@" => ParsingMode::MACROS,
+            "math" | "%" => ParsingMode::MATH,
+            "table" | "|" => ParsingMode::TABLES,
+            "quote" | ">" => ParsingMode::QUOTES,
+            "html" | "<" => ParsingMode::HTML,
+            "link_img" | "li" => ParsingMode::LINKS_IMAGES,
+            _ => return Err(()),
+        })
+    }
+}
 
 #[test]
 fn test_parsing_modes() {

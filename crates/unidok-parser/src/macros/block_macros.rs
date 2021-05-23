@@ -57,7 +57,12 @@ impl Parse for ParseBlockMacro<'_> {
 
             BlockMacro { name, args, content: BlockMacroContent::Prefixed(block) }
         } else if input.parse(ParseOpeningBrace(self.ind)).is_some() {
-            let blocks = input.parse(ParseBlock::new_multi(Context::BlockBraces, ind, self.ac))?;
+            let blocks = input.parse(ParseBlock::new_multi(
+                Context::BlockBraces,
+                ind,
+                self.mode,
+                self.ac,
+            ))?;
             input.try_parse(ParseClosingBrace(self.ind));
 
             BlockMacro { name, args, content: BlockMacroContent::Braces(blocks) }

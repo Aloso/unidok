@@ -16,20 +16,9 @@ pub(super) fn get_parsing_mode(
             Some(MacroArgs::TokenTrees(tts)) => {
                 let mut pm = ParsingMode::new_nothing();
                 for tt in tts {
-                    match &input[tt.as_atom()?.as_word()?] {
-                        "inline" | "i" => pm = pm.set(ParsingMode::INLINE),
-                        "codeblock" | "c" => pm = pm.set(ParsingMode::CODE_BLOCKS),
-                        "heading" | "h" => pm = pm.set(ParsingMode::HEADINGS),
-                        "tbreak" | "b" => pm = pm.set(ParsingMode::THEMATIC_BREAKS),
-                        "subst" | "s" => pm = pm.set(ParsingMode::SUBSTITUTIONS),
-                        "list" | "l" => pm = pm.set(ParsingMode::LISTS),
-                        "limiter" | "$" => pm = pm.set(ParsingMode::LIMITER),
-                        "macro" | "@" => pm = pm.set(ParsingMode::MACROS),
-                        "math" | "%" => pm = pm.set(ParsingMode::MATH),
-                        "table" | "|" => pm = pm.set(ParsingMode::TABLES),
-                        "quote" | ">" => pm = pm.set(ParsingMode::QUOTES),
-                        "html" | "<" => pm = pm.set(ParsingMode::HTML),
-                        "link_img" | "li" => pm = pm.set(ParsingMode::LINKS_IMAGES),
+                    let word = &input[tt.as_atom()?.as_word()?];
+                    match ParsingMode::parse_param(word) {
+                        Some(param) => pm = pm.set(param),
                         _ => return None,
                     }
                 }
@@ -37,7 +26,21 @@ pub(super) fn get_parsing_mode(
             }
             _ => return None,
         },
-        "NOPASS" => Some(ParsingMode::new_nothing()),
+        "NOPASS" => match &args {
+            None => Some(ParsingMode::new_nothing()),
+            Some(MacroArgs::TokenTrees(tts)) => {
+                let mut pm = ParsingMode::new_all();
+                for tt in tts {
+                    let word = &input[tt.as_atom()?.as_word()?];
+                    match ParsingMode::parse_param(word) {
+                        Some(param) => pm = pm.unset(param),
+                        _ => return None,
+                    }
+                }
+                Some(pm)
+            }
+            _ => return None,
+        },
         _ => None,
     })
 }

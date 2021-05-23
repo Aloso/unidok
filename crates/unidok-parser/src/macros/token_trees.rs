@@ -72,7 +72,7 @@ impl Parse for ParseTokenTreeAtom<'_> {
             }
             Some('{') => {
                 input.bump(1);
-                let braces = input.parse(ParseBraces { ind: self.ind, ac: self.ac })?;
+                let braces = input.parse(ParseBraces { ind: self.ind, ac: self.ac, mode: None })?;
                 input.parse('}')?;
                 input.apply();
                 Some(TokenTreeAtom::Braces(braces))

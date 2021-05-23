@@ -10,6 +10,7 @@ use crate::{Context, Indents, Input, Parse};
 
 pub(crate) struct ParseLink<'a> {
     pub ind: Indents<'a>,
+    pub mode: Option<ParsingMode>,
     pub ac: &'a AhoCorasick,
 }
 
@@ -17,7 +18,9 @@ impl Parse for ParseLink<'_> {
     type Output = LinkAst;
 
     fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
-        if let Some(link) = input.parse(ParseFullLink { ind: self.ind, ac: self.ac }) {
+        if let Some(link) =
+            input.parse(ParseFullLink { ind: self.ind, ac: self.ac, mode: self.mode })
+        {
             Some(link)
         } else {
             input.parse(ParseLinkTargetReference).map(|target| LinkAst { text: None, target })
@@ -27,6 +30,7 @@ impl Parse for ParseLink<'_> {
 
 pub(super) struct ParseFullLink<'a> {
     pub(super) ind: Indents<'a>,
+    pub(super) mode: Option<ParsingMode>,
     pub(super) ac: &'a AhoCorasick,
 }
 
@@ -38,7 +42,12 @@ impl Parse for ParseFullLink<'_> {
 
         input.parse('[')?;
         let text = input
-            .parse(Segments::parser(self.ind, Context::LinkOrImg, ParsingMode::new_all(), self.ac))?
+            .parse(Segments::parser(
+                self.ind,
+                Context::LinkOrImg,
+                self.mode.unwrap_or_else(ParsingMode::new_all),
+                self.ac,
+            ))?
             .into_segments_no_underline_zero()?;
         input.parse(']')?;
 

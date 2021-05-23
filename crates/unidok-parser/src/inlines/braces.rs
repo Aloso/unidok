@@ -8,6 +8,7 @@ use crate::{Context, Indents, Input, Parse};
 #[derive(Debug, Clone, Copy)]
 pub(crate) struct ParseBraces<'a> {
     pub ind: Indents<'a>,
+    pub mode: Option<ParsingMode>,
     pub ac: &'a AhoCorasick,
 }
 
@@ -22,7 +23,7 @@ impl Parse for ParseBraces<'_> {
             .parse(Segments::parser(
                 self.ind,
                 Context::InlineBraces,
-                ParsingMode::new_all(),
+                self.mode.unwrap_or_else(ParsingMode::new_all),
                 self.ac,
             ))?
             .into_segments_no_underline_zero()?;

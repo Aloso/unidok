@@ -26,11 +26,13 @@ impl Parse for ParseInlineMacro<'_> {
 
     fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         let mut input = input.start();
+        let ac = self.ac;
+        let ind = self.ind;
 
         input.parse('@')?;
         let name = input.parse(ParseMacroName)?;
         let name_str = name.to_str(input.text()).to_string();
-        let args = input.parse(ParseMacroArgs { name: &name_str, ind: self.ind, ac: self.ac })?;
+        let args = input.parse(ParseMacroArgs { name: &name_str, ind, ac })?;
 
         if name.is_empty() && args.is_none() {
             return None;
@@ -38,21 +40,19 @@ impl Parse for ParseInlineMacro<'_> {
 
         let mode = get_parsing_mode(&name_str, &args, &input)?.or(self.mode);
 
-        let segment = if let Some(braces) = input.parse(ParseBraces { ind: self.ind, ac: self.ac })
-        {
+        let segment = if let Some(braces) = input.parse(ParseBraces { ind, mode, ac }) {
             SegmentAst::Braces(braces)
-        } else if let Some(code) = input.parse(ParseCode { ind: self.ind, mode, ac: self.ac }) {
+        } else if let Some(code) = input.parse(ParseCode { ind, mode, ac }) {
             SegmentAst::Code(code)
-        } else if let Some(mac) = input.parse(ParseInlineMacro { ind: self.ind, mode, ac: self.ac })
-        {
+        } else if let Some(mac) = input.parse(ParseInlineMacro { ind, mode, ac }) {
             SegmentAst::InlineMacro(mac)
-        } else if let Some(img) = input.parse(ParseImage { ind: self.ind, ac: self.ac }) {
+        } else if let Some(img) = input.parse(ParseImage { ind, mode, ac }) {
             SegmentAst::Image(img)
-        } else if let Some(link) = input.parse(ParseLink { ind: self.ind, ac: self.ac }) {
+        } else if let Some(link) = input.parse(ParseLink { ind, mode, ac }) {
             SegmentAst::Link(link)
-        } else if let Some(math) = input.parse(ParseMath { ind: self.ind }) {
+        } else if let Some(math) = input.parse(ParseMath { ind }) {
             SegmentAst::Math(math)
-        } else if let Some(elem) = input.parse(ParseHtmlElem { ind: self.ind, ac: self.ac }) {
+        } else if let Some(elem) = input.parse(ParseHtmlElem { ind, mode, ac }) {
             SegmentAst::InlineHtml(HtmlNodeAst::Element(elem))
         } else {
             return None;
