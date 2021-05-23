@@ -31,17 +31,6 @@ I propose to use [syntect](https://lib.rs/crates/syntect) in Unidok, which can b
 // * Provide an option to emit the IR for debugging
 
 
-## Replacements @NOTOC@NOTXT@(.status){Plannned}
-
-The following text replacements should be enabled by default:
-
-* Smart punctuation: `"`, `'`, `--`, `...`
-* Arrows: `->`, `=>`, `<-`, `<=`, `<->`, `<=>`
-* Symbols: `(C)`, `(TM)`, `(R)`
-
-They can be disabled in the CLI or with a macro.
-
-
 ## Security protocol @NOTOC@NOTXT@(.status){Plannned}
 
 There should be two operating modes, "safe mode" and "unsafe mode". In safe mode, when untrusted input is converted to HTML and displayed, the following should apply:
@@ -66,6 +55,24 @@ The language should be configurable both in the CLI and with a macro. The langua
 ## Math
 
 Allow using a self-hosted MathJax script instead of the one from the CDN.
+
+
+## More substitutions
+
+In addition to smart punctuation (`'`, `"`, `--`, `...`), the following text substitutions could be added:
+
+* Arrows: `->`, `=>`, `<-`, `<->`, `<=>`
+* Symbols: `(C)`, `(TM)`, `(R)`
+
+More opt-in substitutions could be made available via configuration options or plugins, for example:
+
+* Math:
+  `!=`, `<=`, `>=`, `~=`, `===`, `~~`, `+-`, `-+`, `|->`, `_|_`, `|-`,
+  `\AA`, `\EE`, `\N`, `\Z`, `\Q`, `\R`, `\C`, `\H`, `\F`, `\oo` ...
+  * [Wikipedia: Glossary of mathematical symbols](https://en.wikipedia.org/wiki/Glossary_of_mathematical_symbols)
+  * [AsciiMath](http://asciimath.org)
+  * Note that greek letters and many operators can be entered with HTML entities, e.g. `&pi;` = &pi;, `&notin;` = &notin;
+* Other, e.g.: `?!`, `!?`
 
 
 ## Tables
@@ -152,19 +159,6 @@ Absurd claim. [^^foo] [^^bar]
 Plugins could add new macros, text substitutions, URL schemas, HTML tags, change the configuration, read and modify the IR, add document metadata, provide syntax highlighting, provide a file format parser (e.g. to include `*.md` or `*.adoc` files), start a development server, etc. Unidok could communicate with plugins over stdin/out via JSON.
 
 Plugins probably won't work in the playground, so it might make sense to implement as much as possible in Unidok directly; this simplifies distribution, as a single executable is sufficient for most purposes.
-
-
-## Custom replacements
-
-There could be a way to specify custom text replacements, e.g.:
-
-* Math:
-    `!=`, @(title="conflicts with arrow" 'color:#ff6666')`<=`, `>=`, `~=`, `===`, `~~`, `+-`, `-+`, `|->`, `_|_`, `|-`,
-    `\AA`, `\EE`, `\N`, `\Z`, `\Q`, `\R`, `\C`, `\H`, `\F`, `\oo` ...
-    * [Wikipedia: Glossary of mathematical symbols](https://en.wikipedia.org/wiki/Glossary_of_mathematical_symbols)
-    * [AsciiMath](http://asciimath.org)
-    * Note that greek letters and many operators can be entered with HTML entities, e.g. `&pi;` = &pi;, `&notin;` = &notin;
-* Other, e.g.: `?!`, `!?`
 
 
 ## More macros
