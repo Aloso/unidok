@@ -16,6 +16,8 @@ use crate::input::Input;
 use crate::parse::{Parse, ParseInfallible};
 use crate::utils::Indents;
 
+use aho_corasick::AhoCorasick;
+use once_cell::sync::OnceCell;
 use unidok_repr::ast::blocks::BlockAst;
 use unidok_repr::ir::blocks::AnnBlock;
 use unidok_repr::ir::IrState;
@@ -29,7 +31,11 @@ pub struct Doc<'a> {
 
 pub fn parse(s: &str, retrieve_spans: bool) -> Doc {
     let mut input = Input::new(s);
-    let parsed = input.parse(ParseBlock::new_global()).unwrap();
+
+    static PATTERNS: OnceCell<AhoCorasick> = OnceCell::new();
+    let patterns = PATTERNS.get_or_init(ParseBlock::get_global_patterns);
+
+    let parsed = input.parse(ParseBlock::new_global(patterns)).unwrap();
     debug_assert!(input.is_empty());
 
     let mut spans = Vec::new();

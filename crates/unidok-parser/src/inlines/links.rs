@@ -1,5 +1,6 @@
 use std::mem::replace;
 
+use aho_corasick::AhoCorasick;
 use unidok_repr::ast::segments::{LinkAst, LinkTarget};
 
 use super::segments::Segments;
@@ -9,13 +10,14 @@ use crate::{Context, Indents, Input, Parse};
 
 pub(crate) struct ParseLink<'a> {
     pub ind: Indents<'a>,
+    pub ac: &'a AhoCorasick,
 }
 
 impl Parse for ParseLink<'_> {
     type Output = LinkAst;
 
     fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
-        if let Some(link) = input.parse(ParseFullLink { ind: self.ind }) {
+        if let Some(link) = input.parse(ParseFullLink { ind: self.ind, ac: self.ac }) {
             Some(link)
         } else {
             input.parse(ParseLinkTargetReference).map(|target| LinkAst { text: None, target })
@@ -25,6 +27,7 @@ impl Parse for ParseLink<'_> {
 
 pub(super) struct ParseFullLink<'a> {
     pub(super) ind: Indents<'a>,
+    pub(super) ac: &'a AhoCorasick,
 }
 
 impl Parse for ParseFullLink<'_> {
@@ -35,7 +38,7 @@ impl Parse for ParseFullLink<'_> {
 
         input.parse('[')?;
         let text = input
-            .parse(Segments::parser(self.ind, Context::LinkOrImg, ParsingMode::new_all()))?
+            .parse(Segments::parser(self.ind, Context::LinkOrImg, ParsingMode::new_all(), self.ac))?
             .into_segments_no_underline_zero()?;
         input.parse(']')?;
 

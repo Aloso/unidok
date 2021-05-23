@@ -17,7 +17,7 @@ fn main() {
 }
 
 fn run_test() -> usize {
-    let update = matches!(std::env::var("UPDATE_TESTS"), Ok(s) if s == "1");
+    let update = matches!(std::env::var("UPDATE_TESTS").as_deref(), Ok("1"));
 
     if update {
         eprintln!("Updating tests...");

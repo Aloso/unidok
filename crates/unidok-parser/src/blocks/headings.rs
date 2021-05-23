@@ -1,3 +1,4 @@
+use aho_corasick::AhoCorasick;
 use unidok_repr::ast::blocks::{HeadingAst, HeadingKind};
 
 use crate::inlines::Segments;
@@ -8,6 +9,7 @@ use crate::{Context, Indents, Input, Parse};
 pub(crate) struct ParseHeading<'a> {
     pub ind: Indents<'a>,
     pub no_toc: bool,
+    pub ac: &'a AhoCorasick,
 }
 
 impl Parse for ParseHeading<'_> {
@@ -19,7 +21,7 @@ impl Parse for ParseHeading<'_> {
         input.parse_i(ParseSpaces);
         let level = input.parse(ParseHashes)?;
         let segments = input
-            .parse(Segments::parser(self.ind, Context::Heading, ParsingMode::new_all()))?
+            .parse(Segments::parser(self.ind, Context::Heading, ParsingMode::new_all(), self.ac))?
             .into_segments_no_underline_zero()?;
 
         let heading = HeadingAst { level, segments, kind: HeadingKind::Atx };

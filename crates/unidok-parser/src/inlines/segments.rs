@@ -1,5 +1,6 @@
 use std::convert::TryFrom;
 
+use aho_corasick::AhoCorasick;
 use detached_str::StrSlice;
 use unidok_repr::ast::html::{HtmlEntity, HtmlNodeAst};
 use unidok_repr::ast::macros::InlineMacroAst;
@@ -60,12 +61,13 @@ pub(crate) enum Segments {
 }
 
 impl Segments {
-    pub(crate) fn parser(
-        ind: Indents<'_>,
+    pub(crate) fn parser<'a>(
+        ind: Indents<'a>,
         context: Context,
         mode: ParsingMode,
-    ) -> ParseSegments<'_> {
-        ParseSegments { ind, context, mode }
+        ac: &'a AhoCorasick,
+    ) -> ParseSegments<'a> {
+        ParseSegments { ind, context, mode, ac }
     }
 
     pub fn into_segments_no_underline(self) -> Option<Vec<SegmentAst>> {
@@ -87,6 +89,7 @@ pub(crate) struct ParseSegments<'a> {
     ind: Indents<'a>,
     context: Context,
     mode: ParsingMode,
+    ac: &'a AhoCorasick,
 }
 
 impl Parse for ParseSegments<'_> {
@@ -124,6 +127,7 @@ enum Item {
     Html(HtmlNodeAst),
     HtmlEntity(HtmlEntity),
     Escaped(Escaped),
+    Substitution(Substitution),
     LineBreak,
     Limiter,
     Underline(Underline),
@@ -175,6 +179,7 @@ enum StackItem {
     Html(HtmlNodeAst),
     HtmlEntity(HtmlEntity),
     Escaped(Escaped),
+    Substitution(Substitution),
     LineBreak,
     Limiter,
 }
@@ -217,6 +222,7 @@ fn parse_paragraph_items(items: Vec<Item>) -> Vec<StackItem> {
             Item::Html(h) => stack.push(StackItem::Html(h)),
             Item::HtmlEntity(e) => stack.push(StackItem::HtmlEntity(e)),
             Item::Escaped(e) => stack.push(StackItem::Escaped(e)),
+            Item::Substitution(s) => stack.push(StackItem::Substitution(s)),
             Item::LineBreak => stack.push(StackItem::LineBreak),
             Item::Limiter => stack.push(StackItem::Limiter),
             Item::Underline(_) => unreachable!("Unexpected underline"),
@@ -273,6 +279,7 @@ fn stack_to_segments(stack: Vec<StackItem>) -> Vec<SegmentAst> {
             StackItem::Html(h) => SegmentAst::InlineHtml(h),
             StackItem::HtmlEntity(e) => SegmentAst::HtmlEntity(e),
             StackItem::Escaped(e) => SegmentAst::Escaped(e),
+            StackItem::Substitution(e) => SegmentAst::Substitution(e),
             StackItem::LineBreak => SegmentAst::LineBreak,
             StackItem::Limiter => SegmentAst::Limiter,
             StackItem::FormatDelim { delim, .. } => SegmentAst::Text2(delim.to_str()),
@@ -334,15 +341,47 @@ fn is_compatible(left: Flanking, right: Flanking, left_count: u8, right_count: u
     }
 }
 
-#[inline]
-#[allow(unused_parens)]
-fn find_special(c: char) -> bool {
-    matches!(
-        c,
-        ('*' | '_' | '~' | '^' | '#' | '`')
-            | ('%' | '|' | '[' | ']' | '{' | '}' | '!' | '@' | '\\' | '$' | '<' | '&')
-            | ('\n' | '\r')
-    )
+pub(crate) static PATTERNS: &[&str] = &[
+    "*", "_", "~", "^", "#", "`", "%{", "|", "[", "]", "{", "}", "!", "@", "\\", "$", "<", "&",
+    "\n", "\r", "'", "\"", "...", "--",
+];
+
+mod patterns {
+    pub const STAR: u32 = 0;
+    pub const UNDERSCORE: u32 = 1;
+    pub const TILDE: u32 = 2;
+    pub const CARET: u32 = 3;
+    pub const NUMBER_SIGN: u32 = 4;
+    pub const BACKTICK: u32 = 5;
+    pub const PERCENT_BRACE: u32 = 6;
+    pub const PIPE: u32 = 7;
+    pub const OPEN_BRACKET: u32 = 8;
+    pub const CLOSE_BRACKET: u32 = 9;
+    pub const OPEN_BRACE: u32 = 10;
+    pub const CLOSE_BRACE: u32 = 11;
+    pub const EXCL_MARK: u32 = 12;
+    pub const AT: u32 = 13;
+    pub const BACKSLASH: u32 = 14;
+    pub const DOLLAR: u32 = 15;
+    pub const OPEN_ANGLE: u32 = 16;
+    pub const AMPERSAND: u32 = 17;
+    pub const LINE_FEED: u32 = 18;
+    pub const CARRIAGE_RETURN: u32 = 19;
+    pub const SINGLE_QUOTE: u32 = 20;
+    pub const DOUBLE_QUOTE: u32 = 21;
+    pub const ELLIPSIS: u32 = 22;
+    pub const EM_DASH: u32 = 23;
+}
+
+fn pattern_to_format_delim(n: u32) -> Option<FormatDelim> {
+    Some(match n {
+        patterns::STAR => FormatDelim::Star,
+        patterns::UNDERSCORE => FormatDelim::Underscore,
+        patterns::TILDE => FormatDelim::Tilde,
+        patterns::CARET => FormatDelim::Caret,
+        patterns::NUMBER_SIGN => FormatDelim::NumberSign,
+        _ => return None,
+    })
 }
 
 impl ParseSegments<'_> {
@@ -352,7 +391,9 @@ impl ParseSegments<'_> {
         let mut open_braces = 0;
 
         loop {
-            let skip_bytes = input.rest().find(find_special).unwrap_or_else(|| input.len());
+            let r#match = self.ac.find(input.rest());
+            let (skip_bytes, sym) =
+                r#match.map(|m| (m.start(), m.pattern())).unwrap_or_else(|| (input.len(), 0));
 
             if skip_bytes > 0 {
                 items.push(Item::Text(input.bump(skip_bytes)));
@@ -362,13 +403,8 @@ impl ParseSegments<'_> {
                 break;
             }
 
-            if self.handle_char(
-                input,
-                &mut items,
-                input.peek_char().unwrap(),
-                &mut open_brackets,
-                &mut open_braces,
-            )? {
+            let sym = sym as u32;
+            if self.handle_char(input, &mut items, sym, &mut open_brackets, &mut open_braces)? {
                 break;
             }
         }
@@ -388,7 +424,7 @@ impl ParseSegments<'_> {
         &self,
         input: &mut Input,
         items: &mut Vec<Item>,
-        sym: char,
+        sym: u32,
         open_brackets: &mut u32,
         open_braces: &mut u32,
     ) -> Option<bool> {
@@ -396,15 +432,19 @@ impl ParseSegments<'_> {
         let context = self.context;
 
         if self.mode.is(ParsingMode::INLINE) {
-            if let Ok(delim) = FormatDelim::try_from(sym) {
+            if let Some(delim) = pattern_to_format_delim(sym) {
+                let c = input.peek_char().unwrap();
+
                 let left = input.prev_char();
-                let cs = input.parse_i(While(sym));
+                let delim_run = input.parse_i(While(c));
                 let right = input.peek_char();
 
-                if (sym == '_' && is_in_word(left, right)) || is_not_flanking(left, right) {
-                    items.push(Item::Text(cs));
+                if (delim == FormatDelim::Underscore && is_in_word(left, right))
+                    || is_not_flanking(left, right)
+                {
+                    items.push(Item::Text(delim_run));
                 } else {
-                    let count = (cs.len() % 3) as u8;
+                    let count = (delim_run.len() % 3) as u8;
 
                     let left_flank =
                         left.map(FlankType::from_char).unwrap_or(FlankType::Whitespace);
@@ -412,7 +452,7 @@ impl ParseSegments<'_> {
                         right.map(FlankType::from_char).unwrap_or(FlankType::Whitespace);
                     let flanking = Flanking::new(left_flank, right_flank);
 
-                    for _ in 0..cs.len() {
+                    for _ in 0..delim_run.len() {
                         items.push(Item::FormatDelim { delim, count, flanking });
                     }
                 }
@@ -421,7 +461,7 @@ impl ParseSegments<'_> {
         }
 
         match sym {
-            '`' => {
+            patterns::BACKTICK => {
                 if let Context::Code(len) = context {
                     let backticks = input.parse_i(While('`')).len();
                     if backticks == len as usize {
@@ -430,7 +470,7 @@ impl ParseSegments<'_> {
                 }
 
                 if self.mode.is(ParsingMode::INLINE) {
-                    if let Some(code) = input.parse(ParseCode { ind, mode: None }) {
+                    if let Some(code) = input.parse(ParseCode { ind, mode: None, ac: self.ac }) {
                         items.push(Item::Code(code));
                         return Some(false);
                     }
@@ -439,7 +479,7 @@ impl ParseSegments<'_> {
                 items.push(Item::Text(input.parse_i(While('`'))));
                 return Some(false);
             }
-            '%' => {
+            patterns::PERCENT_BRACE => {
                 if self.mode.is(ParsingMode::MATH) {
                     if let Some(math) = input.parse(ParseMath { ind }) {
                         items.push(Item::Math(math));
@@ -447,24 +487,25 @@ impl ParseSegments<'_> {
                     }
                 }
             }
-            '!' => {
+            patterns::EXCL_MARK => {
                 if self.mode.is(ParsingMode::LINKS_IMAGES) {
-                    if let Some(img) = input.parse(ParseImage { ind }) {
+                    if let Some(img) = input.parse(ParseImage { ind, ac: self.ac }) {
                         items.push(Item::Image(img));
                         return Some(false);
                     }
                 }
             }
-            '@' => {
+            patterns::AT => {
                 if self.mode.is(ParsingMode::MACROS) {
-                    if let Some(mac) = input.parse(ParseInlineMacro { ind, mode: Some(self.mode) })
+                    if let Some(mac) =
+                        input.parse(ParseInlineMacro { ind, mode: Some(self.mode), ac: self.ac })
                     {
                         items.push(Item::Macro(mac));
                         return Some(false);
                     }
                 }
             }
-            '\\' => {
+            patterns::BACKSLASH => {
                 if self.mode.is(ParsingMode::INLINE) {
                     if let Some(esc) = input.parse(ParseEscaped) {
                         items.push(Item::Escaped(esc));
@@ -472,7 +513,7 @@ impl ParseSegments<'_> {
                     }
                 }
             }
-            '$' => {
+            patterns::DOLLAR => {
                 if self.mode.is(ParsingMode::LIMITER) {
                     let parser_state = {
                         if matches!(items.last(), Some(i) if i.can_appear_before_limiter())
@@ -496,9 +537,9 @@ impl ParseSegments<'_> {
                     }
                 }
             }
-            '<' => {
+            patterns::OPEN_ANGLE => {
                 if self.mode.is(ParsingMode::HTML) {
-                    if let Some(html) = input.parse(ParseHtmlNode { ind }) {
+                    if let Some(html) = input.parse(ParseHtmlNode { ind, ac: self.ac }) {
                         items.push(Item::Html(html));
                         return Some(false);
                     }
@@ -510,7 +551,7 @@ impl ParseSegments<'_> {
                     }
                 }
             }
-            '&' => {
+            patterns::AMPERSAND => {
                 if self.mode.is(ParsingMode::HTML) {
                     if let Some(entity) = input.parse(ParseHtmlEntity) {
                         items.push(Item::HtmlEntity(entity));
@@ -519,15 +560,15 @@ impl ParseSegments<'_> {
                 }
             }
 
-            '|' => {
+            patterns::PIPE => {
                 if context == Context::Table {
                     return Some(true);
                 }
             }
 
-            '[' => {
+            patterns::OPEN_BRACKET => {
                 if self.mode.is(ParsingMode::LINKS_IMAGES) {
-                    if let Some(link) = input.parse(ParseLink { ind }) {
+                    if let Some(link) = input.parse(ParseLink { ind, ac: self.ac }) {
                         items.push(Item::Link(link));
                         return Some(false);
                     }
@@ -535,7 +576,7 @@ impl ParseSegments<'_> {
 
                 *open_brackets += 1;
             }
-            ']' => {
+            patterns::CLOSE_BRACKET => {
                 if context == Context::LinkOrImg && *open_brackets == 0 {
                     return Some(true);
                 }
@@ -545,10 +586,10 @@ impl ParseSegments<'_> {
                 }
             }
 
-            '{' => {
+            patterns::OPEN_BRACE => {
                 *open_braces += 1;
             }
-            '}' => {
+            patterns::CLOSE_BRACE => {
                 if context == Context::InlineBraces && *open_braces == 0 {
                     return Some(true);
                 }
@@ -566,7 +607,52 @@ impl ParseSegments<'_> {
                 }
             }
 
-            '\n' | '\r' => {
+            patterns::SINGLE_QUOTE => {
+                if self.mode.is(ParsingMode::SUBSTITUTIONS) {
+                    let prev = input.prev_char();
+                    input.bump(1);
+
+                    if matches!(prev, Some(c) if c.is_alphabetic()) {
+                        items.push(Item::Substitution(Substitution { text: "’" }));
+                    } else if matches!(input.peek_char(), Some(c) if c.is_alphabetic()) {
+                        items.push(Item::Substitution(Substitution { text: "‘" }));
+                    } else {
+                        items.push(Item::Substitution(Substitution { text: "’" }));
+                    }
+                    return Some(false);
+                }
+            }
+            patterns::DOUBLE_QUOTE => {
+                if self.mode.is(ParsingMode::SUBSTITUTIONS) {
+                    let prev = input.prev_char();
+                    input.bump(1);
+
+                    if matches!(prev, Some(c) if c.is_alphabetic()) {
+                        items.push(Item::Substitution(Substitution { text: "”" }));
+                    } else if matches!(input.peek_char(), Some(c) if c.is_alphabetic()) {
+                        items.push(Item::Substitution(Substitution { text: "“" }));
+                    } else {
+                        items.push(Item::Substitution(Substitution { text: "”" }));
+                    }
+                    return Some(false);
+                }
+            }
+            patterns::ELLIPSIS => {
+                if self.mode.is(ParsingMode::SUBSTITUTIONS) {
+                    input.bump(3);
+                    items.push(Item::Substitution(Substitution { text: "…" }));
+                    return Some(false);
+                }
+            }
+            patterns::EM_DASH => {
+                if self.mode.is(ParsingMode::SUBSTITUTIONS) {
+                    input.bump(2);
+                    items.push(Item::Substitution(Substitution { text: "—" }));
+                    return Some(false);
+                }
+            }
+
+            patterns::LINE_FEED | patterns::CARRIAGE_RETURN => {
                 if let Context::Table | Context::LinkOrImg | Context::Heading | Context::CodeBlock =
                     context
                 {
@@ -605,13 +691,15 @@ impl ParseSegments<'_> {
 
         let ind = self.ind;
 
-        self.mode.is(P::CODE_BLOCKS) && input.can_parse(ParseCodeBlock { ind, mode: None })
+        self.mode.is(P::CODE_BLOCKS)
+            && input.can_parse(ParseCodeBlock { ind, mode: None, ac: self.ac })
             || self.mode.is(P::COMMENTS) && input.can_parse(ParseComment)
-            || self.mode.is(P::HEADINGS) && input.can_parse(ParseHeading { ind, no_toc: true })
-            || self.mode.is(P::TABLES) && input.can_parse(ParseTable { ind })
-            || self.mode.is(P::LISTS) && input.can_parse(ParseList { ind })
+            || self.mode.is(P::HEADINGS)
+                && input.can_parse(ParseHeading { ind, no_toc: true, ac: self.ac })
+            || self.mode.is(P::TABLES) && input.can_parse(ParseTable { ind, ac: self.ac })
+            || self.mode.is(P::LISTS) && input.can_parse(ParseList { ind, ac: self.ac })
             || self.mode.is(P::THEMATIC_BREAKS) && input.can_parse(ParseThematicBreak { ind })
-            || self.mode.is(P::QUOTES) && input.can_parse(ParseQuote { ind })
+            || self.mode.is(P::QUOTES) && input.can_parse(ParseQuote { ind, ac: self.ac })
             || self.mode.is(P::LINKS_IMAGES) && input.can_parse(ParseLinkRefDef { ind })
     }
 }

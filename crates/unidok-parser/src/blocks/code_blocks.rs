@@ -1,5 +1,6 @@
 use std::convert::TryInto;
 
+use aho_corasick::AhoCorasick;
 use detached_str::StrSlice;
 use unidok_repr::ast::blocks::{CodeBlockAst, FenceType};
 use unidok_repr::Span;
@@ -13,6 +14,7 @@ use super::{Context, ParseBlock};
 pub(crate) struct ParseCodeBlock<'a> {
     pub ind: Indents<'a>,
     pub mode: Option<ParsingMode>,
+    pub ac: &'a AhoCorasick,
 }
 
 impl Parse for ParseCodeBlock<'_> {
@@ -47,7 +49,7 @@ impl Parse for ParseCodeBlock<'_> {
             }
             drop(input2);
 
-            let line = input.parse(ParseBlock::new(context, ind, Some(mode), true))?;
+            let line = input.parse(ParseBlock::new(context, ind, Some(mode), true, self.ac))?;
             lines.push(line);
         }
 

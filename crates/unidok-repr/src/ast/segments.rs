@@ -10,6 +10,7 @@ pub enum SegmentAst {
     Text2(&'static str),
     Text3(String),
     Escaped(Escaped),
+    Substitution(Substitution),
     Limiter,
     Braces(BracesAst),
     Math(MathAst),
@@ -25,6 +26,11 @@ pub enum SegmentAst {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Escaped {
     pub text: StrSlice,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Substitution {
+    pub text: &'static str,
 }
 
 #[derive(Debug, Clone, PartialEq)]

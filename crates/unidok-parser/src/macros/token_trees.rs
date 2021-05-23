@@ -1,3 +1,4 @@
+use aho_corasick::AhoCorasick;
 use unidok_repr::ast::macros::{TokenTree, TokenTreeAtom};
 
 use crate::inlines::braces::ParseBraces;
@@ -7,6 +8,7 @@ use crate::{Input, Parse};
 #[derive(Clone, Copy)]
 pub(crate) struct ParseTokenTree<'a> {
     ind: Indents<'a>,
+    ac: &'a AhoCorasick,
 }
 
 impl Parse for ParseTokenTree<'_> {
@@ -17,7 +19,7 @@ impl Parse for ParseTokenTree<'_> {
 
         match input.peek_char() {
             Some('[' | '{' | '"' | '\'') => {
-                let atom = input.parse(ParseTokenTreeAtom { ind: self.ind })?;
+                let atom = input.parse(ParseTokenTreeAtom { ind: self.ind, ac: self.ac })?;
                 input.apply();
                 Some(TokenTree::Atom(atom))
             }
@@ -33,13 +35,14 @@ impl Parse for ParseTokenTree<'_> {
                         input.parse_i(ParseSpaces);
                         input.parse('=').unwrap();
                         input.parse_i(ParseSpaces);
-                        let value = input.parse(ParseTokenTreeAtom { ind: self.ind })?;
+                        let value =
+                            input.parse(ParseTokenTreeAtom { ind: self.ind, ac: self.ac })?;
                         input.apply();
                         return Some(TokenTree::KV(key, value));
                     }
                 }
 
-                let atom = input.parse(ParseTokenTreeAtom { ind: self.ind })?;
+                let atom = input.parse(ParseTokenTreeAtom { ind: self.ind, ac: self.ac })?;
                 input.apply();
                 Some(TokenTree::Atom(atom))
             }
@@ -50,6 +53,7 @@ impl Parse for ParseTokenTree<'_> {
 
 pub(crate) struct ParseTokenTreeAtom<'a> {
     ind: Indents<'a>,
+    ac: &'a AhoCorasick,
 }
 
 impl Parse for ParseTokenTreeAtom<'_> {
@@ -61,14 +65,14 @@ impl Parse for ParseTokenTreeAtom<'_> {
         match input.peek_char() {
             Some('[') => {
                 input.bump(1);
-                let tuple = input.parse(ParseTokenTrees { ind: self.ind })?;
+                let tuple = input.parse(ParseTokenTrees { ind: self.ind, ac: self.ac })?;
                 input.parse(']')?;
                 input.apply();
                 Some(TokenTreeAtom::Tuple(tuple))
             }
             Some('{') => {
                 input.bump(1);
-                let braces = input.parse(ParseBraces { ind: self.ind })?;
+                let braces = input.parse(ParseBraces { ind: self.ind, ac: self.ac })?;
                 input.parse('}')?;
                 input.apply();
                 Some(TokenTreeAtom::Braces(braces))
@@ -92,13 +96,14 @@ impl Parse for ParseTokenTreeAtom<'_> {
 
 pub(crate) struct ParseTokenTrees<'a> {
     pub ind: Indents<'a>,
+    pub ac: &'a AhoCorasick,
 }
 
 impl Parse for ParseTokenTrees<'_> {
     type Output = Vec<TokenTree>;
 
     fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
-        let parser = ParseTokenTree { ind: self.ind };
+        let parser = ParseTokenTree { ind: self.ind, ac: self.ac };
         let mut token_trees = Vec::new();
 
         input.parse(ParseWsNoBlankLinkes(self.ind))?;

@@ -393,7 +393,9 @@ dependencies = [
 name = "unidok-parser"
 version = "0.1.0"
 dependencies = [
+ "aho-corasick",
  "detached-str",
+ "once_cell",
  "unidok-repr",
 ]
 

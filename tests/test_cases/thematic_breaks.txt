@@ -25,9 +25,9 @@ Text in the same line is forbidden.
 <hr/>
 <p>And another one:</p>
 <hr/>
-<p>Fewer than 3 characters don't work.</p>
+<p>Fewer than 3 characters don’t work.</p>
 <p>**</p>
-<p>Internal spaces don't work.</p>
+<p>Internal spaces don’t work.</p>
 <ul>
 <li>
 <ul>
@@ -48,4 +48,4 @@ Text in the same line is forbidden.
 </li>
 </ul>
 <p>Text in the same line is forbidden.</p>
-<p>-------------- ~</p>
+<p>——————— ~</p>

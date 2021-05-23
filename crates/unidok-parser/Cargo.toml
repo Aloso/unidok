@@ -14,3 +14,5 @@ readme = "README.md"
 [dependencies]
 detached-str = { path = "../detached-str", version = "0.1" }
 unidok-repr = { path = "../unidok-repr", version = "0.1" }
+aho-corasick = "0.7.18"
+once_cell = "1.7"

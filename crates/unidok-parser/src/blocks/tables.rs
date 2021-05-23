@@ -1,3 +1,4 @@
+use aho_corasick::AhoCorasick;
 use unidok_repr::ast::blocks::{CellAlignment, CellMetaAst, TableAst, TableCellAst, TableRowAst};
 
 use crate::inlines::Segments;
@@ -7,6 +8,7 @@ use crate::{Context, Indents, Input, Parse, ParseInfallible};
 
 pub(crate) struct ParseTable<'a> {
     pub ind: Indents<'a>,
+    pub ac: &'a AhoCorasick,
 }
 
 impl Parse for ParseTable<'_> {
@@ -24,7 +26,7 @@ impl Parse for ParseTable<'_> {
 
         let mut rows = Vec::new();
         loop {
-            if let Some(row) = input.parse(ParseTableRow { ind }) {
+            if let Some(row) = input.parse(ParseTableRow { ind, ac: self.ac }) {
                 rows.push(row);
             } else {
                 return None;
@@ -56,6 +58,7 @@ impl Parse for ParseTable<'_> {
 
 struct ParseTableRow<'a> {
     ind: Indents<'a>,
+    ac: &'a AhoCorasick,
 }
 
 impl Parse for ParseTableRow<'_> {
@@ -74,7 +77,12 @@ impl Parse for ParseTableRow<'_> {
                 vec![]
             } else {
                 input
-                    .parse(Segments::parser(self.ind, Context::Table, ParsingMode::new_all()))?
+                    .parse(Segments::parser(
+                        self.ind,
+                        Context::Table,
+                        ParsingMode::new_all(),
+                        self.ac,
+                    ))?
                     .into_segments_no_underline()?
             };
 

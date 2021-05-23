@@ -1,3 +1,4 @@
+use aho_corasick::AhoCorasick;
 use unidok_repr::ast::blocks::{Bullet, ListAst};
 
 use crate::utils::{ParseLineBreak, ParseLineEnd, ParseNSpaces, ParseSpacesU8, While};
@@ -7,6 +8,7 @@ use super::ParseBlock;
 
 pub(crate) struct ParseList<'a> {
     pub ind: Indents<'a>,
+    pub ac: &'a AhoCorasick,
 }
 
 impl Parse for ParseList<'_> {
@@ -21,7 +23,7 @@ impl Parse for ParseList<'_> {
         loop {
             let ind = self.ind.push_indent(indent_spaces);
 
-            let content_parser = ParseBlock::new_multi(Context::Global, ind);
+            let content_parser = ParseBlock::new_multi(Context::Global, ind, self.ac);
             items.push(input.parse(content_parser)?);
 
             if input.parse(ParseLineBreak(self.ind)).is_none() {

@@ -1,3 +1,4 @@
+use aho_corasick::AhoCorasick;
 use unidok_repr::ast::html::{ElemClose, ElemContentAst, ElemName, HtmlElemAst};
 use unidok_repr::ast::segments::SegmentAst;
 
@@ -12,6 +13,7 @@ use super::elem_name::ParseElemName;
 
 pub(crate) struct ParseHtmlElem<'a> {
     pub ind: Indents<'a>,
+    pub ac: &'a AhoCorasick,
 }
 
 impl ParseHtmlElem<'_> {
@@ -75,8 +77,11 @@ impl Parse for ParseHtmlElem<'_> {
             } else if name.must_contain_blocks()
                 || (name.can_contain_blocks() && input.parse(ParseLineBreak(self.ind)).is_some())
             {
-                let blocks =
-                    input.parse(ParseBlock::new_multi(Context::BlockHtml(name), self.ind))?;
+                let blocks = input.parse(ParseBlock::new_multi(
+                    Context::BlockHtml(name),
+                    self.ind,
+                    self.ac,
+                ))?;
                 input.try_parse(ParseClosingTag { elem: name });
                 ElemContentAst::Blocks(blocks)
             } else {
@@ -92,6 +97,7 @@ impl Parse for ParseHtmlElem<'_> {
                         self.ind,
                         Context::InlineHtml(name),
                         ParsingMode::new_all(),
+                        self.ac,
                     ))?
                     .into_segments_no_underline_zero()?;
                 input.try_parse(ParseClosingTag { elem: name });

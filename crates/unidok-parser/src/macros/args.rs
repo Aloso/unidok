@@ -1,3 +1,4 @@
+use aho_corasick::AhoCorasick;
 use detached_str::StrSlice;
 use unidok_repr::ast::macros::MacroArgs;
 
@@ -9,6 +10,7 @@ use super::token_trees::ParseTokenTrees;
 pub(crate) struct ParseMacroArgs<'a> {
     pub name: &'a str,
     pub ind: Indents<'a>,
+    pub ac: &'a AhoCorasick,
 }
 
 impl Parse for ParseMacroArgs<'_> {
@@ -23,7 +25,7 @@ impl Parse for ParseMacroArgs<'_> {
         let content = match self.name {
             "LOAD" => MacroArgs::Raw(input.parse_i(ParseRaw)),
             _ => MacroArgs::TokenTrees(
-                input.parse(ParseTokenTrees { ind: self.ind.push_indent(2) })?,
+                input.parse(ParseTokenTrees { ind: self.ind.push_indent(2), ac: self.ac })?,
             ),
         };
 

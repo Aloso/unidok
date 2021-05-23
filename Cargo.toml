@@ -19,7 +19,7 @@ readme = "README.md"
 [dependencies]
 unidok-parser = { path = "crates/unidok-parser", version = "0.1" }
 unidok-to-html = { path = "crates/unidok-to-html", version = "0.1" }
-clap = "2.33"
+clap = { version = "2.33", features = ["color"] }
 ignore = "0.4.17"
 anyhow = "1.0"
 rayon = "1.5"

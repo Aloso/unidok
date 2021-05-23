@@ -18,7 +18,7 @@ $// Escaped comment
 <p>Text</p>
 <blockquote>
 </blockquote>
-<p>A paragraph can't end with a // comment</p>
+<p>A paragraph can’t end with a // comment</p>
 <table>
 <tr>
 <td>// No comment allowed here</td>

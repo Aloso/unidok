@@ -1,5 +1,6 @@
 use std::convert::TryInto;
 
+use aho_corasick::AhoCorasick;
 use unidok_repr::ast::segments::{CodeAst, SegmentAst};
 
 use crate::parsing_mode::ParsingMode;
@@ -12,6 +13,7 @@ use super::Segments;
 pub(crate) struct ParseCode<'a> {
     pub ind: Indents<'a>,
     pub mode: Option<ParsingMode>,
+    pub ac: &'a AhoCorasick,
 }
 
 impl Parse for ParseCode<'_> {
@@ -56,7 +58,7 @@ impl Parse for ParseCode<'_> {
 
             segments
         } else {
-            let parser = Segments::parser(self.ind, Context::Code(len), mode);
+            let parser = Segments::parser(self.ind, Context::Code(len), mode, self.ac);
             input.parse(parser)?.into_segments_no_underline()?
         };
 

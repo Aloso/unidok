@@ -1,12 +1,14 @@
+use aho_corasick::AhoCorasick;
 use unidok_repr::ast::segments::BracesAst;
 
 use super::Segments;
 use crate::parsing_mode::ParsingMode;
 use crate::{Context, Indents, Input, Parse};
 
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub(crate) struct ParseBraces<'a> {
     pub ind: Indents<'a>,
+    pub ac: &'a AhoCorasick,
 }
 
 impl Parse for ParseBraces<'_> {
@@ -17,7 +19,12 @@ impl Parse for ParseBraces<'_> {
 
         input.parse('{')?;
         let segments = input
-            .parse(Segments::parser(self.ind, Context::InlineBraces, ParsingMode::new_all()))?
+            .parse(Segments::parser(
+                self.ind,
+                Context::InlineBraces,
+                ParsingMode::new_all(),
+                self.ac,
+            ))?
             .into_segments_no_underline_zero()?;
         input.parse('}')?;
 

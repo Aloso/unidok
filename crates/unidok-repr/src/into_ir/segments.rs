@@ -15,6 +15,7 @@ impl<'a> IntoIR<'a> for SegmentAst {
             SegmentAst::Text2(t) => Segment::Text(t),
             SegmentAst::Text3(t) => Segment::Text2(t),
             SegmentAst::Escaped(esc) => Segment::EscapedText(esc.text.into_ir(text, state)),
+            SegmentAst::Substitution(s) => Segment::Text(s.text),
             SegmentAst::Limiter => Segment::Limiter,
             SegmentAst::Braces(b) => Segment::Braces(b.into_ir(text, state)),
             SegmentAst::Math(b) => Segment::Math(b.into_ir(text, state)),
