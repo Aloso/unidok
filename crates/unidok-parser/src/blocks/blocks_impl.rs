@@ -1,59 +1,38 @@
-use aho_corasick::AhoCorasick;
 use unidok_repr::ast::blocks::{BlockAst, HeadingAst, HeadingKind, ParagraphAst};
 
 use crate::blocks::*;
-use crate::inlines::{segments, Segments};
+use crate::inlines::Segments;
 use crate::macros::ParseBlockMacro;
 use crate::parsing_mode::ParsingMode;
+use crate::state::ParsingState;
 use crate::utils::ParseLineBreak;
-use crate::{Indents, Input, Parse};
-
-use super::Context;
+use crate::{Context, Input, Parse};
 
 #[derive(Debug, Clone, Copy)]
 pub(crate) struct ParseBlock<'a> {
-    context: Context,
-    ind: Indents<'a>,
     mode: Option<ParsingMode>,
+    state: ParsingState<'a>,
     no_toc: bool,
-    ac: &'a AhoCorasick,
 }
 
 impl<'a> ParseBlock<'a> {
-    pub(crate) fn new(
-        context: Context,
-        ind: Indents<'a>,
-        mode: Option<ParsingMode>,
-        no_toc: bool,
-        ac: &'a AhoCorasick,
-    ) -> Self {
-        ParseBlock { context, ind, mode, no_toc, ac }
+    pub(crate) fn new(mode: Option<ParsingMode>, state: ParsingState<'a>, no_toc: bool) -> Self {
+        ParseBlock { mode, state, no_toc }
     }
 
-    pub(crate) fn new_multi(
-        context: Context,
-        ind: Indents<'a>,
-        mode: Option<ParsingMode>,
-        ac: &'a AhoCorasick,
-    ) -> ParseBlocks<'a> {
-        ParseBlocks { context, ind, mode, ac }
-    }
-
-    pub(crate) fn new_global(patterns: &'a AhoCorasick) -> ParseBlocks<'a> {
-        ParseBlocks { context: Context::Global, ind: Indents::new(), mode: None, ac: patterns }
-    }
-
-    pub(crate) fn get_global_patterns() -> AhoCorasick {
-        AhoCorasick::new_auto_configured(segments::PATTERNS)
+    pub(crate) fn new_multi(mode: Option<ParsingMode>, state: ParsingState<'a>) -> ParseBlocks<'a> {
+        ParseBlocks { mode, state }
     }
 }
 
 impl ParseBlock<'_> {
     fn consume_empty_lines(&mut self, input: &mut Input) {
+        let context = self.state.context();
         if let Context::BlockBraces | Context::Heading | Context::BlockHtml(_) | Context::Global =
-            self.context
+            context
         {
-            while input.parse(ParseLineBreak(self.ind)).is_some() && !input.is_empty() {}
+            let ind = self.state.ind();
+            while input.parse(ParseLineBreak(ind)).is_some() && !input.is_empty() {}
         }
     }
 }
@@ -62,9 +41,10 @@ impl Parse for ParseBlock<'_> {
     type Output = BlockAst;
 
     fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
-        let ind = self.ind;
-
+        let ind = self.state.ind();
         let mode = self.mode.unwrap_or_else(ParsingMode::new_all);
+        let ac = self.state.special_chars();
+        let context = self.state.context();
 
         if mode.is(ParsingMode::COMMENTS) {
             if let Some(comment) = input.parse(ParseComment) {
@@ -81,37 +61,35 @@ impl Parse for ParseBlock<'_> {
         }
 
         if mode.is(ParsingMode::CODE_BLOCKS) {
-            if let Some(block) = input.parse(ParseCodeBlock { ind, mode: self.mode, ac: self.ac }) {
+            if let Some(block) = input.parse(ParseCodeBlock { ind, mode: self.mode, ac }) {
                 self.consume_empty_lines(input);
                 return Some(BlockAst::CodeBlock(block));
             }
         }
 
         if mode.is(ParsingMode::TABLES) {
-            if let Some(table) = input.parse(ParseTable { ind, ac: self.ac }) {
+            if let Some(table) = input.parse(ParseTable { ind, ac }) {
                 self.consume_empty_lines(input);
                 return Some(BlockAst::Table(table));
             }
         }
 
         if mode.is(ParsingMode::HEADINGS) {
-            if let Some(heading) =
-                input.parse(ParseHeading { ind, no_toc: self.no_toc, ac: self.ac })
-            {
+            if let Some(heading) = input.parse(ParseHeading { ind, no_toc: self.no_toc, ac }) {
                 self.consume_empty_lines(input);
                 return Some(BlockAst::Heading(heading));
             }
         }
 
         if mode.is(ParsingMode::LISTS) {
-            if let Some(list) = input.parse(ParseList { ind, mode: self.mode, ac: self.ac }) {
+            if let Some(list) = input.parse(ParseList { ind, mode: self.mode, ac }) {
                 self.consume_empty_lines(input);
                 return Some(BlockAst::List(list));
             }
         }
 
         if mode.is(ParsingMode::QUOTES) {
-            if let Some(quote) = input.parse(ParseQuote { ind, mode: self.mode, ac: self.ac }) {
+            if let Some(quote) = input.parse(ParseQuote { ind, mode: self.mode, ac }) {
                 self.consume_empty_lines(input);
                 return Some(BlockAst::Quote(quote));
             }
@@ -125,18 +103,18 @@ impl Parse for ParseBlock<'_> {
         }
 
         if mode.is(ParsingMode::MACROS) {
-            let parser = ParseBlockMacro::new(self.context, ind, self.mode, self.no_toc, self.ac);
+            let parser = ParseBlockMacro::new(self.mode, self.state, self.no_toc);
             if let Some(mac) = input.parse(parser) {
                 self.consume_empty_lines(input);
                 return Some(BlockAst::BlockMacro(mac));
             }
         }
 
-        let segments = input.parse(Segments::parser(ind, self.context, mode, self.ac))?;
+        let segments = input.parse(Segments::parser(ind, context, mode, ac))?;
         self.consume_empty_lines(input);
 
         match segments {
-            Segments::Empty if self.context == Context::CodeBlock && !input.is_empty() => {
+            Segments::Empty if context == Context::CodeBlock && !input.is_empty() => {
                 Some(BlockAst::Paragraph(ParagraphAst { segments: vec![] }))
             }
             Segments::Empty => None,
@@ -161,10 +139,8 @@ impl Parse for ParseBlock<'_> {
 
 #[derive(Debug)]
 pub(crate) struct ParseBlocks<'a> {
-    context: Context,
-    ind: Indents<'a>,
     mode: Option<ParsingMode>,
-    ac: &'a AhoCorasick,
+    state: ParsingState<'a>,
 }
 
 impl Parse for ParseBlocks<'_> {
@@ -172,7 +148,7 @@ impl Parse for ParseBlocks<'_> {
 
     fn parse(&mut self, input: &mut Input) -> Option<Self::Output> {
         loop {
-            if input.parse(ParseLineBreak(self.ind)).is_none() {
+            if input.parse(ParseLineBreak(self.state.ind())).is_none() {
                 break;
             }
             if input.is_empty() {
@@ -180,13 +156,7 @@ impl Parse for ParseBlocks<'_> {
             }
         }
 
-        let parser = ParseBlock {
-            context: self.context,
-            ind: self.ind,
-            mode: self.mode,
-            no_toc: false,
-            ac: self.ac,
-        };
+        let parser = ParseBlock { mode: self.mode, no_toc: false, state: self.state };
 
         let mut v = Vec::new();
         while let Some(node) = input.parse(parser) {

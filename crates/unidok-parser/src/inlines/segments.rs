@@ -14,8 +14,8 @@ use super::limiters::ParseLimiter;
 use super::links::ParseLink;
 use super::math::ParseMath;
 use crate::blocks::{
-    Context, ParseCodeBlock, ParseComment, ParseHeading, ParseLinkRefDef, ParseList, ParseQuote,
-    ParseTable, ParseThematicBreak, Underline,
+    ParseCodeBlock, ParseComment, ParseHeading, ParseLinkRefDef, ParseList, ParseQuote, ParseTable,
+    ParseThematicBreak, Underline,
 };
 use crate::html::elem::ParseHtmlElem;
 use crate::html::entities::ParseHtmlEntity;
@@ -24,7 +24,7 @@ use crate::macros::utils::ParseClosingBrace;
 use crate::macros::ParseInlineMacro;
 use crate::parsing_mode::ParsingMode;
 use crate::utils::{is_ws, ParseLineBreak, While};
-use crate::{Indents, Input, Parse};
+use crate::{Context, Indents, Input, Parse};
 
 pub fn strip_space_start(segment: &mut SegmentAst, input: &Input) -> bool {
     match segment {
@@ -345,6 +345,10 @@ pub(crate) static PATTERNS: &[&str] = &[
     "*", "_", "~", "^", "#", "`", "%{", "|", "[", "]", "{", "}", "!", "@", "\\", "$", "<", "&",
     "\n", "\r", "'", "\"", "...", "--",
 ];
+
+pub(crate) fn get_global_patterns() -> AhoCorasick {
+    AhoCorasick::new_auto_configured(PATTERNS)
+}
 
 mod patterns {
     pub const STAR: u32 = 0;

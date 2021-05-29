@@ -17,19 +17,3 @@ pub(crate) use lists::ParseList;
 pub(crate) use quotes::ParseQuote;
 pub(crate) use tables::ParseTable;
 pub(crate) use thematic_breaks::ParseThematicBreak;
-
-use unidok_repr::ast::html::ElemName;
-
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub(crate) enum Context {
-    InlineBraces,
-    BlockBraces,
-    Table,
-    LinkOrImg,
-    Code(u8),
-    CodeBlock,
-    Heading,
-    InlineHtml(ElemName),
-    BlockHtml(ElemName),
-    Global,
-}

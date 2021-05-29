@@ -6,14 +6,15 @@ use unidok_repr::ast::blocks::{CodeBlockAst, FenceType};
 use unidok_repr::Span;
 
 use crate::parsing_mode::ParsingMode;
+use crate::state::ParsingState;
 use crate::utils::{ParseLineBreak, ParseSpacesU8, ParseWsAndLineEnd, Until, While};
-use crate::{Indents, Input, Parse};
+use crate::{Context, Indents, Input, Parse};
 
-use super::{Context, ParseBlock};
+use super::ParseBlock;
 
 pub(crate) struct ParseCodeBlock<'a> {
-    pub ind: Indents<'a>,
     pub mode: Option<ParsingMode>,
+    pub ind: Indents<'a>,
     pub ac: &'a AhoCorasick,
 }
 
@@ -49,7 +50,11 @@ impl Parse for ParseCodeBlock<'_> {
             }
             drop(input2);
 
-            let line = input.parse(ParseBlock::new(context, ind, Some(mode), true, self.ac))?;
+            let line = input.parse(ParseBlock::new(
+                Some(mode),
+                ParsingState::new(ind, context, self.ac),
+                true,
+            ))?;
             lines.push(line);
         }
 

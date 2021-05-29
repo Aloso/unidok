@@ -2,6 +2,7 @@ use aho_corasick::AhoCorasick;
 use unidok_repr::ast::blocks::{Bullet, ListAst};
 
 use crate::parsing_mode::ParsingMode;
+use crate::state::ParsingState;
 use crate::utils::{ParseLineBreak, ParseLineEnd, ParseNSpaces, ParseSpacesU8, While};
 use crate::{Context, Indents, Parse};
 
@@ -25,7 +26,8 @@ impl Parse for ParseList<'_> {
         loop {
             let ind = self.ind.push_indent(indent_spaces);
 
-            let content_parser = ParseBlock::new_multi(Context::Global, ind, self.mode, self.ac);
+            let content_parser =
+                ParseBlock::new_multi(self.mode, ParsingState::new(ind, Context::Global, self.ac));
             items.push(input.parse(content_parser)?);
 
             if input.parse(ParseLineBreak(self.ind)).is_none() {

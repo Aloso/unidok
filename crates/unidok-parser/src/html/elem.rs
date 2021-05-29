@@ -2,11 +2,12 @@ use aho_corasick::AhoCorasick;
 use unidok_repr::ast::html::{ElemClose, ElemContentAst, ElemName, HtmlElemAst};
 use unidok_repr::ast::segments::SegmentAst;
 
-use crate::blocks::{Context, ParseBlock};
+use crate::blocks::ParseBlock;
 use crate::inlines::Segments;
 use crate::parsing_mode::ParsingMode;
+use crate::state::ParsingState;
 use crate::utils::{ParseLineBreak, ParseLineEnd, ParseSpaces, Until};
-use crate::{Indents, Input, Parse};
+use crate::{Context, Indents, Input, Parse};
 
 use super::attr::ParseAttributes;
 use super::elem_name::ParseElemName;
@@ -79,10 +80,8 @@ impl Parse for ParseHtmlElem<'_> {
                 || (name.can_contain_blocks() && input.parse(ParseLineBreak(self.ind)).is_some())
             {
                 let blocks = input.parse(ParseBlock::new_multi(
-                    Context::BlockHtml(name),
-                    self.ind,
                     self.mode,
-                    self.ac,
+                    ParsingState::new(self.ind, Context::BlockHtml(name), self.ac),
                 ))?;
                 input.try_parse(ParseClosingTag { elem: name });
                 ElemContentAst::Blocks(blocks)
