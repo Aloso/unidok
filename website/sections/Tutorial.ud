@@ -566,7 +566,7 @@ Some characters are automatically substituted: Quotes, apostrophes, 3 dots or tw
 Here's an ellipsis... And this--is an em dash.
 ```
 
-The quote style isn't yet configurable, unfortunately.
+The quote style can be configured with the [`lang` configuration option](?macros#lang).
 
 ## Math
 
