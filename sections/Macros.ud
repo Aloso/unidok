@@ -244,7 +244,7 @@ Unidok can be configured with the `@CONFIG` macro:
 
 ### `heading_anchor`
 
-Configures if headings should contain an anchor to itself.
+Configures if headings should contain an anchor to themselves.
 
 Possible values:
 * `none` - no anchor is added
@@ -266,7 +266,7 @@ Note that the anchor is empty, but it can be made visible with CSS using a `::be
 
 ### `lang`
 
-This configures the language (or region or script) in which the document is written. It affects the type of smart quotes used.
+This configures the language (or region or script) in which the document is written. It affects the type of smart quotes used ([more information](https://en.wikipedia.org/wiki/Quotation_mark)).
 
 Possible values:
 
