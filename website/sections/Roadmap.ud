@@ -44,14 +44,6 @@ The safe mode should be the default. Unsafe mode can be enabled in the API, the 
 Further restrictions can be put in place, e.g. to forbid embedding iframes or untrusted JavaScripts in the document.
 
 
-## Language awareness @NOTOC@NOTXT@(.status){Plannned}
-
-The language should be configurable both in the CLI and with a macro. The language affects
-
-* The type of smart quotes used
-* The `lang` attribute when emitting a complete HTML page
-
-
 ## Math
 
 Allow using a self-hosted MathJax script instead of the one from the CDN.
@@ -119,6 +111,12 @@ They look like this in GFM:
 * Forbid nested links?
 * URLs in angle brackets?
 
+
+## Language awareness
+
+The `lang` config option currently only affects the quote style. Maybe it should be renamed to `quote_style`? This would be less confusing, since unlike the HTML `lang` attribute, it can't be applied to individual elements (it is always globally scoped), and doesn't accept language codes such as `en-US`. Moreover, I'd like to support alternative quote styles in the future, e.g. guillements in German text. This could be done by specifying `quote_style="german alt"`.
+
+However, there is still value in specifying the actual language of the document, e.g. with a `@LANG` macro, which corresponds to the HTML `lang` attribute. For convenience, this macro should also set the quote style, but could be overridden with `@CONFIG(quote_style)`.
 
 ## Footnote definitions and bibliography
 
