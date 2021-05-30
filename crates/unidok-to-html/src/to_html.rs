@@ -11,6 +11,7 @@ fn push_esc(s: &str, buf: &mut String) {
             '>' => buf.push_str("&gt;"),
             '&' => buf.push_str("&amp;"),
             '"' => buf.push_str("&quot;"),
+            '\u{A0}' => buf.push_str("&nbsp;"),
             '\0' => buf.push('\u{FFFD}'),
             _ => buf.push(c),
         }

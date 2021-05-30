@@ -257,8 +257,43 @@ Note that the anchor is empty, but it can be made visible with CSS using a `::be
 ```
 @CONFIG(heading_anchor=start)
 
+
 - Hover this title:
   ## Test
 ```
 
 @(.media-big){_Note that heading anchors on this website only  appear when the cursor is hovering over the heading._}
+
+### `lang`
+
+This configures the language (or region or script) in which the document is written. It affects the type of smart quotes used.
+
+Possible values:
+
+`afrikaans`, `albanian`, `amharic`, `arabic`, `armenian`, `azerbaijani`, `basque`, `belarusian`, `bosnian`, `bulgarian`, `catalan`, `chinese`, `traditional chinese`, `croatian`, `czech`, `danish`, `dutch`, `english`, `esperanto`, `estonian`, `filipino`, `finnish`, `french`, `galician`, `georgian`, `german`, `swiss`, `greek`, `hebrew`, `hindi`, `hungarian`, `icelandic`, `ido`, `indonesian`, `interlingua`, `irish`, `italian`, `japanese`, `kazakh`, `khmer`, `north korean`, `south korean`, `lao`, `latvian`, `lithuanian`, `lojban`, `macedonian`, `maltese`, `mongolian` (cyrillic script), `new tai lue`, `norwegian`, `occitan`, `pashto`, `persian`, `polish`, `brazilian`, `portuguese`, `romanian`, `romansh`, `russian`, `serbian`, `scottish gaelic`, `slovak`, `slovene`, `sorbian`, `spanish`, `swedish`, `tai le`, `tamil`, `tibetan`, `tigrinya`, `thai`, `turkish`, `ukrainian`, `urdu`, `uyghur`, `uzbek`, `vietnamese`, `welsh `
+
+Examples:
+
+@(.playground)
+```
+@CONFIG(lang=german)
+
+
+"Hallo welt"
+```
+
+@(.playground)
+```
+@CONFIG(lang=french)
+
+
+"Bonjour le monde"
+```
+
+@(.playground)
+```
+@CONFIG(lang="new tai lue")
+
+
+"ᩉᩖᩢᨠ"
+```

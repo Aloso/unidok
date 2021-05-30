@@ -620,44 +620,54 @@ impl ParseSegments<'_> {
             patterns::SINGLE_QUOTE => {
                 if self.mode.is(ParsingMode::SUBSTITUTIONS) {
                     let prev = input.prev_char();
-                    input.bump(1);
+                    let s = input.bump(1);
 
-                    if matches!(prev, Some(c) if c.is_alphabetic()) {
-                        items.push(Item::Substitution(Substitution { text: "’" }));
-                    } else if matches!(input.peek_char(), Some(c) if c.is_alphabetic()) {
-                        items.push(Item::Substitution(Substitution { text: "‘" }));
+                    let prev_is_alpha = matches!(prev, Some(c) if c.is_alphabetic());
+                    let next_is_alpha = matches!(input.peek_char(), Some(c) if c.is_alphabetic());
+
+                    if prev_is_alpha && !next_is_alpha {
+                        items.push(Item::Substitution(Substitution::CloseSingleQuote));
+                    } else if !prev_is_alpha && next_is_alpha {
+                        items.push(Item::Substitution(Substitution::OpenSingleQuote));
+                    } else if prev_is_alpha {
+                        items.push(Item::Substitution(Substitution::Apostrophe));
                     } else {
-                        items.push(Item::Substitution(Substitution { text: "’" }));
+                        items.push(Item::Text(s));
                     }
+
                     return Some(false);
                 }
             }
             patterns::DOUBLE_QUOTE => {
                 if self.mode.is(ParsingMode::SUBSTITUTIONS) {
                     let prev = input.prev_char();
-                    input.bump(1);
+                    let s = input.bump(1);
 
-                    if matches!(prev, Some(c) if c.is_alphabetic()) {
-                        items.push(Item::Substitution(Substitution { text: "”" }));
-                    } else if matches!(input.peek_char(), Some(c) if c.is_alphabetic()) {
-                        items.push(Item::Substitution(Substitution { text: "“" }));
+                    let prev_is_alpha = matches!(prev, Some(c) if c.is_alphabetic());
+                    let next_is_alpha = matches!(input.peek_char(), Some(c) if c.is_alphabetic());
+
+                    if prev_is_alpha && !next_is_alpha {
+                        items.push(Item::Substitution(Substitution::CloseDoubleQuote));
+                    } else if !prev_is_alpha && next_is_alpha {
+                        items.push(Item::Substitution(Substitution::OpenDoubleQuote));
                     } else {
-                        items.push(Item::Substitution(Substitution { text: "”" }));
+                        items.push(Item::Text(s));
                     }
+
                     return Some(false);
                 }
             }
             patterns::ELLIPSIS => {
                 if self.mode.is(ParsingMode::SUBSTITUTIONS) {
                     input.bump(3);
-                    items.push(Item::Substitution(Substitution { text: "…" }));
+                    items.push(Item::Substitution(Substitution::Text("…")));
                     return Some(false);
                 }
             }
             patterns::EM_DASH => {
                 if self.mode.is(ParsingMode::SUBSTITUTIONS) {
                     input.bump(2);
-                    items.push(Item::Substitution(Substitution { text: "—" }));
+                    items.push(Item::Substitution(Substitution::Text("—")));
                     return Some(false);
                 }
             }

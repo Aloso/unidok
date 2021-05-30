@@ -227,9 +227,8 @@ impl<'a> IntoIR<'a> for MacroAst {
                 if let Some(MacroArgs::TokenTrees(args)) = self.args {
                     for arg in args {
                         if let TokenTree::KV(key, value) = arg {
-                            let key = key.to_str(text);
-                            if key == "heading_anchor" {
-                                match value.as_str(text) {
+                            match key.to_str(text) {
+                                "heading_anchor" => match value.as_str(text) {
                                     Some("start" | "before") => {
                                         state.config.heading_anchor = HeadingAnchor::Start
                                     }
@@ -240,7 +239,19 @@ impl<'a> IntoIR<'a> for MacroAst {
                                         state.config.heading_anchor = HeadingAnchor::None
                                     }
                                     _ => {}
+                                },
+                                "lang" => {
+                                    if let Some(value) = value.as_str(text) {
+                                        if let Ok(quote_style) = value.parse() {
+                                            state.config.quote_style = quote_style;
+                                        } else {
+                                            return Macro::Invalid;
+                                        }
+                                    } else {
+                                        return Macro::Invalid;
+                                    }
                                 }
+                                _ => return Macro::Invalid,
                             }
                         }
                     }

@@ -1,6 +1,7 @@
 pub mod ast;
 pub mod config;
 pub mod ir;
+pub mod quotes;
 pub mod try_reduce;
 
 mod into_ir;

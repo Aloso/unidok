@@ -29,8 +29,13 @@ pub struct Escaped {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Substitution {
-    pub text: &'static str,
+pub enum Substitution {
+    Text(&'static str),
+    OpenDoubleQuote,
+    OpenSingleQuote,
+    CloseDoubleQuote,
+    CloseSingleQuote,
+    Apostrophe,
 }
 
 #[derive(Debug, Clone, PartialEq)]

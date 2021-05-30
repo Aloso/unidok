@@ -1,6 +1,7 @@
 use crate::ast::segments::*;
 use crate::ast::AstState;
 use crate::ir::segments::*;
+use crate::quotes::ClosingQuotes;
 use crate::IntoIR;
 
 use super::utils::collapse_text;
@@ -15,7 +16,7 @@ impl<'a> IntoIR<'a> for SegmentAst {
             SegmentAst::Text2(t) => Segment::Text(t),
             SegmentAst::Text3(t) => Segment::Text2(t),
             SegmentAst::Escaped(esc) => Segment::EscapedText(esc.text.into_ir(text, state)),
-            SegmentAst::Substitution(s) => Segment::Text(s.text),
+            SegmentAst::Substitution(s) => Segment::Text(s.into_ir(text, state)),
             SegmentAst::Limiter => Segment::Limiter,
             SegmentAst::Braces(b) => Segment::Braces(b.into_ir(text, state)),
             SegmentAst::Math(b) => Segment::Math(b.into_ir(text, state)),
@@ -179,5 +180,26 @@ impl<'a> IntoIR<'a> for CodeAst {
 
     fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
         Code { macros: vec![], segments: collapse_text(self.segments).into_ir(text, state) }
+    }
+}
+
+impl<'a> IntoIR<'a> for Substitution {
+    type IR = &'a str;
+
+    fn into_ir(self, _: &str, state: &mut AstState) -> Self::IR {
+        match self {
+            Substitution::Text(text) => text,
+            Substitution::OpenDoubleQuote => state.config.quote_style.double_start.to_str(),
+            Substitution::OpenSingleQuote => state.config.quote_style.single_start.to_str(),
+            Substitution::CloseDoubleQuote => state.config.quote_style.double_end.to_str(),
+            Substitution::CloseSingleQuote => state.config.quote_style.single_end.to_str(),
+            Substitution::Apostrophe => {
+                if state.config.quote_style.is_english() {
+                    ClosingQuotes::EnglishSingle.to_str()
+                } else {
+                    "'"
+                }
+            }
+        }
     }
 }
