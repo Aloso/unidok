@@ -50,11 +50,8 @@ impl Parse for ParseCodeBlock<'_> {
             }
             drop(input2);
 
-            let line = input.parse(ParseBlock::new(
-                Some(mode),
-                ParsingState::new(ind, context, self.ac),
-                true,
-            ))?;
+            let line = input
+                .parse(ParseBlock::new(Some(mode), ParsingState::new(ind, context, self.ac)))?;
             lines.push(line);
         }
 
@@ -105,7 +102,7 @@ impl Parse for ParseInfo {
             FenceType::Backticks(_) => '`',
             FenceType::Tildes(_) => '~',
         };
-        if s.to_str(input.text()).contains(c) {
+        if s.to_str(&input.text).contains(c) {
             return None;
         }
 

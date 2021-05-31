@@ -1,4 +1,4 @@
-use crate::ast::AstState;
+use crate::ast::AstData;
 use crate::config::Config;
 use crate::ir::blocks::Heading;
 use crate::IntoIR;
@@ -18,7 +18,7 @@ pub struct IrState<'a> {
 }
 
 impl<'a> IrState<'a> {
-    pub fn new(text: &'a str, mut state: AstState) -> Self {
+    pub fn new(text: &'a str, mut state: AstData) -> Self {
         let headings = state.headings.clone().into_ir(text, &mut state);
         let footnotes = state.footnotes.clone().into_ir(text, &mut state);
         let contains_math = state.contains_math;

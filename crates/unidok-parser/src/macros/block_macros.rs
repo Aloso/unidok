@@ -13,12 +13,11 @@ use super::utils::{get_parsing_mode, ParseClosingBrace, ParseOpeningBrace};
 pub(crate) struct ParseBlockMacro<'a> {
     mode: Option<ParsingMode>,
     state: ParsingState<'a>,
-    no_toc: bool,
 }
 
 impl<'a> ParseBlockMacro<'a> {
-    pub fn new(mode: Option<ParsingMode>, state: ParsingState<'a>, no_toc: bool) -> Self {
-        Self { mode, state, no_toc }
+    pub fn new(mode: Option<ParsingMode>, state: ParsingState<'a>) -> Self {
+        Self { mode, state }
     }
 }
 
@@ -34,7 +33,7 @@ impl Parse for ParseBlockMacro<'_> {
 
         input.parse('@')?;
         let name = input.parse(ParseMacroName)?;
-        let name_str = name.to_str(input.text()).to_string();
+        let name_str = name.to_str(&input.text).to_string();
         let args = input.parse(ParseMacroArgs { ind, name: &name_str, ac })?;
 
         let mode = get_parsing_mode(&name_str, &args, &input)?.or(self.mode);
@@ -44,10 +43,7 @@ impl Parse for ParseBlockMacro<'_> {
         }
 
         let mac = if input.parse(ParseLineBreak(ind)).is_some() {
-            let no_toc = self.no_toc || name_str == "NOTOC";
-
-            let parser =
-                ParseBlock::new(mode, ParsingState::new(ind, self.state.context(), ac), no_toc);
+            let parser = ParseBlock::new(mode, ParsingState::new(ind, self.state.context(), ac));
             let block = Box::new(input.parse(parser)?);
 
             BlockMacro { name, args, content: BlockMacroContent::Prefixed(block) }

@@ -3,7 +3,7 @@ use std::{iter, mem};
 use detached_str::StrSlice;
 
 use crate::ast::macros::*;
-use crate::ast::AstState;
+use crate::ast::AstData;
 use crate::config::HeadingAnchor;
 use crate::ir::blocks::{AnnBlock, Block};
 use crate::ir::html::HtmlNode;
@@ -14,9 +14,9 @@ use crate::IntoIR;
 impl<'a> IntoIR<'a> for BlockMacro {
     type IR = AnnBlock<'a>;
 
-    fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
-        let mut block = self.content.into_ir(text, state);
-        let r#macro = MacroAst { name: self.name, args: self.args }.into_ir(text, state);
+    fn into_ir(self, text: &'a str, data: &mut AstData) -> Self::IR {
+        let mut block = self.content.into_ir(text, data);
+        let r#macro = MacroAst { name: self.name, args: self.args }.into_ir(text, data);
 
         if r#macro.is_for_list() {
             if let AnnBlock { block: Block::List(list), .. } = &mut block {
@@ -33,18 +33,16 @@ impl<'a> IntoIR<'a> for BlockMacro {
 impl<'a> IntoIR<'a> for InlineMacroAst {
     type IR = Segment<'a>;
 
-    fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
-        let mut segment = (*self.segment).into_ir(text, state);
+    fn into_ir(self, text: &'a str, data: &mut AstData) -> Self::IR {
+        let mut segment = (*self.segment).into_ir(text, data);
         let r#macro = MacroAst { name: self.name, args: self.args };
         match &mut segment {
-            Segment::Braces(b) => b.macros.push(r#macro.into_ir(text, state)),
-            Segment::Math(b) => b.macros.push(r#macro.into_ir(text, state)),
-            Segment::Link(b) => b.macros.push(r#macro.into_ir(text, state)),
-            Segment::Image(b) => b.macros.push(r#macro.into_ir(text, state)),
-            Segment::Code(b) => b.macros.push(r#macro.into_ir(text, state)),
-            Segment::InlineHtml(HtmlNode::Element(b)) => {
-                b.macros.push(r#macro.into_ir(text, state))
-            }
+            Segment::Braces(b) => b.macros.push(r#macro.into_ir(text, data)),
+            Segment::Math(b) => b.macros.push(r#macro.into_ir(text, data)),
+            Segment::Link(b) => b.macros.push(r#macro.into_ir(text, data)),
+            Segment::Image(b) => b.macros.push(r#macro.into_ir(text, data)),
+            Segment::Code(b) => b.macros.push(r#macro.into_ir(text, data)),
+            Segment::InlineHtml(HtmlNode::Element(b)) => b.macros.push(r#macro.into_ir(text, data)),
 
             _ => {}
         }
@@ -55,11 +53,11 @@ impl<'a> IntoIR<'a> for InlineMacroAst {
 impl<'a> IntoIR<'a> for BlockMacroContent {
     type IR = AnnBlock<'a>;
 
-    fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
+    fn into_ir(self, text: &'a str, data: &mut AstData) -> Self::IR {
         match self {
-            BlockMacroContent::Prefixed(p) => (*p).into_ir(text, state),
+            BlockMacroContent::Prefixed(p) => (*p).into_ir(text, data),
             BlockMacroContent::Braces(b) => {
-                AnnBlock { macros: vec![], block: Block::Braces(b.into_ir(text, state)) }
+                AnnBlock { macros: vec![], block: Block::Braces(b.into_ir(text, data)) }
             }
         }
     }
@@ -73,7 +71,7 @@ struct MacroAst {
 impl<'a> IntoIR<'a> for MacroAst {
     type IR = Macro<'a>;
 
-    fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
+    fn into_ir(self, text: &'a str, data: &mut AstData) -> Self::IR {
         match self.name.to_str(text) {
             "" => {
                 if let Some(MacroArgs::TokenTrees(tts)) = self.args {
@@ -204,17 +202,17 @@ impl<'a> IntoIR<'a> for MacroAst {
             }
             "FOOTNOTES" => {
                 if self.args.is_none() {
-                    if state.footnotes.is_empty() {
+                    if data.footnotes.is_empty() {
                         Macro::Footnotes(vec![])
                     } else {
-                        let links = mem::take(&mut state.footnotes);
+                        let links = mem::take(&mut data.footnotes);
                         let footnotes = links
                             .into_iter()
                             .flat_map(|link| {
-                                let num = state.next_footnote_def;
-                                state.next_footnote_def += 1;
+                                let num = data.next_footnote_def;
+                                data.next_footnote_def += 1;
 
-                                link.text.map(|t| Footnote { num, text: t.into_ir(text, state) })
+                                link.text.map(|t| Footnote { num, text: t.into_ir(text, data) })
                             })
                             .collect();
                         Macro::Footnotes(footnotes)
@@ -230,20 +228,20 @@ impl<'a> IntoIR<'a> for MacroAst {
                             match key.to_str(text) {
                                 "heading_anchor" => match value.as_str(text) {
                                     Some("start" | "before") => {
-                                        state.config.heading_anchor = HeadingAnchor::Start
+                                        data.config.heading_anchor = HeadingAnchor::Start
                                     }
                                     Some("end" | "after") => {
-                                        state.config.heading_anchor = HeadingAnchor::End
+                                        data.config.heading_anchor = HeadingAnchor::End
                                     }
                                     Some("none" | "no" | "false") => {
-                                        state.config.heading_anchor = HeadingAnchor::None
+                                        data.config.heading_anchor = HeadingAnchor::None
                                     }
                                     _ => {}
                                 },
                                 "lang" => {
                                     if let Some(value) = value.as_str(text) {
                                         if let Ok(quote_style) = value.parse() {
-                                            state.config.quote_style = quote_style;
+                                            data.config.quote_style = quote_style;
                                         } else {
                                             return Macro::Invalid;
                                         }
@@ -256,6 +254,13 @@ impl<'a> IntoIR<'a> for MacroAst {
                         }
                     }
                     Macro::Config
+                } else {
+                    Macro::Invalid
+                }
+            }
+            "INCLUDE" => {
+                if let Some(MacroArgs::Raw(path)) = self.args {
+                    Macro::Include(path.to_str(text))
                 } else {
                     Macro::Invalid
                 }

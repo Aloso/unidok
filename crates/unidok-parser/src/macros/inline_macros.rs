@@ -31,7 +31,7 @@ impl Parse for ParseInlineMacro<'_> {
 
         input.parse('@')?;
         let name = input.parse(ParseMacroName)?;
-        let name_str = name.to_str(input.text()).to_string();
+        let name_str = name.to_str(&input.text).to_string();
         let args = input.parse(ParseMacroArgs { name: &name_str, ind, ac })?;
 
         if name.is_empty() && args.is_none() {

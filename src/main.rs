@@ -4,6 +4,7 @@ use std::time::Instant;
 
 use anyhow::{bail, Context};
 use clap::{App, AppSettings, Arg, SubCommand};
+use unidok_repr::config::{Config, UnsafeConfig};
 
 use crate::file_conversions::{convert_dir, convert_file};
 
@@ -41,6 +42,9 @@ fn app() -> clap::App<'static, 'static> {
                         .value_name("PATH")
                         .help("The file or directory where the HTML output should be saved")
                         .required(true),
+                    Arg::with_name("unsafe")
+                        .takes_value(false)
+                        .help("Enable unsafe mode, which allows things like file system access"),
                 ]),
         )
         .subcommand(
@@ -48,12 +52,15 @@ fn app() -> clap::App<'static, 'static> {
                 .visible_alias("s")
                 .aliases(&["stio", "sdio", "sdtio", "tsdio", "stdoi", "stido"])
                 .about("Convert the standard input to HTML and prints it")
-                .arg(
+                .args(&[
                     Arg::with_name("input")
                         .value_name("INPUT")
                         .help("The Unidok text to convert")
                         .required(true),
-                ),
+                    Arg::with_name("unsafe")
+                        .takes_value(false)
+                        .help("Enable unsafe mode, which allows things like file system access"),
+                ]),
         )
         .setting(AppSettings::SubcommandRequiredElseHelp)
 }
@@ -72,6 +79,7 @@ fn main() -> anyhow::Result<()> {
     if let Some(args) = args.subcommand_matches("to-html") {
         let input = args.value_of_os("in").context("missing --in")?;
         let output = args.value_of_os("out").context("missing --out")?;
+        let is_unsafe = args.is_present("unsafe");
 
         let input = Path::new(input);
         let output = Path::new(output);
@@ -87,16 +95,23 @@ fn main() -> anyhow::Result<()> {
         let file_type = meta.file_type();
 
         if file_type.is_file() {
-            convert_file(&input, &output, verbosity)?;
+            convert_file(&input, &output, verbosity, is_unsafe)?;
         } else if file_type.is_dir() {
-            convert_dir(&input, &output, verbosity)?;
+            convert_dir(&input, &output, verbosity, is_unsafe)?;
         } else {
             bail!("The specified path `{}` is not a file or directory", input.display());
         }
     } else if let Some(args) = args.subcommand_matches("stdio") {
-        let input = args.value_of("input").context("missing input")?;
+        let input_str = args.value_of("input").context("missing input")?;
+        let is_unsafe = args.is_present("unsafe");
 
-        let res = unidok_parser::parse(input, false);
+        let mut input = unidok_parser::Input::new(&input_str);
+        let mut config = Config::default();
+        if is_unsafe {
+            config.unsafe_config = Some(UnsafeConfig { root: None });
+        }
+
+        let res = unidok_parser::parse(&mut input, config);
         let nodes = unidok_to_html::convert(res);
         let html = unidok_to_html::to_string(&nodes);
         println!("{}", html);

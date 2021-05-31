@@ -84,7 +84,7 @@ impl Parse for ParseBullet {
                 if num.len() > 9 {
                     return None;
                 }
-                let start = num.to_str(input.text()).parse::<u32>().unwrap();
+                let start = num.to_str(&input.text).parse::<u32>().unwrap();
 
                 let bullet = if input.parse('.').is_some() {
                     Bullet::Dot { start }

@@ -1,5 +1,5 @@
 use crate::ast::blocks::*;
-use crate::ast::AstState;
+use crate::ast::AstData;
 use crate::ir::blocks::*;
 use crate::{IntoIR, ToPlaintext};
 
@@ -8,19 +8,19 @@ use super::utils::collapse_text;
 impl<'a> IntoIR<'a> for BlockAst {
     type IR = AnnBlock<'a>;
 
-    fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
+    fn into_ir(self, text: &'a str, data: &mut AstData) -> Self::IR {
         let block = match self {
-            BlockAst::CodeBlock(b) => Block::CodeBlock(b.into_ir(text, state)),
-            BlockAst::Paragraph(b) => Block::Paragraph(b.into_ir(text, state)),
-            BlockAst::Heading(b) => Block::Heading(b.into_ir(text, state)),
-            BlockAst::Table(b) => Block::Table(b.into_ir(text, state)),
-            BlockAst::ThematicBreak(b) => Block::ThematicBreak(b.into_ir(text, state)),
-            BlockAst::List(b) => Block::List(b.into_ir(text, state)),
-            BlockAst::Quote(b) => Block::Quote(b.into_ir(text, state)),
+            BlockAst::CodeBlock(b) => Block::CodeBlock(b.into_ir(text, data)),
+            BlockAst::Paragraph(b) => Block::Paragraph(b.into_ir(text, data)),
+            BlockAst::Heading(b) => Block::Heading(b.into_ir(text, data)),
+            BlockAst::Table(b) => Block::Table(b.into_ir(text, data)),
+            BlockAst::ThematicBreak(b) => Block::ThematicBreak(b.into_ir(text, data)),
+            BlockAst::List(b) => Block::List(b.into_ir(text, data)),
+            BlockAst::Quote(b) => Block::Quote(b.into_ir(text, data)),
             BlockAst::BlockMacro(block) => {
-                return block.into_ir(text, state);
+                return block.into_ir(text, data);
             }
-            BlockAst::BlockHtml(h) => Block::BlockHtml(h.into_ir(text, state)),
+            BlockAst::BlockHtml(h) => Block::BlockHtml(h.into_ir(text, data)),
 
             BlockAst::Comment(_) | BlockAst::LinkRefDef(_) => Block::Empty,
         };
@@ -31,19 +31,19 @@ impl<'a> IntoIR<'a> for BlockAst {
 impl<'a> IntoIR<'a> for CodeBlockAst {
     type IR = CodeBlock<'a>;
 
-    fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
+    fn into_ir(self, text: &'a str, data: &mut AstData) -> Self::IR {
         let lines = self
             .lines
             .into_iter()
             .map(|b| {
-                let b = b.into_ir(text, state);
+                let b = b.into_ir(text, data);
                 debug_assert!(b.macros.is_empty());
                 b.block
             })
             .collect();
 
         CodeBlock {
-            info: self.info.into_ir(text, state),
+            info: self.info.into_ir(text, data),
             fence: self.fence_type,
             lines,
             indent: self.indent,
@@ -54,16 +54,16 @@ impl<'a> IntoIR<'a> for CodeBlockAst {
 impl<'a> IntoIR<'a> for ParagraphAst {
     type IR = Paragraph<'a>;
 
-    fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
-        Paragraph { segments: collapse_text(self.segments).into_ir(text, state) }
+    fn into_ir(self, text: &'a str, data: &mut AstData) -> Self::IR {
+        Paragraph { segments: collapse_text(self.segments).into_ir(text, data) }
     }
 }
 
 impl<'a> IntoIR<'a> for HeadingAst {
     type IR = Heading<'a>;
 
-    fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
-        let segments = collapse_text(self.segments).into_ir(text, state);
+    fn into_ir(self, text: &'a str, data: &mut AstData) -> Self::IR {
+        let segments = collapse_text(self.segments).into_ir(text, data);
 
         let mut plaintext = String::new();
         for segment in &segments {
@@ -78,7 +78,7 @@ impl<'a> IntoIR<'a> for HeadingAst {
 impl<'a> IntoIR<'a> for ThematicBreakAst {
     type IR = ThematicBreak;
 
-    fn into_ir(self, _: &str, _: &mut AstState) -> Self::IR {
+    fn into_ir(self, _: &str, _: &mut AstData) -> Self::IR {
         ThematicBreak { len: self.len, kind: self.kind }
     }
 }
@@ -86,26 +86,26 @@ impl<'a> IntoIR<'a> for ThematicBreakAst {
 impl<'a> IntoIR<'a> for TableAst {
     type IR = Table<'a>;
 
-    fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
-        Table { rows: self.rows.into_ir(text, state) }
+    fn into_ir(self, text: &'a str, data: &mut AstData) -> Self::IR {
+        Table { rows: self.rows.into_ir(text, data) }
     }
 }
 
 impl<'a> IntoIR<'a> for TableRowAst {
     type IR = TableRow<'a>;
 
-    fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
-        TableRow { is_header_row: self.is_header_row, cells: self.cells.into_ir(text, state) }
+    fn into_ir(self, text: &'a str, data: &mut AstData) -> Self::IR {
+        TableRow { is_header_row: self.is_header_row, cells: self.cells.into_ir(text, data) }
     }
 }
 
 impl<'a> IntoIR<'a> for TableCellAst {
     type IR = TableCell<'a>;
 
-    fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
+    fn into_ir(self, text: &'a str, data: &mut AstData) -> Self::IR {
         TableCell {
-            meta: self.meta.into_ir(text, state),
-            segments: collapse_text(self.segments).into_ir(text, state),
+            meta: self.meta.into_ir(text, data),
+            segments: collapse_text(self.segments).into_ir(text, data),
         }
     }
 }
@@ -113,7 +113,7 @@ impl<'a> IntoIR<'a> for TableCellAst {
 impl<'a> IntoIR<'a> for CellMetaAst {
     type IR = CellMeta;
 
-    fn into_ir(self, _: &'a str, _: &mut AstState) -> Self::IR {
+    fn into_ir(self, _: &'a str, _: &mut AstData) -> Self::IR {
         CellMeta {
             is_header_cell: self.is_header_cell,
             alignment: self.alignment,
@@ -127,15 +127,15 @@ impl<'a> IntoIR<'a> for CellMetaAst {
 impl<'a> IntoIR<'a> for ListAst {
     type IR = List<'a>;
 
-    fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
-        List { bullet: self.bullet, items: self.items.into_ir(text, state), macros: vec![] }
+    fn into_ir(self, text: &'a str, data: &mut AstData) -> Self::IR {
+        List { bullet: self.bullet, items: self.items.into_ir(text, data), macros: vec![] }
     }
 }
 
 impl<'a> IntoIR<'a> for QuoteAst {
     type IR = Quote<'a>;
 
-    fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR {
-        Quote { content: self.content.into_ir(text, state) }
+    fn into_ir(self, text: &'a str, data: &mut AstData) -> Self::IR {
+        Quote { content: self.content.into_ir(text, data) }
     }
 }

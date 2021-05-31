@@ -5,7 +5,7 @@ use super::segments::LinkAst;
 use crate::config::Config;
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct AstState {
+pub struct AstData {
     pub link_ref_defs: HashMap<String, LinkRefDef>,
     pub headings: Vec<HeadingAst>,
     pub contains_math: bool,
@@ -17,9 +17,9 @@ pub struct AstState {
     pub config: Config,
 }
 
-impl AstState {
+impl AstData {
     pub fn new(config: Config) -> Self {
-        AstState {
+        AstData {
             link_ref_defs: HashMap::new(),
             headings: Vec::new(),
             contains_math: false,
@@ -31,8 +31,8 @@ impl AstState {
     }
 }
 
-impl Default for AstState {
+impl Default for AstData {
     fn default() -> Self {
-        AstState::new(Config::default())
+        AstData::new(Config::default())
     }
 }

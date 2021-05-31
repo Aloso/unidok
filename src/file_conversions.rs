@@ -5,29 +5,45 @@ use std::time::Instant;
 use anyhow::Context;
 use ignore::Walk;
 use rayon::iter::{ParallelBridge, ParallelIterator};
+use unidok_repr::config::{Config, UnsafeConfig};
 
-pub fn convert_file(input: &Path, output: &Path, verbosity: u8) -> anyhow::Result<()> {
-    let content = fs::read_to_string(input)
-        .with_context(|| format!("File `{}` couldn't be read", input.display()))?;
+pub fn convert_file(
+    input_path: &Path,
+    output_path: &Path,
+    verbosity: u8,
+    is_unsafe: bool,
+) -> anyhow::Result<()> {
+    let content = fs::read_to_string(input_path)
+        .with_context(|| format!("File `{}` couldn't be read", input_path.display()))?;
 
     let start = Instant::now();
-    let res = unidok_parser::parse(&content, false);
+
+    let mut input = unidok_parser::Input::new(&content);
+    let mut config = Config::default();
+    if is_unsafe {
+        let cwd = std::env::current_dir().context("Could not get current directory path")?;
+        config.unsafe_config = Some(UnsafeConfig { root: Some(cwd) });
+    }
+    let res = unidok_parser::parse(&mut input, config);
+
     let time1 = start.elapsed();
+
     let nodes = unidok_to_html::convert(res);
     let html = unidok_to_html::to_string(&nodes);
+
     let time2 = start.elapsed();
 
-    if let Some(parent) = output.parent() {
+    if let Some(parent) = output_path.parent() {
         fs::create_dir_all(parent)
             .with_context(|| format!("Directory `{}` couldn't be created", parent.display()))?;
     }
-    fs::write(output, html)
-        .with_context(|| format!("File `{}` couldn't be written", output.display()))?;
+    fs::write(output_path, html)
+        .with_context(|| format!("File `{}` couldn't be written", output_path.display()))?;
 
     if verbosity > 0 {
         eprintln!();
-        eprintln!("File: {}", input.display());
-        eprintln!("   -> {}", output.display());
+        eprintln!("File: {}", input_path.display());
+        eprintln!("   -> {}", output_path.display());
         if verbosity == 1 {
             eprintln!(" Parsed and rendered in {:.1?}", time2);
         } else {
@@ -45,7 +61,12 @@ pub fn convert_file(input: &Path, output: &Path, verbosity: u8) -> anyhow::Resul
     Ok(())
 }
 
-pub fn convert_dir(input: &Path, output: &Path, verbosity: u8) -> anyhow::Result<()> {
+pub fn convert_dir(
+    input: &Path,
+    output: &Path,
+    verbosity: u8,
+    is_unsafe: bool,
+) -> anyhow::Result<()> {
     Walk::new(input).par_bridge().try_for_each(|entry| {
         let entry =
             entry.with_context(|| format!("An entry in `{}` couldn't be read", input.display()))?;
@@ -54,7 +75,7 @@ pub fn convert_dir(input: &Path, output: &Path, verbosity: u8) -> anyhow::Result
         if is_unidok_file(&path)? {
             if let Ok(rel_path) = path.strip_prefix(input) {
                 let output = output.join(rel_path).with_extension("html");
-                convert_file(&path, &output, verbosity)?;
+                convert_file(&path, &output, verbosity, is_unsafe)?;
             }
         }
 

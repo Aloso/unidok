@@ -2,6 +2,7 @@ use std::time::{Duration, Instant};
 use std::{fs, process};
 
 use similar::{ChangeTag, TextDiff};
+use unidok_repr::config::Config;
 
 const RED: &str = "\u{001b}[0;31m";
 const YELLOW: &str = "\u{001b}[0;33m";
@@ -133,7 +134,8 @@ fn test_case(
 
     let handle = thread::spawn(move || {
         let start = Instant::now();
-        let res = unidok_parser::parse(&unidok, false);
+        let mut input = unidok_parser::Input::new(unidok);
+        let res = unidok_parser::parse(&mut input, Config::default());
         let parsing_time = start.elapsed();
 
         let nodes = unidok_to_html::convert(res);

@@ -12,12 +12,11 @@ use crate::{Context, Input, Parse};
 pub(crate) struct ParseBlock<'a> {
     mode: Option<ParsingMode>,
     state: ParsingState<'a>,
-    no_toc: bool,
 }
 
 impl<'a> ParseBlock<'a> {
-    pub(crate) fn new(mode: Option<ParsingMode>, state: ParsingState<'a>, no_toc: bool) -> Self {
-        ParseBlock { mode, state, no_toc }
+    pub(crate) fn new(mode: Option<ParsingMode>, state: ParsingState<'a>) -> Self {
+        ParseBlock { mode, state }
     }
 
     pub(crate) fn new_multi(mode: Option<ParsingMode>, state: ParsingState<'a>) -> ParseBlocks<'a> {
@@ -75,7 +74,7 @@ impl Parse for ParseBlock<'_> {
         }
 
         if mode.is(ParsingMode::HEADINGS) {
-            if let Some(heading) = input.parse(ParseHeading { ind, no_toc: self.no_toc, ac }) {
+            if let Some(heading) = input.parse(ParseHeading { ind, ac }) {
                 self.consume_empty_lines(input);
                 return Some(BlockAst::Heading(heading));
             }
@@ -103,7 +102,7 @@ impl Parse for ParseBlock<'_> {
         }
 
         if mode.is(ParsingMode::MACROS) {
-            let parser = ParseBlockMacro::new(self.mode, self.state, self.no_toc);
+            let parser = ParseBlockMacro::new(self.mode, self.state);
             if let Some(mac) = input.parse(parser) {
                 self.consume_empty_lines(input);
                 return Some(BlockAst::BlockMacro(mac));
@@ -156,7 +155,7 @@ impl Parse for ParseBlocks<'_> {
             }
         }
 
-        let parser = ParseBlock { mode: self.mode, no_toc: false, state: self.state };
+        let parser = ParseBlock { mode: self.mode, state: self.state };
 
         let mut v = Vec::new();
         while let Some(node) = input.parse(parser) {

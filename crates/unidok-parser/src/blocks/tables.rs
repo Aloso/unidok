@@ -164,13 +164,13 @@ impl Parse for ParseRowsAndColumns {
 
         let num = input.parse_i(While(|c: char| c.is_ascii_digit()));
         if !num.is_empty() {
-            let num = num.to_str(input.text()).parse().ok()?;
+            let num = num.to_str(&input.text).parse().ok()?;
             col_span = Some(num);
         }
         if input.parse('x').is_some() {
             let num = input.parse_i(While(|c: char| c.is_ascii_digit()));
             if !num.is_empty() {
-                let num = num.to_str(input.text()).parse().ok()?;
+                let num = num.to_str(&input.text).parse().ok()?;
                 row_span = Some(num);
             }
         }

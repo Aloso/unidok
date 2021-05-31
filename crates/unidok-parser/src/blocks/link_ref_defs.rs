@@ -22,7 +22,7 @@ impl Parse for ParseLinkRefDef<'_> {
 
         input.try_parse(ParseSpacesU8);
         let url = input.parse_i(Until(|c| matches!(c, '\n' | '\r' | '"' | '\'')));
-        let url_trimmed = url.trim_end_matches(is_ws, input.text());
+        let url_trimmed = url.trim_end_matches(is_ws, &input.text);
 
         if url_trimmed.is_empty() {
             return None;
@@ -40,8 +40,6 @@ impl Parse for ParseLinkRefDef<'_> {
         input.try_parse(ParseLineBreak(self.ind));
 
         let lrd = LinkRefDef { name, url: url_trimmed, title };
-        let name = input[name].to_string();
-        input.state_mut().link_ref_defs.insert(name, lrd.clone());
         input.apply();
         Some(lrd)
     }

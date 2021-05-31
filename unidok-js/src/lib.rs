@@ -1,6 +1,7 @@
 mod utils;
 
 use serde::Serialize;
+use unidok_repr::config::Config;
 use unidok_repr::SyntaxSpan;
 use wasm_bindgen::prelude::*;
 
@@ -12,12 +13,15 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 /// Returns a `CompileResult`.
 #[wasm_bindgen]
-pub fn compile(input: &str, retrieve_spans: Option<bool>) -> JsValue {
+pub fn compile(input_str: &str, retrieve_spans: Option<bool>) -> JsValue {
     utils::set_panic_hook();
 
     let retrieve_spans = retrieve_spans.unwrap_or(false);
+    let mut config = Config::default();
+    config.retrieve_spans = retrieve_spans;
 
-    let res = unidok_parser::parse(input, retrieve_spans);
+    let mut input = unidok_parser::Input::new(input_str);
+    let res = unidok_parser::parse(&mut input, config);
     let contains_math = res.state.contains_math;
 
     let spans = if retrieve_spans { Some(res.spans.clone()) } else { None };

@@ -23,6 +23,9 @@ pub enum Macro<'a> {
     /// `@CONFIG(){}`
     Config,
 
+    /// `@INCLUDE(...){}`
+    Include(&'a str),
+
     Invalid,
 }
 

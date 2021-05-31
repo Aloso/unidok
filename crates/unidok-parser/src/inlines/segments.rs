@@ -28,7 +28,7 @@ use crate::{Context, Indents, Input, Parse};
 
 pub fn strip_space_start(segment: &mut SegmentAst, input: &Input) -> bool {
     match segment {
-        SegmentAst::Text(s) if s.to_str(input.text()).starts_with(' ') => {
+        SegmentAst::Text(s) if s.to_str(&input.text).starts_with(' ') => {
             *s = s.get(1..);
             true
         }
@@ -42,7 +42,7 @@ pub fn strip_space_start(segment: &mut SegmentAst, input: &Input) -> bool {
 
 pub fn strip_space_end(segment: &mut SegmentAst, input: &Input) -> bool {
     match segment {
-        SegmentAst::Text(s) if s.to_str(input.text()).ends_with(' ') => {
+        SegmentAst::Text(s) if s.to_str(&input.text).ends_with(' ') => {
             *s = s.get(..s.len() - 1);
             true
         }
@@ -714,7 +714,7 @@ impl ParseSegments<'_> {
 
         self.mode.is(P::CODE_BLOCKS) && input.can_parse(ParseCodeBlock { ind, mode: None, ac })
             || self.mode.is(P::COMMENTS) && input.can_parse(ParseComment)
-            || self.mode.is(P::HEADINGS) && input.can_parse(ParseHeading { ind, no_toc: true, ac })
+            || self.mode.is(P::HEADINGS) && input.can_parse(ParseHeading { ind, ac })
             || self.mode.is(P::TABLES) && input.can_parse(ParseTable { ind, ac })
             || self.mode.is(P::LISTS) && input.can_parse(ParseList { ind, ac, mode: None })
             || self.mode.is(P::THEMATIC_BREAKS) && input.can_parse(ParseThematicBreak { ind })

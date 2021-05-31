@@ -21,7 +21,7 @@ impl Parse for ParseAttribute<'_> {
             input.parse_i(ParseWs(self.ind));
 
             let value = input.parse(QuotedString(self.ind)).or_else(|| {
-                input.parse(ParseAttrName).map(|s| s.to_str(input.text()).to_string())
+                input.parse(ParseAttrName).map(|s| s.to_str(&input.text).to_string())
             })?;
 
             Some(value)

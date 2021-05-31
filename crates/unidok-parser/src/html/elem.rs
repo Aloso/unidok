@@ -51,7 +51,7 @@ impl Parse for ParseHtmlElem<'_> {
                 let mut content = String::new();
                 loop {
                     let s = input2.parse_i(Until(|c| matches!(c, '<' | '\n' | '\r')));
-                    content.push_str(s.to_str(input2.text()));
+                    content.push_str(s.to_str(&input2.text));
 
                     match input2.peek_char() {
                         Some('<') => {

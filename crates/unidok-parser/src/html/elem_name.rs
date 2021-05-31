@@ -21,7 +21,7 @@ impl Parse for ParseElemName {
             return None;
         }
 
-        let elem_name = ElemName::try_from(name.to_str(input.text()))?;
+        let elem_name = ElemName::try_from(name.to_str(&input.text))?;
 
         input.apply();
         Some(elem_name)

@@ -1,25 +1,18 @@
 use std::ops::{Deref, DerefMut, Index};
 
 use detached_str::{Str, StrSlice};
-use unidok_repr::ast::AstState;
 
 use crate::{Parse, ParseInfallible};
 
 #[derive(Debug, Clone)]
 pub struct Input {
-    text: Str,
+    pub text: Str,
     idx: usize,
-    state: AstState,
 }
 
 impl Input {
     pub fn new(text: impl ToString) -> Self {
-        Input { text: text.to_string().into(), idx: 0, state: Default::default() }
-    }
-
-    #[inline]
-    pub fn text(&self) -> &str {
-        &self.text
+        Input { text: text.to_string().into(), idx: 0 }
     }
 
     #[must_use]
@@ -87,14 +80,6 @@ impl Input {
     /// correctness, the parser should NOT be bumped.
     pub fn can_parse<P: Parse>(&mut self, mut parser: P) -> bool {
         parser.can_parse(self)
-    }
-
-    pub fn state_mut(&mut self) -> &mut AstState {
-        &mut self.state
-    }
-
-    pub fn into_state(self) -> AstState {
-        self.state
     }
 }
 

@@ -386,6 +386,7 @@ dependencies = [
  "rayon",
  "similar",
  "unidok-parser",
+ "unidok-repr",
  "unidok-to-html",
 ]
 

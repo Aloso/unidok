@@ -5,10 +5,10 @@ mod macros;
 mod segments;
 mod utils;
 
-use crate::ast::AstState;
+use crate::ast::AstData;
 
 pub trait IntoIR<'a> {
     type IR: 'a;
 
-    fn into_ir(self, text: &'a str, state: &mut AstState) -> Self::IR;
+    fn into_ir(self, text: &'a str, data: &mut AstData) -> Self::IR;
 }
