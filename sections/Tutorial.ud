@@ -8,7 +8,7 @@ This tutorial should give you a deeper understanding of Unidok and of how it dif
 @NOTOC
 #### Table of Contents
 
-@TOC{}
+@TOC
 
 @(.differences){
   @(.mini-title)
@@ -428,13 +428,14 @@ HTML can be used anywhere:
 
 There are macros for a variety of uses. Macros always start with a `@`, optionally followed by an all-uppercase word, optionally followed by arguments in parentheses:
 
+@(.playground)
 ```
 @THIS(is a macro)
 @AS_IS_THIS
 @(and this)
 ```
 
-A macro must always be attached to a block or element:
+A macro can be attached to a block or element:
 
 @(.playground)
 ```
@@ -449,7 +450,13 @@ Paragraph
 - List
 - List
 
-@(.green){Text enclosed in curly braces}
+@(.green) {
+  Multiple
+
+  paragraphs
+}
+
+Some @(.green){part} of a paragraph
 
 @(.green)`Inline code`
 
@@ -458,7 +465,7 @@ Paragraph
 @(.green)[A link](https://www.google.com)
 ```
 
-The above macros add an HTML attribute to elements, which are displayed with a green border.
+The above macros add the `green` CSS class to the elements. When a macro shouldn't have any content, add a blank line after the macro.
 
 You can find a list of available macros in the [Macros](javascript:scrollTo({top:0,left:0,behavior:'smooth'})) tab.
 
@@ -577,7 +584,7 @@ Math blocks are enclosed in `%{}` and use [AsciiMath](https://asciimath.org) syn
 %{sum_(i=1)^n i^3=((n(n+1))/2)^2}
 ```
 
-For math formulas to be displayed properly, the MathJax script must be included. This can be done conveniently with the [`@MATH_SCRIPT{}`](?macros#math-script) macro.
+For math formulas to be displayed properly, the MathJax script must be included. This can be done conveniently with the [`@MATH_SCRIPT`](?macros#math-script) macro.
 
 
 ## Deep dive: Binding power

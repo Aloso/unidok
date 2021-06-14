@@ -6,7 +6,7 @@
 @NOTOC
 #### Table of Contents
 
-@TOC{}
+@TOC
 
 @(.differences){
   @(.mini-title)
@@ -59,7 +59,7 @@ However, footnotes are only displayed when the `@FOOTNOTES` macro is encountered
 ```
 Some text [First footnote][^] [Second footnote][^]
 
-@FOOTNOTES{}
+@FOOTNOTES
 ```
 
 
@@ -78,25 +78,25 @@ When applied to a list, the text in each list item is wrapped in a `<p>` element
 
 ### `@BULLET`
 
-When applied to a list, the it uses the specified bullet type. This uses the [list-style] CSS property. It has loads of possible values, here are the values that are well-supported across different browsers:
+When applied to a list, the list uses the specified bullet type. This uses the [list-style] CSS property. It has loads of possible values, here are the values that are well-supported across different browsers:
 
 [list-style]: https://developer.mozilla.org/de/docs/Web/CSS/list-style "MDN documentation"
 
-- armenian
-- circle
-- decimal
-- decimal-leading-zero
-- disc
-- georgian
-- lower-alpha
-- lower-greek
-- lower-latin
-- lower-roman
-- square
-- upper-alpha
-- upper-greek
-- upper-latin
-- upper-roman
+- `armenian`
+- `circle`
+- `decimal`
+- `decimal-leading-zero`
+- `disc`
+- `georgian`
+- `lower-alpha`
+- `lower-greek`
+- `lower-latin`
+- `lower-roman`
+- `square`
+- `upper-alpha`
+- `upper-greek`
+- `upper-latin`
+- `upper-roman`
 
 @(.playground)
 ```
@@ -121,7 +121,7 @@ Inserts a table of contents.
 
 Table of contents:
 
-@TOC{}
+@TOC
 
 ## Heading 2
 
@@ -138,7 +138,7 @@ When applied to an element within the heading, that element is shown in the head
 
 @(.playground)
 ````
-@TOC{}
+@TOC
 
 ## Heading 5
 
@@ -156,7 +156,7 @@ When something is annotated with `@NOTXT`, it will be ignored when converting th
 
 @(.playground)
 ```
-@TOC{}
+@TOC
 
 ## A heading @NOTXT{_this isn't in the slug_}
 ```
@@ -216,7 +216,7 @@ Example:
 
 @(.playground)
 ```
-@MATH_SCRIPT{}
+@MATH_SCRIPT
 
 %{(1/4)^(-1)=4}
 ```
@@ -257,7 +257,6 @@ Note that the anchor is empty, but it can be made visible with CSS using a `::be
 ```
 @CONFIG(heading_anchor=start)
 
-
 - Hover this title:
   ## Test
 ```
@@ -278,7 +277,6 @@ Examples:
 ```
 @CONFIG(lang=german)
 
-
 "Hallo welt"
 ```
 
@@ -286,14 +284,12 @@ Examples:
 ```
 @CONFIG(lang=french)
 
-
 "Bonjour le monde"
 ```
 
 @(.playground)
 ```
 @CONFIG(lang="new tai lue")
-
 
 "ᩉᩖᩢᨠ"
 ```
