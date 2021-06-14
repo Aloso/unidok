@@ -21,6 +21,7 @@ pub struct InlineMacroAst {
 pub enum BlockMacroContent {
     Prefixed(Box<BlockAst>),
     Braces(Vec<BlockAst>),
+    None,
 }
 
 #[derive(Debug, Clone, PartialEq)]

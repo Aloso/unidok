@@ -59,6 +59,7 @@ impl<'a> IntoIR<'a> for BlockMacroContent {
             BlockMacroContent::Braces(b) => {
                 AnnBlock { macros: vec![], block: Block::Braces(b.into_ir(text, data)) }
             }
+            BlockMacroContent::None => AnnBlock { macros: vec![], block: Block::Empty },
         }
     }
 }

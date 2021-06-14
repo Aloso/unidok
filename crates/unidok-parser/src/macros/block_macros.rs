@@ -4,7 +4,7 @@ use crate::blocks::ParseBlock;
 use crate::macros::utils::ParseMacroName;
 use crate::parsing_mode::ParsingMode;
 use crate::state::ParsingState;
-use crate::utils::{ParseLineBreak, ParseSpacesU8};
+use crate::utils::{ParseLineBreak, ParseLineEnd, ParseSpaces, ParseSpacesU8};
 use crate::{Context, Input, Parse};
 
 use super::args::ParseMacroArgs;
@@ -36,17 +36,32 @@ impl Parse for ParseBlockMacro<'_> {
         let name_str = name.to_str(&input.text).to_string();
         let args = input.parse(ParseMacroArgs { ind, name: &name_str, ac })?;
 
-        let mode = get_parsing_mode(&name_str, &args, &input)?.or(self.mode);
-
         if name.is_empty() && args.is_none() {
             return None;
         }
 
-        let mac = if input.parse(ParseLineBreak(ind)).is_some() {
-            let parser = ParseBlock::new(mode, ParsingState::new(ind, self.state.context(), ac));
-            let block = Box::new(input.parse(parser)?);
+        input.parse_i(ParseSpaces);
 
-            BlockMacro { name, args, content: BlockMacroContent::Prefixed(block) }
+        let mode = get_parsing_mode(&name_str, &args, &input)?.or(self.mode);
+
+        let content = if input.parse(ParseLineEnd).is_some() {
+            let mut line_breaks = 0u8;
+            if input.parse(ParseLineBreak(ind)).is_some() {
+                line_breaks += 1;
+            }
+            if input.parse(ParseLineBreak(ind)).is_some() {
+                line_breaks += 1;
+            }
+
+            if line_breaks == 1 {
+                let parser =
+                    ParseBlock::new(mode, ParsingState::new(ind, self.state.context(), ac));
+                let block = Box::new(input.parse(parser)?);
+
+                BlockMacroContent::Prefixed(block)
+            } else {
+                BlockMacroContent::None
+            }
         } else if input.parse(ParseOpeningBrace(self.state.ind())).is_some() {
             let blocks = input.parse(ParseBlock::new_multi(
                 self.mode,
@@ -54,12 +69,12 @@ impl Parse for ParseBlockMacro<'_> {
             ))?;
             input.try_parse(ParseClosingBrace(ind));
 
-            BlockMacro { name, args, content: BlockMacroContent::Braces(blocks) }
+            BlockMacroContent::Braces(blocks)
         } else {
             return None;
         };
 
         input.apply();
-        Some(mac)
+        Some(BlockMacro { name, args, content })
     }
 }

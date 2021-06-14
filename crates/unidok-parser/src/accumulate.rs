@@ -50,6 +50,7 @@ fn accumulate_single_block_data(parsed: &BlockAst, data: &mut AstData, no_toc: b
                     accumulate_single_block_data(p, data, no_toc, text)
                 }
                 BlockMacroContent::Braces(b) => accumulate_block_data(b, data, no_toc, text),
+                BlockMacroContent::None => {}
             }
         }
         BlockAst::BlockHtml(b) => accumulate_html(b, data, no_toc, text),

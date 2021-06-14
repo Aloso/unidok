@@ -481,6 +481,12 @@ pre code {
 
 .green {
     border-left: 5px solid green;
+    background: #1eff001a;
+}
+
+:not(ul):not(ol):not(blockquote).green {
+    padding-left: 2px;
+    padding-right: 2px;
 }
 
 .hl {

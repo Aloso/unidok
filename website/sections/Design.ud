@@ -10,7 +10,7 @@ Unidok is still very much in flux. I will add more features, but I might also ch
 @NOTOC
 #### Table of contents
 
-@TOC{}
+@TOC
 
 ## Inline formatting
 
@@ -96,7 +96,7 @@ It's odd that macros can attach to `inline code`, but not to other types of inli
 
 When a macro appears before a formatting delimiter, the parsing strategy could be changed, but is it worth the added complexity?
 
-Note that this already works: `@MACRO{**bold text**}`. This creates an unnecessary `<span>`, but that can be fixed by changing the behaviour of inline macros with braces that contain only a single element.
+Note that this already works: `@MACRO{**bold text**}`.
 
 ## Thematic breaks and underlines
 

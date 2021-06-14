@@ -8,22 +8,22 @@ pub enum Macro<'a> {
     Loose,
     /// `@BULLET()`
     ListStyle(String),
-    /// `@TOC{}`
+    /// `@TOC`
     Toc,
     /// `@NOTOC`
     NoToc,
     /// `@NOTXT`
     NoText,
-    /// `@FOOTNOTES{}`
+    /// `@FOOTNOTES`
     Footnotes(Vec<Footnote<'a>>),
-    /// `@MATH_SCRIPT{}`
+    /// `@MATH_SCRIPT`
     MathScript,
     /// `@BLANK`
     Blank,
-    /// `@CONFIG(){}`
+    /// `@CONFIG()`
     Config,
 
-    /// `@INCLUDE(...){}`
+    /// `@INCLUDE(...)`
     Include(&'a str),
 
     Invalid,

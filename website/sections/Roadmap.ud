@@ -12,7 +12,7 @@ For other items, there's no guarantee that they will be implemented, but you can
 @NOTOC
 #### Table of contents
 
-@TOC{}
+@TOC
 
 
 ## Syntax highlighting @NOTOC@NOTXT@(.status){Plannned}
@@ -126,7 +126,7 @@ Footnotes look like this:
 ```
 Absurd claim. [This is some footnote text][^] [Another footnote][^]
 
-@FOOTNOTES{}
+@FOOTNOTES
 ```
 
 This looks like a link referring to a link reference, only that the reference is the special token `^`. This could be extended similar to link definitions:
@@ -134,7 +134,7 @@ This looks like a link referring to a link reference, only that the reference is
 ```
 Absurd claim. [^foo] [^bar]
 
-@FOOTNOTES{}
+@FOOTNOTES
 
 [^foo]: This is some footnote text
 [^bar]: Another footnote
@@ -148,7 +148,7 @@ Absurd claim. [^^foo] [^^bar]
 [^^foo]: John Foo. _Absurd Claims_. 2007. ISBN-1234567
 [^^bar]: Max Bar. _Even more absurd claims_. 2008. ISBN-2345678
 
-@BIBLIOGRAPHY{}
+@BIBLIOGRAPHY
 ```
 
 
