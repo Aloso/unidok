@@ -564,16 +564,25 @@ Since HTML elements are considered _inline_ only if there's text in the same lin
 
 ## Substitutions
 
-Some characters are automatically substituted: Quotes, apostrophes, 3 dots or two consecutive dashes:
+Some characters are automatically substituted:
+
+||# Characters      |# Explanation
+||  `"`, `'`        |  Smart quotes (language dependent; this is a work in progress)
+|| `...`            | Ellipsis
+|| `--`            | EM dash (--)
+|| `->`, `<-`      | Arrows (->, <-)
+|| `(C)`, `(R)`, `(TM)` | (C) (R) (TM)
 
 @(.playground)
 ```
-"This is a quote". 'This also works.'
-
-Here's an ellipsis... And this--is an em dash.
+* "This is a quote". 'This also works'.
+* Ellipsis...
+* This--looks dashing!
+* -> WOW <-
+* (C) (R) (TM)
 ```
 
-The quote style can be configured with the [`lang` configuration option](?macros#lang).
+The quote style can be configured with the [`lang` configuration option](?macros#lang). This is an interim solution until proper language support is implemented.
 
 ## Math
 
@@ -601,7 +610,7 @@ To determine if a delimiter is left-flanking or right-flanking, delimiters must 
 ||  Whitespace (space, tab, line break, etc.)                 |  1
 ||  Limiter `$`                                               |  0
 
-If the left character has a higher binding power than the right character, the delimiter is right-flanking. If the right character's binding power is higher, the delimiter is left-flanking. If the binding powers are equal, the delimiter is both left- and right-flanking.
+If the left character has a higher binding power than the right character, the delimiter is right-flanking, and vice versa. If the binding powers are equal, the delimiter is both left- and right-flanking.
 
 This is best shown with a few examples:
 
@@ -648,3 +657,7 @@ There are a few more rules, though:
 @LOOSE
 - A formatting range can't be empty (so `**` doesn't close itself immediately).
 - If one of the delimiters can both open and close a formatting range, the sum of the length of their delimiter runs mustn't be divisible by 3, unless both delimiter run lengths are divisible by 3.
+
+### Compatibility with CommonMark
+
+Unidok's precedence rules try to follow the CommonMark specification closely. However, the specification is ambiguous or misleading in some places, which led to a few inconsistencies between Unidok and the CommonMark reference implementation, which I intend to fix. Unfortunately, the rules are complicated and sometimes ad-hoc and unintuitive, and most Markdown implementations are buggy. This means that very few people know the exact behaviour of delimiter precedence in Markdown. This is rarely a problem in real-world usage, but when it is, trial and error is needed to get the correct result. Therefore it is debatable if exact compatibility with Markdown is even useful here.

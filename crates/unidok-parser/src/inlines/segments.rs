@@ -1,6 +1,6 @@
 use std::convert::TryFrom;
 
-use aho_corasick::AhoCorasick;
+use aho_corasick::{AhoCorasick, AhoCorasickBuilder, MatchKind};
 use detached_str::StrSlice;
 use unidok_repr::ast::html::{HtmlEntity, HtmlNodeAst};
 use unidok_repr::ast::macros::InlineMacroAst;
@@ -342,12 +342,12 @@ fn is_compatible(left: Flanking, right: Flanking, left_count: u8, right_count: u
 }
 
 pub(crate) static PATTERNS: &[&str] = &[
-    "*", "_", "~", "^", "#", "`", "%{", "|", "[", "]", "{", "}", "!", "@", "\\", "$", "<", "&",
-    "\n", "\r", "'", "\"", "...", "--",
+    "*", "_", "~", "^", "#", "`", "%{", "|", "[", "]", "{", "}", "!", "@", "\\", "$", "&", "\n",
+    "\r", "'", "\"", "...", "--", "->", "<-", "<", "(C)", "(R)", "(TM)",
 ];
 
 pub(crate) fn get_global_patterns() -> AhoCorasick {
-    AhoCorasick::new_auto_configured(PATTERNS)
+    AhoCorasickBuilder::new().match_kind(MatchKind::LeftmostFirst).build(PATTERNS)
 }
 
 mod patterns {
@@ -367,14 +367,19 @@ mod patterns {
     pub const AT: u32 = 13;
     pub const BACKSLASH: u32 = 14;
     pub const DOLLAR: u32 = 15;
-    pub const OPEN_ANGLE: u32 = 16;
-    pub const AMPERSAND: u32 = 17;
-    pub const LINE_FEED: u32 = 18;
-    pub const CARRIAGE_RETURN: u32 = 19;
-    pub const SINGLE_QUOTE: u32 = 20;
-    pub const DOUBLE_QUOTE: u32 = 21;
-    pub const ELLIPSIS: u32 = 22;
-    pub const EM_DASH: u32 = 23;
+    pub const AMPERSAND: u32 = 16;
+    pub const LINE_FEED: u32 = 17;
+    pub const CARRIAGE_RETURN: u32 = 18;
+    pub const SINGLE_QUOTE: u32 = 19;
+    pub const DOUBLE_QUOTE: u32 = 20;
+    pub const ELLIPSIS: u32 = 21;
+    pub const EM_DASH: u32 = 22;
+    pub const ARROW_R: u32 = 23;
+    pub const ARROW_L: u32 = 24;
+    pub const OPEN_ANGLE: u32 = 25;
+    pub const CIRCLE_C: u32 = 26;
+    pub const CIRCLE_R: u32 = 27;
+    pub const TRADEMARK: u32 = 28;
 }
 
 fn pattern_to_format_delim(n: u32) -> Option<FormatDelim> {
@@ -668,6 +673,41 @@ impl ParseSegments<'_> {
                 if self.mode.is(ParsingMode::SUBSTITUTIONS) {
                     input.bump(2);
                     items.push(Item::Substitution(Substitution::Text("—")));
+                    return Some(false);
+                }
+            }
+            patterns::ARROW_R => {
+                if self.mode.is(ParsingMode::SUBSTITUTIONS) {
+                    input.bump(2);
+                    items.push(Item::Substitution(Substitution::Text("→")));
+                    return Some(false);
+                }
+            }
+            patterns::ARROW_L => {
+                if self.mode.is(ParsingMode::SUBSTITUTIONS) {
+                    input.bump(2);
+                    items.push(Item::Substitution(Substitution::Text("←")));
+                    return Some(false);
+                }
+            }
+            patterns::CIRCLE_C => {
+                if self.mode.is(ParsingMode::SUBSTITUTIONS) {
+                    input.bump(3);
+                    items.push(Item::Substitution(Substitution::Text("©")));
+                    return Some(false);
+                }
+            }
+            patterns::CIRCLE_R => {
+                if self.mode.is(ParsingMode::SUBSTITUTIONS) {
+                    input.bump(3);
+                    items.push(Item::Substitution(Substitution::Text("®")));
+                    return Some(false);
+                }
+            }
+            patterns::TRADEMARK => {
+                if self.mode.is(ParsingMode::SUBSTITUTIONS) {
+                    input.bump(4);
+                    items.push(Item::Substitution(Substitution::Text("™")));
                     return Some(false);
                 }
             }

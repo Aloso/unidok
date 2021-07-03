@@ -1,0 +1,17 @@
+This... is an ellipsis. Here are <- some -> arrows. Em dashes--are important. (C) The Unidok contributors (R) (TM).
+
+Here are some "double quotes" and 'single quotes'. It's amaaaazing! "¡With punctuation!"
+
+@CONFIG(lang = german)
+
+"Test", 'test'
+
+@CONFIG(lang = french)
+
+"Test", 'test'
+
+............................................................
+<p>This… is an ellipsis. Here are ← some → arrows. Em dashes—are important. © The Unidok contributors ® ™.</p>
+<p>Here are some “double quotes” and ‘single quotes’. It’s amaaaazing! &quot;¡With punctuation!&quot;</p>
+<p>„Test“, ‚test‘</p>
+<p>«&nbsp;Test&nbsp;», “test”</p>
