@@ -51,12 +51,7 @@ Allow using a self-hosted MathJax script instead of the one from the CDN.
 
 ## More substitutions
 
-In addition to smart punctuation (`'`, `"`, `--`, `...`), the following text substitutions could be added:
-
-* Arrows: `->`, `=>`, `<-`, `<->`, `<=>`
-* Symbols: `(C)`, `(TM)`, `(R)`
-
-More opt-in substitutions could be made available via configuration options or plugins, for example:
+More substitutions could be made available via configuration options or plugins, for example:
 
 * Math:
   `!=`, `<=`, `>=`, `~=`, `===`, `~~`, `+-`, `-+`, `|->`, `_|_`, `|-`,
@@ -64,6 +59,8 @@ More opt-in substitutions could be made available via configuration options or p
   * [Wikipedia: Glossary of mathematical symbols](https://en.wikipedia.org/wiki/Glossary_of_mathematical_symbols)
   * [AsciiMath](http://asciimath.org)
   * Note that greek letters and many operators can be entered with HTML entities, e.g. `&pi;` = &pi;, `&notin;` = &notin;
+* Emojis:
+  `:-)`, `:-(`, `(-:`, `)-:`, `:lol:`, `:grin:`, `:wink:`, `:blush:`, `:angry:`, `:hugs:`, etc.
 * Other, e.g.: `?!`, `!?`
 
 
@@ -184,11 +181,6 @@ date: 2025-01-01
 ````
 
 A metadata section must be at the very top of the file. This is usually unambiguous, since documents rarely start with a thematic break.
-
-
-## Emojis
-
-They could be written like `:makeup:`.
 
 
 ## Support XML
