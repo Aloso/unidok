@@ -18,7 +18,6 @@ use crate::parse::{Parse, ParseInfallible};
 use crate::state::{Context, ParsingState};
 use crate::utils::Indents;
 
-use unidok_repr::ast::blocks::BlockAst;
 use unidok_repr::ast::AstData;
 use unidok_repr::config::Config;
 use unidok_repr::ir::blocks::AnnBlock;
@@ -35,14 +34,12 @@ pub struct Doc<'a> {
 
 pub fn parse(input: &mut Input, config: Config) -> Doc<'_> {
     let parsed = input.parse(ParseBlock::new_multi(None, ParsingState::new_global())).unwrap();
-    debug_assert!(input.is_empty());
+    assert!(input.is_empty());
 
     let mut spans = Vec::new();
     if config.retrieve_spans {
         for p in &parsed {
-            if let BlockAst::CodeBlock(c) = p {
-                c.to_spans(&mut spans);
-            }
+            p.to_spans(&mut spans);
         }
     }
 
