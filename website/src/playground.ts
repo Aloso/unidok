@@ -73,8 +73,8 @@ export class Playground {
                     highlightSelectionMatches({ minSelectionLength: 3 }),
                     EditorState.tabSize.of(4),
                     EditorView.updateListener.of(updateListener),
-                    keymap.of(myKeymap)
-                ]
+                    keymap.of(myKeymap),
+                ],
             }),
             parent: this.input,
         })
@@ -189,7 +189,7 @@ export function addBigPlayground() {
 
     const title = document.createElement('span')
     title.id = 'big-playground-title'
-    title.innerHTML = 'Unidoc playground'
+    title.innerHTML = 'Unidok playground'
 
     const toolbar = document.createElement('div')
     toolbar.id = 'big-playground-toolbar'

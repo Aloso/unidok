@@ -85,13 +85,15 @@ impl ToSpans for Comment {
 
 impl ToSpans for CodeBlockAst {
     fn to_spans(&self, buf: &mut Vec<SyntaxSpan>) {
-        let span = self.opening_fence.until(self.closing_fence).with(SyntaxKind::CodeBlock);
-        let info = Span::from(self.info).with(SyntaxKind::InfoString);
-        buf.push(span);
+        buf.push(self.opening_fence.until(self.closing_fence).with(SyntaxKind::CodeBlock));
         buf.push(self.opening_fence.with(SyntaxKind::CodeFence));
-        buf.push(info);
+        if !self.info.is_empty() {
+            buf.push(Span::from(self.info).with(SyntaxKind::InfoString));
+        }
         self.lines.to_spans(buf);
-        buf.push(self.closing_fence.with(SyntaxKind::CodeFence));
+        if !self.closing_fence.is_empty() {
+            buf.push(self.closing_fence.with(SyntaxKind::CodeFence));
+        }
     }
 }
 
