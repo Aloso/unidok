@@ -14,4 +14,4 @@ readme = "README.md"
 [dependencies]
 unidok-repr = { path="../unidok-repr", version="0.2" }
 unidok-parser = { path="../unidok-parser", version="0.2" }
-asciimath-rs = "0.5.8"
+asciimath-rs = "0.6.1"

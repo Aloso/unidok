@@ -28,9 +28,9 @@ checksum = "15af2628f6890fe2609a3b91bef4c83450512802e59489f9c1cb1fa5df064a61"
 
 [[package]]
 name = "asciimath-rs"
-version = "0.5.8"
+version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ed7f3813e3a1c4a76d4d591826bed4d37e13165728cbee5ea7004269b311ab3a"
+checksum = "580b86258cd778e385e137a33b48e7456abc7339f00a0649640212e74b4ff795"
 dependencies = [
  "charred",
  "htmlescape",
