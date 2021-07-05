@@ -3,7 +3,7 @@ members = ["crates/*"]
 
 [package]
 name = "unidok"
-version = "0.1.0"
+version = "0.2.0"
 description = "A powerful, readable, easy-to-learn markup language"
 authors = ["Ludwig Stecher <ludwig.stecher@gmx.de>"]
 edition = "2018"
@@ -17,10 +17,10 @@ readme = "README.md"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-unidok-parser = { path = "crates/unidok-parser", version = "0.1" }
-unidok-to-html = { path = "crates/unidok-to-html", version = "0.1" }
-unidok-repr = { path = "crates/unidok-repr", version = "0.1" }
-clap = { version = "2.33", features = ["color"] }
+unidok-parser = { path="crates/unidok-parser", version="0.2" }
+unidok-to-html = { path="crates/unidok-to-html", version="0.2" }
+unidok-repr = { path="crates/unidok-repr", version="0.2" }
+clap = { version="2.33", features=["color"] }
 ignore = "0.4.17"
 anyhow = "1.0"
 rayon = "1.5"

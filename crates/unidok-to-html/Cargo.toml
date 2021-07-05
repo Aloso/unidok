@@ -1,7 +1,7 @@
 [package]
 name = "unidok-to-html"
 description = "Convert a parsed Unidok document to HTML"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Ludwig Stecher <ludwig.stecher@gmx.de>"]
 edition = "2018"
 license = "Apache-2.0 OR MIT"
@@ -12,6 +12,6 @@ readme = "README.md"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-unidok-repr = { path = "../unidok-repr", version = "0.1" }
-unidok-parser = { path = "../unidok-parser", version = "0.1" }
+unidok-repr = { path="../unidok-repr", version="0.2" }
+unidok-parser = { path="../unidok-parser", version="0.2" }
 asciimath-rs = "0.5.8"

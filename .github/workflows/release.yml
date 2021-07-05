@@ -31,7 +31,7 @@ jobs:
           draft: false
           prerelease: false
           body: |
-            This is a new release of `unidok`.
+            This is a new release of `unidok`. [Find out what changed](https://github.com/Aloso/unidok/blob/main/CHANGELOG.md).
 
             ### Installation
             If you're running on Linux, macOS or Windows, you can use the binaries below.

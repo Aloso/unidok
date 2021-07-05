@@ -86,18 +86,12 @@ Get a pre-built binary from the [releases page](https://github.com/Aloso/unidok/
 
 ### As Rust libraries:
 
-[Install rustup](https://rustup.rs/), then run
-
-```shell
-rustup default beta
-```
-
-Then add the following dependencies to your `Cargo.toml`:
+Add the following dependencies to your `Cargo.toml`:
 
 @PASS(c li)
 ```toml
-[unidok-parser](https://docs.rs/unidok-parser) = "0.1"
-[unidok-to-html](https://docs.rs/unidok-to-html) = "0.1"
+[unidok-parser](https://docs.rs/unidok-parser) = "0.2"
+[unidok-to-html](https://docs.rs/unidok-to-html) = "0.2"
 ```
 
 ******

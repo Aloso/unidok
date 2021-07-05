@@ -378,7 +378,7 @@ checksum = "9337591893a19b88d8d87f2cec1e73fad5cdfd10e5a6f349f498ad6ea2ffb1e3"
 
 [[package]]
 name = "unidok"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -392,7 +392,7 @@ dependencies = [
 
 [[package]]
 name = "unidok-parser"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "aho-corasick",
  "detached-str",
@@ -402,7 +402,7 @@ dependencies = [
 
 [[package]]
 name = "unidok-repr"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "detached-str",
  "serde",
@@ -411,7 +411,7 @@ dependencies = [
 
 [[package]]
 name = "unidok-to-html"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "asciimath-rs",
  "unidok-parser",
